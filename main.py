@@ -653,7 +653,7 @@ def run_water_quality_dashboard():
                 st.write("Logo not found.")
         with col_title:
             st.markdown(
-                '<div class="main-header"><h1>Ποιοτικά χαρακτηριστικά Επιφανειακού Ύδατος Ταμιευτήρα Γαδουρά Ρόδου</h1></div>',
+                '<div class="main-header"><h1>Ποιοτικά χαρακτηριστικά Επιφανειακού Ύδατος Λίμνης Κορώνεια</h1></div>',
                 unsafe_allow_html=True
             )
         st.write(f"Current working directory: {base_dir}")
