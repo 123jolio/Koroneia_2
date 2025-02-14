@@ -1,1 +1,0 @@
-cd C:\Users\John Lioumbas\Desktop\Software_Gadoura\LakeProcessingApp\to web app>streamlit run app.py
