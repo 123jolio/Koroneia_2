@@ -15,8 +15,6 @@
 Σημαντική Σημείωση
 Πριν εκτελέσετε την εφαρμογή, βεβαιωθείτε ότι όλα τα απαραίτητα αρχεία δεδομένων (GeoTIFF, XML shapefiles, KML, Excel κ.λπ.) βρίσκονται στους σωστούς φακέλους.
 """
-"""
-
 # Disable Streamlit's file watchdog to avoid inotify watch limit issues.
 import os
 os.environ["STREAMLIT_SERVER_ENABLEWATCHDOG"] = "false"
