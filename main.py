@@ -498,7 +498,7 @@ def run_lake_processing_app():
     fig_monthly.update_layout(height=1400)
     st.plotly_chart(fig_monthly, use_container_width=True)
 
-    #######################################################################
+   #######################################################################
     # Group 2: Yearly Days in Range Analysis with multiple years selectable
     #######################################################################
     st.header("Yearly Days in Range Analysis")
@@ -519,9 +519,12 @@ def run_lake_processing_app():
     else:
         n_rows = len(selected_years_analysis)
         n_cols = len(selected_months_yearly)
-        subplot_titles = [f"{year} - {datetime(2000, m, 1).strftime('%B')}"
-                          for year in selected_years_analysis for m in selected_months_yearly]
+        subplot_titles = [
+            f"{year} - {datetime(2000, m, 1).strftime('%B')}"
+            for year in selected_years_analysis for m in selected_months_yearly
+        ]
         
+        # Create a subplot grid with improved spacing and a shared coloraxis.
         fig_yearly = make_subplots(
             rows=n_rows, cols=n_cols,
             subplot_titles=subplot_titles,
@@ -530,34 +533,41 @@ def run_lake_processing_app():
         
         # Build a dictionary mapping (year, month) to its days in range count.
         yearly_days_in_range = {}
-        trace_count = 0
         for i, year in enumerate(selected_years_analysis):
             for j, m in enumerate(selected_months_yearly):
                 indices = [k for k, d in enumerate(DATES) if d.year == year and d.month == m]
                 if indices:
                     count_img = np.sum(stack_full_in_range[indices, :, :], axis=0)
                     yearly_days_in_range[(year, m)] = count_img  # store data for later use
-                    showscale = True if trace_count == 0 else False
                     fig_yearly.add_trace(
                         go.Heatmap(
                             z=np.flipud(count_img),
                             colorscale="plasma",
-                            showscale=showscale,
-                            colorbar=dict(title="Days In Range") if showscale else None
+                            coloraxis="coloraxis",  # use the shared coloraxis
+                            showscale=False       # hide individual colorbars
                         ),
                         row=i+1, col=j+1
                     )
-                    trace_count += 1
                 else:
                     yearly_days_in_range[(year, m)] = None
                     fig_yearly.add_annotation(
                         text="No data",
                         showarrow=False, row=i+1, col=j+1
                     )
-        fig_yearly.update_layout(height=300 * n_rows)
+        
+        # Update the layout to include a common coloraxis (with a single colorbar)
+        fig_yearly.update_layout(
+            coloraxis=dict(
+                colorscale="plasma",
+                colorbar=dict(title="Days In Range", len=0.75)
+            ),
+            height=300 * n_rows,
+            width=1200,
+            margin=dict(l=50, r=50, t=50, b=50)
+        )
         st.plotly_chart(fig_yearly, use_container_width=True)
         
-        # --- New: Add a selectbox to enlarge one of the yearly plots ---
+        # --- Enlarged View Selector ---
         available_pairs = [(year, m) for (year, m), data in yearly_days_in_range.items() if data is not None]
         if available_pairs:
             pair_labels = [f"{year} - {datetime(2000, m, 1).strftime('%B')}" for year, m in available_pairs]
@@ -574,8 +584,9 @@ def run_lake_processing_app():
             )
             fig_large.update_layout(
                 title=f"Larger View: {selected_pair[0]} - {datetime(2000, selected_pair[1], 1).strftime('%B')}",
-                width=1200,
-                height=1200
+                width=800,
+                height=800,
+                margin=dict(l=50, r=50, t=50, b=50)
             )
             st.plotly_chart(fig_large, use_container_width=False)
         else:
