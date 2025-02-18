@@ -556,7 +556,7 @@ def run_lake_processing_app():
                 colorscale="plasma",
                 colorbar=dict(title="Days In Range", len=0.75)
             ),
-            height=300 * n_rows,
+            height=3000 * n_rows,
             width=1200,
             margin=dict(l=50, r=50, t=50, b=50)
         )
