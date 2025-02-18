@@ -1294,12 +1294,6 @@ def run_custom_ui():
 # 10) Main
 # -----------------------------------------------------------------------------
 def main():
-    """
-    1) Show the Intro Page (with logo, headline, and short text)
-    2) Show the Custom UI (3‑row selection via modern select boxes)
-    3) Depending on the selections, run the appropriate analysis page.
-       (Currently, detailed data are only available for the combination (Κορώνεια + Χλωροφύλλη).)
-    """
     run_intro_page()
     run_custom_ui()
 
@@ -1307,26 +1301,30 @@ def main():
     idx = st.session_state.get("index_choice", None)
     analysis = st.session_state.get("analysis_choice", None)
 
-    # Only provide full data if the combination is available.
-    if wb == "Κορώνεια" and idx == "Χλωροφύλλη":
+    # Check if the user selected "Burned Areas"
+    if analysis == "Burned Areas":
+        if wb == "Γαδουρά":
+            run_burned_areas()
+        else:
+            st.warning("Το 'Burned Areas' είναι διαθέσιμο μόνο για το υδάτινο σώμα 'Γαδουρά'.")
+    # Otherwise, handle the other analysis types (for example, only available for (Κορώνεια + Χλωροφύλλη))
+    elif wb == "Κορώνεια" and idx == "Χλωροφύλλη":
         if analysis == "Lake Processing":
             run_lake_processing_app()
         elif analysis == "Water Processing":
             run_water_processing()
         elif analysis == "Water Quality Dashboard":
             run_water_quality_dashboard()
-        elif analysis == "Burned Areas":
-            run_burned_areas()
         elif analysis == "Water level":
             run_water_level_profiles()
         else:
             st.info("Παρακαλώ επιλέξτε ένα είδος ανάλυσης.")
     else:
-        if analysis is not None:
-            st.warning(
-                "Οι διαθέσιμα δεδομένα αφορούν μόνο την περίπτωση (Κορώνεια + Χλωροφύλλη). "
-                "Για άλλους συνδυασμούς, παρακαλώ περιμένετε περαιτέρω ενημερώσεις."
-            )
+        st.warning(
+            "Οι διαθέσιμα δεδομένα αφορούν μόνο την περίπτωση (Κορώνεια + Χλωροφύλλη) "
+            "εκτός από το 'Burned Areas' που είναι διαθέσιμο μόνο για το 'Γαδουρά'."
+        )
+
 
 # -----------------------------------------------------------------------------
 # 11) Entry Point
