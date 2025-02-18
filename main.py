@@ -56,7 +56,7 @@ st.set_page_config(
 )
 
 # -----------------------------------------------------------------------------
-# Inject Custom CSS for a Modern Look
+# Inject Custom CSS for a Dark Theme
 # -----------------------------------------------------------------------------
 def inject_custom_css():
     custom_css = """
@@ -66,36 +66,36 @@ def inject_custom_css():
             font-family: 'Roboto', sans-serif;
         }
         .block-container {
-            background-color: #f7f7f7;
-            color: #333;
+            background-color: #121212;
+            color: #e0e0e0;
         }
         h1, h2, h3, h4, h5, h6 {
-            color: #005f73;
+            color: #bb86fc;
         }
         .stButton button {
-            background-color: #0a9396;
-            color: #fff;
+            background-color: #3700b3;
+            color: #ffffff;
             border-radius: 5px;
             padding: 8px 16px;
             border: none;
-            box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
         }
         .stButton button:hover {
-            background-color: #117a8b;
+            background-color: #6200ee;
         }
         .sidebar .sidebar-content {
-            background-color: #e0fbfc;
+            background-color: #1f1f1f;
         }
         .stSelectbox, .stSlider, .stTextInput {
-            background-color: #fff;
-            color: #333;
+            background-color: #1f1f1f;
+            color: #e0e0e0;
         }
         /* Card style for sections */
         .card {
-            background-color: #fff;
+            background-color: #1e1e1e;
             padding: 1.5rem;
             border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
             margin-bottom: 1.5rem;
         }
     </style>
@@ -449,7 +449,7 @@ def run_lake_processing_app():
 
     st.sidebar.header("Additional Analysis Controls")
     selected_years_analysis = st.sidebar.multiselect(
-        "Select Years for Days in Range Analysis",
+        "Select Years for Days In Range Analysis",
         options=unique_years_full,
         default=unique_years_full,
         key="additional_years"
@@ -507,7 +507,7 @@ def run_lake_processing_app():
     st.header("Yearly Days in Range Analysis")
     st.write("Number of days each pixel is in range for selected months in the selected years.")
     selected_months_yearly = st.sidebar.multiselect(
-        "Select Months for Yearly Days in Range Analysis",
+        "Select Months for Yearly Days In Range Analysis",
         options=list(range(1, 13)),
         default=list(range(1, 13)),
         format_func=lambda m: datetime(2000, m, 1).strftime('%B'),
@@ -612,13 +612,13 @@ def run_water_quality_dashboard():
     st.markdown("""
     <style>
     .main-header {
-        background-color: #4CAF50;
+        background-color: #3700b3;
         color: white;
         padding: 20px;
         text-align: center;
         border-radius: 5px;
         margin-bottom: 20px;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.5);
     }
     </style>
     """, unsafe_allow_html=True)
@@ -1283,7 +1283,7 @@ def run_custom_ui():
     analysis = st.selectbox("Είδος Ανάλυσης", ["Lake Processing", "Water Processing", "Water Quality Dashboard",
                                                  "Burned Areas", "Water level"], key="analysis_choice")
     st.markdown(f"""
-    <div style="padding: 0.5rem; background-color:#e9ecef; border-radius:5px; margin-top:1rem;">
+    <div style="padding: 0.5rem; background-color:#1f1f1f; border-radius:5px; margin-top:1rem;">
         <strong>Επιλεγμένο υδάτινο σώμα:</strong> {waterbody} &nbsp;&nbsp; | &nbsp;&nbsp;
         <strong>Επιλεγμένος Δείκτης:</strong> {index} &nbsp;&nbsp; | &nbsp;&nbsp;
         <strong>Επιλεγμένη Ανάλυση:</strong> {analysis}
