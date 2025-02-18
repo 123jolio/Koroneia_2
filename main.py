@@ -56,6 +56,55 @@ st.set_page_config(
 )
 
 # -----------------------------------------------------------------------------
+# Inject Custom CSS for a Modern Look
+# -----------------------------------------------------------------------------
+def inject_custom_css():
+    custom_css = """
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700&display=swap" rel="stylesheet">
+    <style>
+        html, body, [class*="css"] {
+            font-family: 'Roboto', sans-serif;
+        }
+        .block-container {
+            background-color: #f7f7f7;
+            color: #333;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            color: #005f73;
+        }
+        .stButton button {
+            background-color: #0a9396;
+            color: #fff;
+            border-radius: 5px;
+            padding: 8px 16px;
+            border: none;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+        }
+        .stButton button:hover {
+            background-color: #117a8b;
+        }
+        .sidebar .sidebar-content {
+            background-color: #e0fbfc;
+        }
+        .stSelectbox, .stSlider, .stTextInput {
+            background-color: #fff;
+            color: #333;
+        }
+        /* Card style for sections */
+        .card {
+            background-color: #fff;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+        }
+    </style>
+    """
+    st.markdown(custom_css, unsafe_allow_html=True)
+
+inject_custom_css()
+
+# -----------------------------------------------------------------------------
 # 1) Helper Functions
 # -----------------------------------------------------------------------------
 def extract_date_from_filename(filename: str):
@@ -164,77 +213,28 @@ def load_data(input_folder: str):
 # -----------------------------------------------------------------------------
 def run_intro_page():
     """
-    Renders an intro page with a dark background.
-    The logo is placed in one column and the headline text in an adjacent column.
+    Renders an introductory page with a dark background, a logo, and headline text.
     """
-    # --- Inject custom CSS for dark styling ---
     st.markdown("""
-    <style>
-    /* Overall page background */
-    .block-container {
-        background-color: #2c2f33;
-        color: #fff;
-    }
-    /* Headings in teal color */
-    h1, h2, h3, h4, h5, h6 {
-        color: #00cccc;
-    }
-    /* Make text input, selectboxes, etc. darker */
-    .stTextInput, .stSlider, .stSelectbox, .stRadio, .stMultiSelect {
-        background-color: #888 !important;
-        color: #fff !important;
-    }
-    /* Buttons */
-    .stButton button {
-        background-color: #444;
-        color: #fff;
-        border: 1px solid #888;
-        padding: 6px 12px;
-        margin: 4px 2px;
-    }
-    .stButton button:hover {
-        background-color: #666;
-        color: #fff;
-    }
-    /* Sidebar background */
-    .sidebar .sidebar-content {
-        background-color: #23272a;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
-    # --- Create two columns: one for the logo and one for the headline text ---
-    col_logo, col_text = st.columns([1, 2])
-    
-    with col_logo:
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-        logo_path = os.path.join(base_dir, "logo.jpg")
-        if os.path.exists(logo_path):
-            st.image(logo_path, width=150)
-        else:
-            st.write("Logo not found.")
-    
-    with col_text:
-        st.markdown(
-            "<h2 style='text-align: center;'>"
-            "Ποιοτικά χαρακτηριστικά επιφανειακού Ύδατος με χρήση Εργαλείων Δορυφορικής Τηλεπισκόπησης"
-            "</h2>",
-            unsafe_allow_html=True
-        )
-
-    # --- Additional intro text (if needed) ---
-    st.markdown(
-        """
-        ### Εισαγωγή
-        
-        Αυτή η εφαρμογή αναλύει τα ποιοτικά χαρακτηριστικά του επιφανειακού ύδατος χρησιμοποιώντας εργαλεία
-        δορυφορικής τηλεπισκόπησης. Επιλέξτε τις επιθυμητές ρυθμίσεις μέσω του μενού και εξερευνήστε τα 
-        δεδομένα με διάφορες αναλυτικές προσεγγίσεις.
-        """,
-        unsafe_allow_html=True
-    )
-
-
+    <div class="card">
+        <div style="display: flex; align-items: center;">
+            <div style="flex: 1;">
+                <!-- Logo -->
+                %s
+            </div>
+            <div style="flex: 3; text-align: center;">
+                <h2>Ποιοτικά χαρακτηριστικά επιφανειακού Ύδατος με χρήση Εργαλείων Δορυφορικής Τηλεπισκόπησης</h2>
+            </div>
+        </div>
+        <div style="margin-top: 1rem;">
+            <h4>Εισαγωγή</h4>
+            <p>Αυτή η εφαρμογή αναλύει τα ποιοτικά χαρακτηριστικά του επιφανειακού ύδατος χρησιμοποιώντας εργαλεία δορυφορικής τηλεπισκόπησης.
+            Επιλέξτε τις επιθυμητές ρυθμίσεις μέσω του μενού και εξερευνήστε τα δεδομένα με διάφορες αναλυτικές προσεγγίσεις.</p>
+        </div>
+    </div>
+    """ % (
+        f'<img src="logo.jpg" width="150">' if os.path.exists(os.path.join(os.path.dirname(os.path.abspath(__file__)), "logo.jpg")) else "Logo not found."
+    ), unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
 # 3) Lake Processing (Full Analysis)
@@ -243,6 +243,7 @@ def run_lake_processing_app():
     """
     Spatiotemporal analysis of the lake: thresholds, date filters, monthly/yearly maps, etc.
     """
+    st.markdown('<div class="card">', unsafe_allow_html=True)
     st.title("Lake Processing (Κορώνεια - Χλωροφύλλη)")
 
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -589,25 +590,22 @@ def run_lake_processing_app():
             st.info("No valid yearly data available for enlarged view.")
 
     st.info("End of Lake Processing section.")
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
 # 4) Water Processing (Placeholder)
 # -----------------------------------------------------------------------------
 def run_water_processing():
+    st.markdown('<div class="card">', unsafe_allow_html=True)
     st.title("Water Processing (Placeholder)")
     st.info("No data or functionality yet for Water Processing.")
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
 # 5) Water Quality Dashboard
 # -----------------------------------------------------------------------------
 def run_water_quality_dashboard():
-    """
-    Full interactive water quality dashboard:
-    - Timelapse video
-    - Default sampling, upload sampling
-    - mg conversions
-    - Lake height data
-    """
+    st.markdown('<div class="card">', unsafe_allow_html=True)
     st.title("Water Quality Dashboard (Κορώνεια - Χλωροφύλλη)")
 
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -882,7 +880,7 @@ def run_water_quality_dashboard():
 
         return fig_geo, fig_dual, fig_colors, fig_mg, results_colors, results_mg, lake_data
 
-    # Session state
+    # Session state for sampling analysis results
     if "default_results" not in st.session_state:
         st.session_state.default_results = None
     if "upload_results" not in st.session_state:
@@ -1012,8 +1010,7 @@ def run_water_quality_dashboard():
                                 xaxis_range=[datetime(year, 1, 1), datetime(year, 12, 31)]
                             )
                             cols[j].plotly_chart(fig_year, use_container_width=True, config={'scrollZoom': True})
-
-    # ~~~ Tab 2: Uploaded Sampling ~~~
+        # ~~~ Tab 2: Uploaded Sampling ~~~
     with tabs[1]:
         st.header("Analysis for Uploaded Sampling")
         uploaded_file = st.file_uploader("Upload a KML file for new sampling points", type="kml", key="upload_tab")
@@ -1135,20 +1132,25 @@ def run_water_quality_dashboard():
             st.info("Please upload a KML file for new sampling points.")
 
     st.info("End of Water Quality Dashboard section.")
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
 # 6) Burned Areas (Placeholder)
 # -----------------------------------------------------------------------------
 def run_burned_areas():
+    st.markdown('<div class="card">', unsafe_allow_html=True)
     st.title("Burned Areas around reservoir (Placeholder)")
     st.info("No data or functionality yet for burned-area analysis.")
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
 # 7) Water Level (Placeholder)
 # -----------------------------------------------------------------------------
 def run_water_level_profiles():
+    st.markdown('<div class="card">', unsafe_allow_html=True)
     st.title("Water level Height Profiles (Placeholder)")
     st.info("No data or functionality yet for water-level height profiles.")
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
 # 8) Pattern Analysis (Full Code, Not Linked)
@@ -1274,90 +1276,44 @@ def run_custom_ui():
     """
     Row 1: 'Επιλογή υδάτινου σώματος' → [Κορώνεια, Πολυφύτου, Γαδουρά, Αξιός]
     Row 2: 'Επιλογή Δείκτη' → [Πραγματικό, Χλωροφύλλη, CDOM, Colour]
-    Row 3: 'Είδος Ανάλυσης' → [Lake processing, Water Processing, Water Quality Dashboard,
-                               Burned Areas around reservoir, Water level Height Profiles]
+    Row 3: 'Είδος Ανάλυσης' → [Lake Processing, Water Processing, Water Quality Dashboard,
+                               Burned Areas, Water level]
     """
-    if "waterbody_choice" not in st.session_state:
-        st.session_state["waterbody_choice"] = None
-    if "index_choice" not in st.session_state:
-        st.session_state["index_choice"] = None
-    if "analysis_choice" not in st.session_state:
-        st.session_state["analysis_choice"] = None
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.header("Παραμετροποίηση Ανάλυσης")
+    
+    waterbody_options = ["Κορώνεια", "Πολυφύτου", "Γαδουρά", "Αξιός"]
+    index_options = ["Πραγματικό", "Χλωροφύλλη", "CDOM", "Colour"]
+    analysis_options = ["Lake Processing", "Water Processing", "Water Quality Dashboard",
+                        "Burned Areas", "Water level"]
 
-    # --- Row 1: Επιλογή υδάτινου σώματος ---
-    st.subheader("Επιλογή υδάτινου σώματος")
-    row1_col1, row1_col2, row1_col3, row1_col4 = st.columns(4)
-    with row1_col1:
-        if st.button("Κορώνεια"):
-            st.session_state["waterbody_choice"] = "Κορώνεια"
-    with row1_col2:
-        if st.button("Πολυφύτου"):
-            st.session_state["waterbody_choice"] = "Πολυφύτου"
-    with row1_col3:
-        if st.button("Γαδουρά"):
-            st.session_state["waterbody_choice"] = "Γαδουρά"
-    with row1_col4:
-        if st.button("Αξιός"):
-            st.session_state["waterbody_choice"] = "Αξιός"
-
-    st.write("")
-
-    # --- Row 2: Επιλογή Δείκτη ---
-    st.subheader("Επιλογή Δείκτη")
-    row2_col1, row2_col2, row2_col3, row2_col4 = st.columns(4)
-    with row2_col1:
-        if st.button("Πραγματικό"):
-            st.session_state["index_choice"] = "Πραγματικό"
-    with row2_col2:
-        if st.button("Χλωροφύλλη"):
-            st.session_state["index_choice"] = "Χλωροφύλλη"
-    with row2_col3:
-        if st.button("CDOM"):
-            st.session_state["index_choice"] = "CDOM"
-    with row2_col4:
-        if st.button("Colour"):
-            st.session_state["index_choice"] = "Colour"
-
-    st.write("")
-
-    # --- Row 3: Είδος Ανάλυσης ---
-    st.subheader("Είδος Ανάλυσης")
-    row3_col1, row3_col2, row3_col3, row3_col4, row3_col5 = st.columns(5)
-    with row3_col1:
-        if st.button("Lake processing"):
-            st.session_state["analysis_choice"] = "Lake Processing"
-    with row3_col2:
-        if st.button("Water Processing"):
-            st.session_state["analysis_choice"] = "Water Processing"
-    with row3_col3:
-        if st.button("Water Quality Dashboard"):
-            st.session_state["analysis_choice"] = "Water Quality Dashboard"
-    with row3_col4:
-        if st.button("Burned Areas around reservoir"):
-            st.session_state["analysis_choice"] = "Burned Areas"
-    with row3_col5:
-        if st.button("Water level Height Profiles"):
-            st.session_state["analysis_choice"] = "Water level"
-
-    st.write("---")
-    st.write(f"**Επιλεγμένο υδάτινο σώμα:** {st.session_state.get('waterbody_choice', 'None')}")
-    st.write(f"**Επιλεγμένος Δείκτης:** {st.session_state.get('index_choice', 'None')}")
-    st.write(f"**Επιλεγμένο Είδος Ανάλυσης:** {st.session_state.get('analysis_choice', 'None')}")
+    st.session_state.waterbody_choice = st.selectbox("Επιλογή υδάτινου σώματος", waterbody_options, key="waterbody_choice")
+    st.session_state.index_choice = st.selectbox("Επιλογή Δείκτη", index_options, key="index_choice")
+    st.session_state.analysis_choice = st.selectbox("Είδος Ανάλυσης", analysis_options, key="analysis_choice")
+    
+    st.markdown(f"""
+    <div style="padding: 0.5rem; background-color:#e9ecef; border-radius:5px; margin-top:1rem;">
+        <strong>Επιλεγμένο υδάτινο σώμα:</strong> {st.session_state.get("waterbody_choice", "None")} &nbsp;&nbsp; | &nbsp;&nbsp;
+        <strong>Επιλεγμένος Δείκτης:</strong> {st.session_state.get("index_choice", "None")} &nbsp;&nbsp; | &nbsp;&nbsp;
+        <strong>Επιλεγμένη Ανάλυση:</strong> {st.session_state.get("analysis_choice", "None")}
+    </div>
+    """, unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
 # 10) Main
 # -----------------------------------------------------------------------------
 def main():
     """
-    1) Show the Intro Page (dark styling, headline, logo, short text)
-    2) Show the new 3-row UI
-    3) If user picks (Κορώνεια + Χλωροφύλλη), run the selected page
-       Otherwise, show placeholders or warnings
+    1) Show the Intro Page (with logo, headline, and short text)
+    2) Show the Custom UI (3‑row selection via modern select boxes)
+    3) If user picks (Κορώνεια + Χλωροφύλλη) then run the chosen analysis page.
+       Otherwise, show a warning that other combinations are placeholders.
     """
     # 1) Intro
     run_intro_page()
 
-    # 2) 3-row UI
+    # 2) Custom UI
     run_custom_ui()
 
     # 3) Decide which page to run
@@ -1378,13 +1334,12 @@ def main():
         elif analysis == "Water level":
             run_water_level_profiles()
         else:
-            st.info("Please select an Είδος Ανάλυσης (3rd row).")
+            st.info("Παρακαλώ επιλέξτε ένα είδος ανάλυσης (3rd row).")
     else:
-        # If user picks any other combination, show a warning
         if analysis is not None:
             st.warning(
-                "Currently, data are only available for (Κορώνεια + Χλωροφύλλη). "
-                "Other combinations are placeholders until data are added."
+                "Οι διαθέσιμα δεδομένα αφορούν μόνο την περίπτωση (Κορώνεια + Χλωροφύλλη). "
+                "Για άλλους συνδυασμούς, παρακαλώ περιμένετε περαιτέρω ενημερώσεις."
             )
 
 # -----------------------------------------------------------------------------
