@@ -224,7 +224,7 @@ def run_intro_page():
         else:
             st.write("Logo not found.")
     with col_text:
-        st.markdown("<h2 style='text-align: center;'>Ποιοτικά χαρακτηριστικά Επιφανειακού Ύδατος με χρήση Εργαλείων Δορυφορικής Τηλεπισκόπησης</h2>", unsafe_allow_html=True)
+        st.markdown("<h2 style='text-align: center;'>Ποιοτικά χαρακτηριστικά Επιφανειακού Ύδατος σε Λίμνες, Ταμιευτήρες και Ποτάμια με χρήση Εργαλείων Δορυφορικής Τηλεπισκόπησης</h2>", unsafe_allow_html=True)
     st.markdown("""
     <div class="card">
       <h4>Εισαγωγή</h4>
@@ -439,13 +439,14 @@ def run_lake_processing_app():
     with col4:
         st.plotly_chart(time_max_fig, use_container_width=True)
 
-    # --- Additional Analysis Controls for Yearly Days In Range ---
+    # Additional monthly/yearly analysis
     unique_years_full = sorted({d.year for d in DATES})
     if not unique_years_full:
         st.error("No valid years found in the data.")
         st.stop()
     min_year = unique_years_full[0]
     max_year = unique_years_full[-1]
+
     st.sidebar.header("Additional Analysis Controls")
     selected_years_analysis = st.sidebar.multiselect(
         "Select Years for Days In Range Analysis",
@@ -459,7 +460,50 @@ def run_lake_processing_app():
         monthly_year_range = (min_year, max_year)
     st.sidebar.write("Monthly Analysis Year Range is set to:", monthly_year_range)
 
-    # --- Group 2: Yearly Days in Range Analysis ---
+    # Group 1: Monthly Days in Range
+    st.header("Monthly Days in Range Analysis")
+    st.write("Number of days each pixel is in range for each month over the selected years.")
+    stack_full_in_range = (STACK >= lower_thresh) & (STACK <= upper_thresh)
+    monthly_days_in_range = {}
+    for m in range(1, 13):
+        indices_m = [i for i, d in enumerate(DATES)
+                     if monthly_year_range[0] <= d.year <= monthly_year_range[1] and d.month == m]
+        if indices_m:
+            monthly_days_in_range[m] = np.sum(stack_full_in_range[indices_m, :, :], axis=0)
+        else:
+            monthly_days_in_range[m] = None
+
+    fig_monthly = make_subplots(
+        rows=3, cols=4,
+        subplot_titles=[datetime(2000, m, 1).strftime('%B') for m in range(1, 13)],
+        horizontal_spacing=0.05, vertical_spacing=0.1
+    )
+    trace_count = 0
+    for m in range(1, 13):
+        row = (m - 1) // 4 + 1
+        col = (m - 1) % 4 + 1
+        img = monthly_days_in_range[m]
+        if img is not None:
+            showscale = True if trace_count == 0 else False
+            fig_monthly.add_trace(
+                go.Heatmap(
+                    z=np.flipud(img),
+                    colorscale="plasma",
+                    showscale=showscale,
+                    colorbar=dict(title="Days In Range") if showscale else None
+                ),
+                row=row, col=col
+            )
+            trace_count += 1
+        else:
+            fig_monthly.add_annotation(
+                text="No data",
+                showarrow=False, row=row, col=col
+            )
+    fig_monthly.update_layout(height=1400)
+    st.plotly_chart(fig_monthly, use_container_width=True)
+
+    # Group 2: Yearly Days in Range
     st.header("Yearly Days in Range Analysis")
     st.write("Number of days each pixel is in range for selected months in the selected years.")
     selected_months_yearly = st.sidebar.multiselect(
@@ -480,14 +524,10 @@ def run_lake_processing_app():
             f"{year} - {datetime(2000, m, 1).strftime('%B')}"
             for year in selected_years_analysis for m in selected_months_yearly
         ]
-        # Dynamically compute figure width and height (at least 1200 x 600)
-        fig_width = max(300 * n_cols, 1200)
-        fig_height = max(300 * n_rows, 600)
-        
         fig_yearly = make_subplots(
             rows=n_rows, cols=n_cols,
             subplot_titles=subplot_titles,
-            horizontal_spacing=0.05, vertical_spacing=0.15
+            horizontal_spacing=0.03, vertical_spacing=0.08
         )
         yearly_days_in_range = {}
         for i, year in enumerate(selected_years_analysis):
@@ -516,8 +556,8 @@ def run_lake_processing_app():
                 colorscale="plasma",
                 colorbar=dict(title="Days In Range", len=0.75)
             ),
-            height=fig_height,
-            width=fig_width,
+            height=3000 * n_rows,
+            width=1200,
             margin=dict(l=50, r=50, t=50, b=50)
         )
         st.plotly_chart(fig_yearly, use_container_width=True)
@@ -1284,6 +1324,7 @@ def main():
             "Τα διαθέσιμα δεδομένα αφορούν μόνο την περίπτωση (Κορώνεια + Χλωροφύλλη) "
             "η περίπτωση 'Burned Areas' είναι διαθέσιμη μόνο για τον ταμιευτήρα 'Γαδουρά'."
         )
+
 
 # -----------------------------------------------------------------------------
 # 11) Entry Point
