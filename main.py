@@ -526,7 +526,7 @@ else:
     ]
     # Compute overall dimensions dynamically; you can adjust these factors.
     fig_width = max(300 * n_cols, 1200)
-    fig_height = max(100 * n_rows, 600)
+    fig_height = max(300 * n_rows, 600)
     
     fig_yearly = make_subplots(
         rows=n_rows, cols=n_cols,
