@@ -527,7 +527,7 @@ def run_lake_processing_app():
         fig_yearly = make_subplots(
             rows=n_rows, cols=n_cols,
             subplot_titles=subplot_titles,
-            horizontal_spacing=0.03, vertical_spacing=0.08
+            horizontal_spacing=0.003, vertical_spacing=0.08
         )
         yearly_days_in_range = {}
         for i, year in enumerate(selected_years_analysis):
