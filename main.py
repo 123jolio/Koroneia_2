@@ -221,26 +221,7 @@ def run_intro_page():
     # --- Intro text ---
     st.markdown(
         """
-        ### Introduction
-        
-        This application processes and analyzes satellite-based water quality data for various lakes.
-        Currently, **real data** exist for:
-        - **Λίμνη Κορώνεια** 
-        - **Δείκτης: Χλωροφύλλη** 
-
-        Other water bodies or indices are placeholders until their data are added.
-
-        **Pages**:
-        - **Lake Processing:**  thresholding, date filters, monthly/yearly analysis
-        - **Water Quality Dashboard:**  sampling points, timelapse videos, mg conversions
-        - **Burned Areas** & **Water level**: placeholders
-        - **Pattern Analysis**: code included but not linked from the new UI
-
-        **How to use**:
-        1. Pick a water body in the first row.
-        2. Pick an index in the second row.
-        3. Pick the analysis type in the third row.
-        If you pick (Κορώνεια + Χλωροφύλλη), the pages have real data. Otherwise, placeholders/warnings.
+        ### .
         """,
         unsafe_allow_html=True
     )
