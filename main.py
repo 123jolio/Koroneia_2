@@ -181,7 +181,7 @@ def run_intro_page():
     }
     /* Make text input, selectboxes, etc. darker */
     .stTextInput, .stSlider, .stSelectbox, .stRadio, .stMultiSelect {
-        background-color: #444 !important;
+        background-color: #888 !important;
         color: #fff !important;
     }
     /* Buttons */
