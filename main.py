@@ -517,23 +517,18 @@ def run_lake_processing_app():
         st.warning("Please select at least one year for yearly analysis.")
     elif not selected_months_yearly:
         st.warning("Please select at least one month for yearly analysis.")
-else:
-    n_rows = len(selected_years_analysis)
-    n_cols = len(selected_months_yearly)
-    subplot_titles = [
-        f"{year} - {datetime(2000, m, 1).strftime('%B')}"
-        for year in selected_years_analysis for m in selected_months_yearly
-    ]
-    # Compute overall dimensions dynamically; you can adjust these factors.
-    fig_width = max(300 * n_cols, 1200)
-    fig_height = max(300 * n_rows, 600)
-    
-    fig_yearly = make_subplots(
-        rows=n_rows, cols=n_cols,
-        subplot_titles=subplot_titles,
-        horizontal_spacing=0.05,  # increased from 0.003 for more room between columns
-        vertical_spacing=0.15     # increased from 0.008 for more room between rows
-    )
+    else:
+        n_rows = len(selected_years_analysis)
+        n_cols = len(selected_months_yearly)
+        subplot_titles = [
+            f"{year} - {datetime(2000, m, 1).strftime('%B')}"
+            for year in selected_years_analysis for m in selected_months_yearly
+        ]
+        fig_yearly = make_subplots(
+            rows=n_rows, cols=n_cols,
+            subplot_titles=subplot_titles,
+            horizontal_spacing=0.03, vertical_spacing=0.08
+        )
         yearly_days_in_range = {}
         for i, year in enumerate(selected_years_analysis):
             for j, m in enumerate(selected_months_yearly):
