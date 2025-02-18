@@ -2,31 +2,22 @@
 """
 Εφαρμογή Ποιότητας Νερού Ταμιευτήρων και Πίνακας Ελέγχου Ποιότητας Νερού
 
-Αυτή η εφαρμογή Streamlit περιλαμβάνει:
+Διάταξη UI σε 3 σειρές:
+1) Επιλογή υδάτινου σώματος → [Κορώνεια, Πολυφύτου, Γαδουρά, Αξιός]
+2) Επιλογή Δείκτη         → [Πραγματικό, Χλωροφύλλη, CDOM, Colour]
+3) Είδος Ανάλυσης         → [Lake processing, Water Processing, Water Quality Dashboard,
+                             Burned Areas around reservoir, Water level Height Profiles]
 
-1) Lake Processing (Eπεξεργασία Λίμνης) με λεπτομερή χρονοσειρά, ημερομηνίες, 
-   thresholding, monthly/yearly analysis κ.λπ.
-2) Water Processing (Placeholder)
-3) Water Quality Dashboard (με default/upload sampling, timelapse, διαδραστικά γραφήματα)
-4) Burned Areas around reservoir (Placeholder)
-5) Water level Height Profiles (Placeholder)
-6) Pattern Analysis (πλήρης κώδικας, αλλά ΔΕΝ συνδέεται από το νέο 3-row UI — 
-   μπορείτε να το συνδέσετε εάν θέλετε).
+Το πρόγραμμα περιέχει τις σελίδες:
+- Lake Processing (πλήρης ανάλυση: threshold/date filters, monthly/yearly)
+- Water Quality Dashboard (default/upload sampling, timelapse video, mg conversions)
+- Water Processing (placeholder)
+- Burned Areas around reservoir (placeholder)
+- Water level Height Profiles (placeholder)
+- Pattern Analysis (δεν συνδέεται στο UI, αλλά υπάρχει κώδικας)
 
-+ Νέα Διάταξη: 3 Σειρές Κουμπιών
-  Row 1: "Επιλογή υδάτινου σώματος" → [Κορώνεια, Πολυφύτου, Γαδουρά, Αξιός]
-  Row 2: "Επιλογή Δείκτη" → [Πραγματικό, Χλωροφύλλη, CDOM, Colour]
-  Row 3: [Lake processing, Water Processing, Water Quality Dashboard,
-          Burned Areas around reservoir, Water level Height Profiles]
-
-Σημαντική Σημείωση:
-- Αυτή τη στιγμή, τα δεδομένα (GeoTIFF, κλπ.) αφορούν μόνο (Κορώνεια + Χλωροφύλλη).
-  Για οποιοδήποτε άλλο συνδυασμό, εμφανίζεται προειδοποίηση "no data".
-- Βεβαιωθείτε ότι τα GeoTIFF αρχεία, shapefile.xml, KML, Excel, κλπ. βρίσκονται 
-  στους σωστούς φακέλους.
-
-Για να τρέξετε:
-  streamlit run app.py
+Πριν εκτελέσετε, βεβαιωθείτε ότι τα αρχεία (GeoTIFF, shapefile.xml, KML, Excel κλπ.)
+βρίσκονται στους σωστούς φακέλους.
 """
 
 # Disable Streamlit's file watchdog to avoid inotify watch limit issues.
@@ -65,13 +56,9 @@ st.set_page_config(
 )
 
 # -----------------------------------------------------------------------------
-# Helper Functions
+# 1) Helper Functions
 # -----------------------------------------------------------------------------
 def extract_date_from_filename(filename: str):
-    """
-    Extract the day-of-year and date object from a filename
-    containing a date in YYYY_MM_DD or YYYY-MM-DD format.
-    """
     basename = os.path.basename(filename)
     match = re.search(r'(\d{4})[_-](\d{2})[_-](\d{2})', basename)
     if match:
@@ -83,10 +70,6 @@ def extract_date_from_filename(filename: str):
 
 def load_lake_shape_from_xml(xml_file: str, bounds: tuple = None,
                              xml_width: float = 518.0, xml_height: float = 505.0):
-    """
-    Load the lake boundary polygon from an XML file (PlotDigitizer format).
-    Optionally transform to GeoTIFF coordinates using provided bounds.
-    """
     try:
         tree = ET.parse(xml_file)
         root = tree.getroot()
@@ -119,9 +102,6 @@ def load_lake_shape_from_xml(xml_file: str, bounds: tuple = None,
         return None
 
 def read_image(file_path: str, lake_shape: dict = None):
-    """
-    Read a GeoTIFF image file (1 band) and optionally apply a lake shape mask.
-    """
     with rasterio.open(file_path) as src:
         img = src.read(1).astype(np.float32)
         profile = src.profile.copy()
@@ -130,7 +110,6 @@ def read_image(file_path: str, lake_shape: dict = None):
         no_data_value = src.nodata
         if no_data_value is not None:
             img = np.where(img == no_data_value, np.nan, img)
-
         # Optionally treat 0 as no-data
         img = np.where(img == 0, np.nan, img)
 
@@ -147,11 +126,6 @@ def read_image(file_path: str, lake_shape: dict = None):
     return img, profile
 
 def load_data(input_folder: str):
-    """
-    Load GeoTIFF images from 'input_folder' plus date info from filenames.
-    If 'shapefile.xml' is present, use it to mask the images.
-    Returns: (stack, days, date_list)
-    """
     shapefile_path = os.path.join(input_folder, "shapefile.xml")
     lake_shape = None
 
@@ -186,12 +160,49 @@ def load_data(input_folder: str):
     return stack, np.array(days), date_list
 
 # -----------------------------------------------------------------------------
-# Introductory Page
+# 2) Introductory Page
 # -----------------------------------------------------------------------------
 def run_intro_page():
     """
-    Shows the main headline, optional logo, and a short introduction.
+    Renders a dark background with teal subheaders, plus a short introduction.
     """
+    # --- Inject custom CSS for dark styling ---
+    st.markdown("""
+    <style>
+    /* Overall page background */
+    .block-container {
+        background-color: #2c2f33;
+        color: #fff;
+    }
+    /* Headings in teal color */
+    h1, h2, h3, h4, h5, h6 {
+        color: #00cccc;
+    }
+    /* Make text input, selectboxes, etc. darker */
+    .stTextInput, .stSlider, .stSelectbox, .stRadio, .stMultiSelect {
+        background-color: #444 !important;
+        color: #fff !important;
+    }
+    /* Buttons */
+    .stButton button {
+        background-color: #444;
+        color: #fff;
+        border: 1px solid #888;
+        padding: 6px 12px;
+        margin: 4px 2px;
+    }
+    .stButton button:hover {
+        background-color: #666;
+        color: #fff;
+    }
+    /* Sidebar background */
+    .sidebar .sidebar-content {
+        background-color: #23272a;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+    # --- Main headline ---
     st.markdown(
         "<h2 style='text-align: center;'>"
         "Ποιοτικά χαρακτηριστικά επιφανειακού Ύδατος με χρήση Εργαλείων Δορυφορικής Τηλεπισκόπησης"
@@ -199,6 +210,7 @@ def run_intro_page():
         unsafe_allow_html=True
     )
 
+    # --- Optional logo ---
     base_dir = os.path.dirname(os.path.abspath(__file__))
     logo_path = os.path.join(base_dir, "logo.jpg")
     if os.path.exists(logo_path):
@@ -206,51 +218,45 @@ def run_intro_page():
     else:
         st.write("Logo not found.")
 
+    # --- Intro text ---
     st.markdown(
         """
         ### Introduction
         
         This application processes and analyzes satellite-based water quality data for various lakes.
-        Currently, real data exist for **Λίμνη Κορώνεια** with the **Χλωροφύλλη** index. 
-        Other water bodies/indices are placeholders until their data are added.
+        Currently, **real data** exist for:
+        - **Λίμνη Κορώνεια** 
+        - **Δείκτης: Χλωροφύλλη** 
+
+        Other water bodies or indices are placeholders until their data are added.
 
         **Pages**:
-        - **Lake Processing:**  
-          Spatiotemporal analysis (sliders, thresholds, monthly/yearly maps).
-        - **Water Quality Dashboard:**  
-          Interactive sampling points, timelapse videos, etc.
-        - **Burned Areas** & **Water level**: Placeholders.
-        - **Pattern Analysis**: Full code is included but not linked to the new UI. 
-          You can link it if needed.
+        - **Lake Processing:**  thresholding, date filters, monthly/yearly analysis
+        - **Water Quality Dashboard:**  sampling points, timelapse videos, mg conversions
+        - **Burned Areas** & **Water level**: placeholders
+        - **Pattern Analysis**: code included but not linked from the new UI
 
-        **Folders**:
-        - Place your GeoTIFFs in "GeoTIFFs".
-        - "shapefile.xml" in "GeoTIFFs" if you want to mask the lake.
-        - "lake height.xlsx" for height data, "sampling.kml" for sampling points, etc.
-        
-        Use the 3-row matrix of buttons below to pick:
-          1) Water body
-          2) Index
-          3) Analysis type
-        Then see the results.
+        **How to use**:
+        1. Pick a water body in the first row.
+        2. Pick an index in the second row.
+        3. Pick the analysis type in the third row.
+        If you pick (Κορώνεια + Χλωροφύλλη), the pages have real data. Otherwise, placeholders/warnings.
         """,
         unsafe_allow_html=True
     )
 
 # -----------------------------------------------------------------------------
-# Lake Processing (full monthly/yearly analysis)
+# 3) Lake Processing (Full Analysis)
 # -----------------------------------------------------------------------------
 def run_lake_processing_app():
     """
-    Lake Processing: thresholding, date filters, monthly/yearly analysis, etc.
-    This is your large spatiotemporal analysis code.
+    Spatiotemporal analysis of the lake: thresholds, date filters, monthly/yearly maps, etc.
     """
     st.title("Lake Processing (Κορώνεια - Χλωροφύλλη)")
 
     base_dir = os.path.dirname(os.path.abspath(__file__))
     input_folder = os.path.join(base_dir, "GeoTIFFs")
 
-    # ~~~~~ Load data ~~~~~
     try:
         STACK, DAYS, DATES = load_data(input_folder)
         st.success("Data loaded successfully.")
@@ -262,7 +268,6 @@ def run_lake_processing_app():
         st.error("No date information available.")
         st.stop()
 
-    # ~~~~~ Define min/max date, years, etc. ~~~~~
     min_date = min(DATES)
     max_date = max(DATES)
     unique_years = sorted({d.year for d in DATES})
@@ -316,7 +321,7 @@ def run_lake_processing_app():
         st.session_state.selected_years = []
         selected_years = []
 
-    # ~~~~~ Filter data based on date & month/year picks ~~~~~
+    # Filter data
     start_dt, end_dt = refined_date_range
     selected_indices = [
         i for i, d in enumerate(DATES)
@@ -330,7 +335,7 @@ def run_lake_processing_app():
     days_filtered = np.array(DAYS)[selected_indices]
     filtered_dates = np.array(DATES)[selected_indices]
 
-    # ~~~~~ Compute analysis maps ~~~~~
+    # Compute analysis maps
     lower_thresh, upper_thresh = threshold_range
     in_range = np.logical_and(stack_filtered >= lower_thresh, stack_filtered <= upper_thresh)
     days_in_range = np.nansum(in_range, axis=0)
@@ -341,7 +346,6 @@ def run_lake_processing_app():
                          out=np.full(sum_days.shape, np.nan),
                          where=(count_in_range != 0))
 
-    # ~~~~~ Days In Range Map ~~~~~
     fig_days = px.imshow(
         days_in_range,
         color_continuous_scale="plasma",
@@ -351,7 +355,6 @@ def run_lake_processing_app():
     fig_days.update_layout(width=2000, height=1600)
     fig_days.update_traces(colorbar=dict(len=0.4))
 
-    # ~~~~~ Mean Day Map ~~~~~
     fig_mean = px.imshow(
         mean_day,
         color_continuous_scale="RdBu",
@@ -373,7 +376,6 @@ def run_lake_processing_app():
         len=0.4
     ))
 
-    # ~~~~~ Sample Image Analysis ~~~~~
     if display_option.lower() == "thresholded":
         filtered_stack = np.where(in_range, stack_filtered, np.nan)
     else:
@@ -448,7 +450,7 @@ def run_lake_processing_app():
     with col4:
         st.plotly_chart(time_max_fig, use_container_width=True)
 
-    # ~~~~~ Additional Analysis (Monthly/Yearly) ~~~~~
+    # Additional monthly/yearly analysis
     unique_years_full = sorted({d.year for d in DATES})
     if not unique_years_full:
         st.error("No valid years found in the data.")
@@ -571,10 +573,9 @@ def run_lake_processing_app():
         )
         st.plotly_chart(fig_yearly, use_container_width=True)
 
-        # Enlarged View
-        available_pairs = [(y, m) for (y, m), data in yearly_days_in_range.items() if data is not None]
+        available_pairs = [(y, mm) for (y, mm), data in yearly_days_in_range.items() if data is not None]
         if available_pairs:
-            pair_labels = [f"{y} - {datetime(2000, m, 1).strftime('%B')}" for y, m in available_pairs]
+            pair_labels = [f"{y} - {datetime(2000, mm, 1).strftime('%B')}" for y, mm in available_pairs]
             selected_pair_label = st.selectbox("Select a Year-Month pair for larger view", options=pair_labels)
             selected_index = pair_labels.index(selected_pair_label)
             selected_pair = available_pairs[selected_index]
@@ -599,78 +600,44 @@ def run_lake_processing_app():
     st.info("End of Lake Processing section.")
 
 # -----------------------------------------------------------------------------
-# Water Processing (Placeholder)
+# 4) Water Processing (Placeholder)
 # -----------------------------------------------------------------------------
 def run_water_processing():
-    """
-    Placeholder for future water processing code.
-    """
     st.title("Water Processing (Placeholder)")
     st.info("No data or functionality yet for Water Processing.")
 
 # -----------------------------------------------------------------------------
-# Water Quality Dashboard (with default/upload sampling)
+# 5) Water Quality Dashboard
 # -----------------------------------------------------------------------------
 def run_water_quality_dashboard():
     """
     Full interactive water quality dashboard:
-      - Timelapse videos
-      - Default sampling points (sampling.kml)
-      - Upload sampling points
-      - Lake height data (lake height.xlsx)
-      - mg/m³ conversions
-      - etc.
+    - Timelapse video
+    - Default sampling, upload sampling
+    - mg conversions
+    - Lake height data
     """
     st.title("Water Quality Dashboard (Κορώνεια - Χλωροφύλλη)")
 
     base_dir = os.path.dirname(os.path.abspath(__file__))
-
-    # Example custom CSS
-    st.markdown(
-        """
-        <style>
-            body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
-            .main-header {
-                background-color: #4CAF50;
-                color: white;
-                padding: 20px;
-                text-align: center;
-                border-radius: 5px;
-                margin-bottom: 20px;
-                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            }
-            .css-1d391kg {
-                background-color: #f0f2f6;
-                border-radius: 10px;
-                padding: 20px;
-                margin-top: 10px;
-            }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    # Optional top logo & heading
-    with st.container():
-        col_logo, col_title = st.columns([1, 4])
-        with col_logo:
-            logo_path = os.path.join(base_dir, "logo.jpg")
-            if os.path.exists(logo_path):
-                st.image(logo_path, width=200)
-            else:
-                st.write("Logo not found.")
-        with col_title:
-            st.markdown(
-                '<div class="main-header"><h1>Ποιοτικά χαρακτηριστικά Επιφανειακού Ύδατος Λίμνης Κορώνεια</h1></div>',
-                unsafe_allow_html=True
-            )
-
-    # Define default paths
-    lake_coordinates_path = os.path.join(base_dir, "lake coordinates.txt")
-    sampling_kml_path = os.path.join(base_dir, "sampling.kml")
     images_folder = os.path.join(base_dir, "GeoTIFFs")
 
-    # Sidebar: date range, background image selection
+    # Additional dark CSS (in case we want to re-apply)
+    st.markdown("""
+    <style>
+    .main-header {
+        background-color: #4CAF50;
+        color: white;
+        padding: 20px;
+        text-align: center;
+        border-radius: 5px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+    # Sidebar
     with st.sidebar:
         st.header("Ρυθμίσεις Ανάλυσης (Dashboard)")
         x_start = st.date_input("Έναρξη", date(2015, 1, 1))
@@ -712,13 +679,13 @@ def run_water_quality_dashboard():
         st.error("Δεν έχει επιλεγεί έγκυρη ημερομηνία για το background.")
         st.stop()
 
-    # Optional MP4 video
+    # Timelapse video (optional)
     video_file = "Sentinel-2_L1C-372961813061153-timelapse.mp4"
     video_path = os.path.join(base_dir, video_file)
     if not os.path.exists(video_path):
-        st.info("Το αρχείο βίντεο (timelapse) δεν βρέθηκε στο φάκελο της εφαρμογής.")
+        st.info("Το αρχείο βίντεο (timelapse) δεν βρέθηκε.")
 
-    # Helper functions for sampling analysis
+    # ~~~ Helper functions for sampling ~~~
     def parse_sampling_kml(kml_file) -> list:
         tree = ET.parse(kml_file)
         root = tree.getroot()
@@ -738,15 +705,9 @@ def run_water_quality_dashboard():
         return int(col), int(row)
 
     def map_rgb_to_mg(r: float, g: float, b: float, mg_factor: float = 2.0) -> float:
-        """
-        Example formula: mg_value ~ (g / 255) * mg_factor
-        """
         return (g / 255.0) * mg_factor
 
     def mg_to_color(mg: float) -> str:
-        """
-        Example color scale from 0.00 mg to 2.00 mg.
-        """
         scale = [
             (0.00, "#0000ff"), (0.02, "#0007f2"), (0.04, "#0011de"), (0.06, "#0017d0"),
             (1.98, "#80007d"), (2.00, "#800080")
@@ -770,15 +731,9 @@ def run_water_quality_dashboard():
 
     def analyze_sampling(sampling_points: list, first_image_data, first_transform,
                          images_folder: str, lake_height_path: str, selected_points: list = None):
-        """
-        Reads each GeoTIFF in 'images_folder', extracts pixel color for each sampling point,
-        converts to mg, merges with lake height data from 'lake_height_path'.
-        Returns multiple figures + color data arrays.
-        """
         results_colors = {name: [] for name, _, _ in sampling_points}
         results_mg = {name: [] for name, _, _ in sampling_points}
 
-        # For each TIF, read R/G/B at sampling coords
         for filename in sorted(os.listdir(images_folder)):
             if filename.lower().endswith(('.tif', '.tiff')):
                 match = re.search(r'(\d{4}_\d{2}_\d{2})', filename)
@@ -794,7 +749,6 @@ def run_water_quality_dashboard():
                     transform = src.transform
                     width, height = src.width, src.height
                     if src.count < 3:
-                        # We need at least 3 bands for R/G/B
                         continue
                     for name, lon, lat in sampling_points:
                         col, row = geographic_to_pixel(lon, lat, transform)
@@ -808,7 +762,6 @@ def run_water_quality_dashboard():
                             pixel_color = (r / 255, g / 255, b / 255)
                             results_colors[name].append((date_obj, pixel_color))
 
-        # Plot the chosen TIF as background with sampling points
         rgb_image = first_image_data.transpose((1, 2, 0)) / 255.0
         fig_geo = px.imshow(rgb_image, title='GeoTIFF Image with Sampling Points')
         for name, lon, lat in sampling_points:
@@ -823,7 +776,6 @@ def run_water_quality_dashboard():
         fig_geo.update_yaxes(visible=False)
         fig_geo.update_layout(width=1200, height=600, showlegend=False)
 
-        # Try to load lake height data
         try:
             lake_data = pd.read_excel(lake_height_path)
             lake_data['Date'] = pd.to_datetime(lake_data.iloc[:, 0])
@@ -832,7 +784,6 @@ def run_water_quality_dashboard():
             st.error(f"Error reading lake height file: {e}")
             lake_data = pd.DataFrame()
 
-        # Build color timeline plot (colors over time + lake height)
         scatter_traces = []
         point_names = list(results_colors.keys())
         if selected_points is not None:
@@ -875,7 +826,6 @@ def run_water_quality_dashboard():
         )
         fig_colors.update_yaxes(title_text="Lake Height", secondary_y=True)
 
-        # Compute average mg across all sampling points
         all_dates = {}
         for data_list in results_mg.values():
             for date_obj, mg_val in data_list:
@@ -904,7 +854,6 @@ def run_water_quality_dashboard():
             showlegend=False
         )
 
-        # Dual plot: lake height + average mg
         fig_dual = make_subplots(specs=[[{"secondary_y": True}]])
         if not lake_data.empty:
             fig_dual.add_trace(
@@ -942,17 +891,16 @@ def run_water_quality_dashboard():
 
         return fig_geo, fig_dual, fig_colors, fig_mg, results_colors, results_mg, lake_data
 
-    # ~~~~~ Session state for results ~~~~~
+    # Session state
     if "default_results" not in st.session_state:
         st.session_state.default_results = None
     if "upload_results" not in st.session_state:
         st.session_state.upload_results = None
 
-    # ~~~~~ Tabs for default vs. uploaded sampling ~~~~~
     tab_names = ["Δειγματοληψία 1 (Default)", "Δειγματοληψία 2 (Upload)"]
     tabs = st.tabs(tab_names)
 
-    # ----- Tab 1: Default Sampling -----
+    # ~~~ Tab 1: Default Sampling ~~~
     with tabs[0]:
         st.header("Ανάλυση για Δειγματοληψία 1 (Default)")
         sampling_kml_path = os.path.join(base_dir, "sampling.kml")
@@ -968,8 +916,7 @@ def run_water_quality_dashboard():
         point_names = [name for name, _, _ in default_sampling_points]
         selected_points = st.multiselect(
             "Select points to display mg/m³ concentrations",
-            options=point_names,
-            default=point_names
+            options=point_names, default=point_names
         )
 
         if st.button("Run Analysis (Default)"):
@@ -1029,13 +976,12 @@ def run_water_quality_dashboard():
                         fig_detail.update_layout(
                             title=f"Detailed mg analysis for {selected_detail_point}",
                             xaxis_title="Date",
-                            yaxis_title="mg/m³"
+                            yaxis_title="mg/m³",
                         )
                         st.plotly_chart(fig_detail, use_container_width=True)
                     else:
                         st.info("No mg data for this point.")
             with nested_tabs[6]:
-                # Yearly charts by color + lake height
                 if not lake_data.empty:
                     if not np.issubdtype(lake_data['Date'].dtype, np.datetime64):
                         lake_data['Date'] = pd.to_datetime(lake_data['Date'])
@@ -1047,7 +993,7 @@ def run_water_quality_dashboard():
                             fig_year = make_subplots(specs=[[{"secondary_y": True}]])
                             for pt_idx, name in enumerate(selected_points):
                                 data_list = results_colors.get(name, [])
-                                filtered_data = [(d, color) for d, color in data_list if d.year == year]
+                                filtered_data = [(d, c) for d, c in data_list if d.year == year]
                                 if not filtered_data:
                                     continue
                                 dates_year = [d for d, _ in filtered_data]
@@ -1076,7 +1022,7 @@ def run_water_quality_dashboard():
                             )
                             cols[j].plotly_chart(fig_year, use_container_width=True, config={'scrollZoom': True})
 
-    # ----- Tab 2: Uploaded Sampling -----
+    # ~~~ Tab 2: Uploaded Sampling ~~~
     with tabs[1]:
         st.header("Analysis for Uploaded Sampling")
         uploaded_file = st.file_uploader("Upload a KML file for new sampling points", type="kml", key="upload_tab")
@@ -1149,7 +1095,7 @@ def run_water_quality_dashboard():
                             fig_detail.update_layout(
                                 title=f"Detailed mg analysis for {selected_detail_point}",
                                 xaxis_title="Date",
-                                yaxis_title="mg/m³"
+                                yaxis_title="mg/m³",
                             )
                             st.plotly_chart(fig_detail, use_container_width=True)
                         else:
@@ -1166,7 +1112,7 @@ def run_water_quality_dashboard():
                                 fig_year = make_subplots(specs=[[{"secondary_y": True}]])
                                 for pt_idx, name in enumerate(selected_points):
                                     data_list = results_colors.get(name, [])
-                                    filtered_data = [(d, color) for d, color in data_list if d.year == year]
+                                    filtered_data = [(d, c) for d, c in data_list if d.year == year]
                                     if not filtered_data:
                                         continue
                                     dates_year = [d for d, _ in filtered_data]
@@ -1200,27 +1146,26 @@ def run_water_quality_dashboard():
     st.info("End of Water Quality Dashboard section.")
 
 # -----------------------------------------------------------------------------
-# Burned Areas (Placeholder)
+# 6) Burned Areas (Placeholder)
 # -----------------------------------------------------------------------------
 def run_burned_areas():
     st.title("Burned Areas around reservoir (Placeholder)")
     st.info("No data or functionality yet for burned-area analysis.")
 
 # -----------------------------------------------------------------------------
-# Water Level (Placeholder)
+# 7) Water Level (Placeholder)
 # -----------------------------------------------------------------------------
 def run_water_level_profiles():
     st.title("Water level Height Profiles (Placeholder)")
     st.info("No data or functionality yet for water-level height profiles.")
 
 # -----------------------------------------------------------------------------
-# Pattern Analysis (Not linked to new UI, but included in full)
+# 8) Pattern Analysis (Full Code, Not Linked)
 # -----------------------------------------------------------------------------
 def run_pattern_analysis():
     """
-    Full pattern analysis code: monthly days in range, spatial classification, etc.
-    Currently not linked from the new 3-row UI. 
-    You can call run_pattern_analysis() from main() if you want a separate page for it.
+    Pattern analysis code: monthly days in range, spatial classification, etc.
+    Not linked from the new UI. You can add a button if desired.
     """
     st.title("Pattern Analysis - Spatial and Temporal Reports")
 
@@ -1254,7 +1199,7 @@ def run_pattern_analysis():
     stack_full_in_range = (STACK_filtered >= lower_thresh) & (STACK_filtered <= upper_thresh)
     filtered_dates = [DATES[i] for i in indices]
 
-    # Compute monthly fraction
+    # Monthly fraction
     monthly_avg = {}
     for m in selected_months_pattern:
         month_indices = [i for i, dd in enumerate(filtered_dates) if dd.month == m]
@@ -1264,7 +1209,6 @@ def run_pattern_analysis():
         else:
             monthly_avg[m] = None
 
-    # Overall average
     agg_avg = None
     count = 0
     for m in monthly_avg:
@@ -1279,12 +1223,11 @@ def run_pattern_analysis():
     else:
         overall_avg = None
 
-    # Temporal pattern
     temporal_data = []
-    for m in sorted(monthly_avg.keys()):
-        if monthly_avg[m] is not None:
-            spatial_avg = np.nanmean(monthly_avg[m])
-            temporal_data.append((m, spatial_avg))
+    for mm in sorted(monthly_avg.keys()):
+        if monthly_avg[mm] is not None:
+            spatial_avg = np.nanmean(monthly_avg[mm])
+            temporal_data.append((mm, spatial_avg))
     if temporal_data:
         months, means = zip(*temporal_data)
         month_names = [datetime(2000, mm, 1).strftime('%B') for mm in months]
@@ -1297,7 +1240,6 @@ def run_pattern_analysis():
     else:
         fig_temporal = go.Figure()
 
-    # Spatial classification
     if overall_avg is not None:
         classification = np.full(overall_avg.shape, "Unclassified", dtype=object)
         valid_mask = ~np.isnan(overall_avg)
@@ -1319,7 +1261,9 @@ def run_pattern_analysis():
         fig_class = go.Figure()
 
     st.header("Pattern Analysis")
-    st.markdown("Analyzes monthly days in range data, plus a spatial classification of persistent in-range fractions.")
+    st.markdown(
+        "Analyzes monthly days in range data, plus a spatial classification of persistent in-range fractions."
+    )
     st.subheader("Temporal Pattern")
     st.plotly_chart(fig_temporal, use_container_width=True)
     st.subheader("Spatial Pattern Classification")
@@ -1333,14 +1277,14 @@ def run_pattern_analysis():
     st.info("End of Pattern Analysis section.")
 
 # -----------------------------------------------------------------------------
-# 3-Row UI
+# 9) The Custom 3-Row UI
 # -----------------------------------------------------------------------------
 def run_custom_ui():
     """
-    Row 1: Επιλογή υδάτινου σώματος → [Κορώνεια, Πολυφύτου, Γαδουρά, Αξιός]
-    Row 2: Επιλογή Δείκτη → [Πραγματικό, Χλωροφύλλη, CDOM, Colour]
-    Row 3: [Lake processing, Water Processing, Water Quality Dashboard,
-            Burned Areas around reservoir, Water level Height Profiles]
+    Row 1: 'Επιλογή υδάτινου σώματος' → [Κορώνεια, Πολυφύτου, Γαδουρά, Αξιός]
+    Row 2: 'Επιλογή Δείκτη' → [Πραγματικό, Χλωροφύλλη, CDOM, Colour]
+    Row 3: 'Είδος Ανάλυσης' → [Lake processing, Water Processing, Water Quality Dashboard,
+                               Burned Areas around reservoir, Water level Height Profiles]
     """
     if "waterbody_choice" not in st.session_state:
         st.session_state["waterbody_choice"] = None
@@ -1349,45 +1293,44 @@ def run_custom_ui():
     if "analysis_choice" not in st.session_state:
         st.session_state["analysis_choice"] = None
 
-    # --- Row 1 ---
-    row1_col1, row1_col2, row1_col3, row1_col4, row1_col5 = st.columns(5)
+    # --- Row 1: Επιλογή υδάτινου σώματος ---
+    st.subheader("Επιλογή υδάτινου σώματος")
+    row1_col1, row1_col2, row1_col3, row1_col4 = st.columns(4)
     with row1_col1:
-        st.subheader("Επιλογή υδάτινου σώματος")
-    with row1_col2:
         if st.button("Κορώνεια"):
             st.session_state["waterbody_choice"] = "Κορώνεια"
-    with row1_col3:
+    with row1_col2:
         if st.button("Πολυφύτου"):
             st.session_state["waterbody_choice"] = "Πολυφύτου"
-    with row1_col4:
+    with row1_col3:
         if st.button("Γαδουρά"):
             st.session_state["waterbody_choice"] = "Γαδουρά"
-    with row1_col5:
+    with row1_col4:
         if st.button("Αξιός"):
             st.session_state["waterbody_choice"] = "Αξιός"
 
     st.write("")
 
-    # --- Row 2 ---
-    row2_col1, row2_col2, row2_col3, row2_col4, row2_col5 = st.columns(5)
+    # --- Row 2: Επιλογή Δείκτη ---
+    st.subheader("Επιλογή Δείκτη")
+    row2_col1, row2_col2, row2_col3, row2_col4 = st.columns(4)
     with row2_col1:
-        st.subheader("Επιλογή Δείκτη")
-    with row2_col2:
         if st.button("Πραγματικό"):
             st.session_state["index_choice"] = "Πραγματικό"
-    with row2_col3:
+    with row2_col2:
         if st.button("Χλωροφύλλη"):
             st.session_state["index_choice"] = "Χλωροφύλλη"
-    with row2_col4:
+    with row2_col3:
         if st.button("CDOM"):
             st.session_state["index_choice"] = "CDOM"
-    with row2_col5:
+    with row2_col4:
         if st.button("Colour"):
             st.session_state["index_choice"] = "Colour"
 
     st.write("")
 
-    # --- Row 3 ---
+    # --- Row 3: Είδος Ανάλυσης ---
+    st.subheader("Είδος Ανάλυσης")
     row3_col1, row3_col2, row3_col3, row3_col4, row3_col5 = st.columns(5)
     with row3_col1:
         if st.button("Lake processing"):
@@ -1411,20 +1354,19 @@ def run_custom_ui():
     st.write(f"**Επιλεγμένο Είδος Ανάλυσης:** {st.session_state.get('analysis_choice', 'None')}")
 
 # -----------------------------------------------------------------------------
-# Main
+# 10) Main
 # -----------------------------------------------------------------------------
 def main():
     """
-    1) Show Intro page
-    2) Show 3-row UI
-    3) If user picks (Κορώνεια + Χλωροφύλλη), route to chosen analysis
-    4) Otherwise, show placeholders or warnings
+    1) Show the Intro Page (dark styling, headline, logo, short text)
+    2) Show the new 3-row UI
+    3) If user picks (Κορώνεια + Χλωροφύλλη), run the selected page
+       Otherwise, show placeholders or warnings
     """
     # 1) Intro
-    # We do the intro page to show the headline & some text
     run_intro_page()
 
-    # 2) Show the custom UI
+    # 2) 3-row UI
     run_custom_ui()
 
     # 3) Decide which page to run
@@ -1432,7 +1374,7 @@ def main():
     idx = st.session_state.get("index_choice", None)
     analysis = st.session_state.get("analysis_choice", None)
 
-    # Real data only for (Κορώνεια + Χλωροφύλλη)
+    # Currently real data only for (Κορώνεια + Χλωροφύλλη)
     if wb == "Κορώνεια" and idx == "Χλωροφύλλη":
         if analysis == "Lake Processing":
             run_lake_processing_app()
@@ -1445,8 +1387,9 @@ def main():
         elif analysis == "Water level":
             run_water_level_profiles()
         else:
-            st.info("Please select an Είδος Ανάλυσης (third row).")
+            st.info("Please select an Είδος Ανάλυσης (3rd row).")
     else:
+        # If user picks any other combination, show a warning
         if analysis is not None:
             st.warning(
                 "Currently, data are only available for (Κορώνεια + Χλωροφύλλη). "
@@ -1454,7 +1397,7 @@ def main():
             )
 
 # -----------------------------------------------------------------------------
-# Entry Point
+# 11) Entry Point
 # -----------------------------------------------------------------------------
 if __name__ == "__main__":
     main()
