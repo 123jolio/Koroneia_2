@@ -164,7 +164,8 @@ def load_data(input_folder: str):
 # -----------------------------------------------------------------------------
 def run_intro_page():
     """
-    Renders a dark background with teal subheaders, plus a short introduction.
+    Renders an intro page with a dark background.
+    The logo is placed in one column and the headline text in an adjacent column.
     """
     # --- Inject custom CSS for dark styling ---
     st.markdown("""
@@ -202,29 +203,38 @@ def run_intro_page():
     </style>
     """, unsafe_allow_html=True)
 
-    # --- Main headline ---
-    st.markdown(
-        "<h2 style='text-align: center;'>"
-        "Ποιοτικά χαρακτηριστικά επιφανειακού Ύδατος με χρήση Εργαλείων Δορυφορικής Τηλεπισκόπησης"
-        "</h2>",
-        unsafe_allow_html=True
-    )
+    # --- Create two columns: one for the logo and one for the headline text ---
+    col_logo, col_text = st.columns([1, 2])
+    
+    with col_logo:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        logo_path = os.path.join(base_dir, "logo.jpg")
+        if os.path.exists(logo_path):
+            st.image(logo_path, width=150)
+        else:
+            st.write("Logo not found.")
+    
+    with col_text:
+        st.markdown(
+            "<h2 style='text-align: center;'>"
+            "Ποιοτικά χαρακτηριστικά επιφανειακού Ύδατος με χρήση Εργαλείων Δορυφορικής Τηλεπισκόπησης"
+            "</h2>",
+            unsafe_allow_html=True
+        )
 
-    # --- Optional logo ---
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    logo_path = os.path.join(base_dir, "logo.jpg")
-    if os.path.exists(logo_path):
-        st.image(logo_path, width=300)
-    else:
-        st.write("Logo not found.")
-
-    # --- Intro text ---
+    # --- Additional intro text (if needed) ---
     st.markdown(
         """
-        ### .
+        ### Εισαγωγή
+        
+        Αυτή η εφαρμογή αναλύει τα ποιοτικά χαρακτηριστικά του επιφανειακού ύδατος χρησιμοποιώντας εργαλεία
+        δορυφορικής τηλεπισκόπησης. Επιλέξτε τις επιθυμητές ρυθμίσεις μέσω του μενού και εξερευνήστε τα 
+        δεδομένα με διάφορες αναλυτικές προσεγγίσεις.
         """,
         unsafe_allow_html=True
     )
+
+
 
 # -----------------------------------------------------------------------------
 # 3) Lake Processing (Full Analysis)
