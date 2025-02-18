@@ -5,7 +5,7 @@
 Διάταξη UI σε 3 σειρές:
 1) Επιλογή υδάτινου σώματος → [Κορώνεια, Πολυφύτου, Γαδουρά, Αξιός]
 2) Επιλογή Δείκτη         → [Πραγματικό, Χλωροφύλλη, CDOM, Colour]
-3) Είδος Ανάλυσης         → [Lake processing, Water Processing, Water Quality Dashboard,
+3) Είδος Ανάλυσης         → [Lake Processing, Water Processing, Water Quality Dashboard,
                              Burned Areas around reservoir, Water level Height Profiles]
 
 Το πρόγραμμα περιέχει τις σελίδες:
@@ -213,28 +213,25 @@ def load_data(input_folder: str):
 # -----------------------------------------------------------------------------
 def run_intro_page():
     """
-    Renders an introductory page with a dark background, a logo, and headline text.
+    Renders an introductory page with a logo, headline, and a short introduction.
     """
+    col_logo, col_text = st.columns([1, 3])
+    with col_logo:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        logo_path = os.path.join(base_dir, "logo.jpg")
+        if os.path.exists(logo_path):
+            st.image(logo_path, width=150)
+        else:
+            st.write("Logo not found.")
+    with col_text:
+        st.markdown("<h2 style='text-align: center;'>Ποιοτικά χαρακτηριστικά επιφανειακού Ύδατος με χρήση Εργαλείων Δορυφορικής Τηλεπισκόπησης</h2>", unsafe_allow_html=True)
     st.markdown("""
     <div class="card">
-        <div style="display: flex; align-items: center;">
-            <div style="flex: 1;">
-                <!-- Logo -->
-                %s
-            </div>
-            <div style="flex: 3; text-align: center;">
-                <h2>Ποιοτικά χαρακτηριστικά επιφανειακού Ύδατος με χρήση Εργαλείων Δορυφορικής Τηλεπισκόπησης</h2>
-            </div>
-        </div>
-        <div style="margin-top: 1rem;">
-            <h4>Εισαγωγή</h4>
-            <p>Αυτή η εφαρμογή αναλύει τα ποιοτικά χαρακτηριστικά του επιφανειακού ύδατος χρησιμοποιώντας εργαλεία δορυφορικής τηλεπισκόπησης.
-            Επιλέξτε τις επιθυμητές ρυθμίσεις μέσω του μενού και εξερευνήστε τα δεδομένα με διάφορες αναλυτικές προσεγγίσεις.</p>
-        </div>
+      <h4>Εισαγωγή</h4>
+      <p>Αυτή η εφαρμογή αναλύει τα ποιοτικά χαρακτηριστικά του επιφανειακού ύδατος χρησιμοποιώντας εργαλεία δορυφορικής τηλεπισκόπησης.
+      Επιλέξτε τις επιθυμητές ρυθμίσεις μέσω του μενού και εξερευνήστε τα δεδομένα με διάφορες αναλυτικές προσεγγίσεις.</p>
     </div>
-    """ % (
-        f'<img src="logo.jpg" width="150">' if os.path.exists(os.path.join(os.path.dirname(os.path.abspath(__file__)), "logo.jpg")) else "Logo not found."
-    ), unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
 # 3) Lake Processing (Full Analysis)
@@ -1274,31 +1271,24 @@ def run_pattern_analysis():
 # -----------------------------------------------------------------------------
 def run_custom_ui():
     """
-    Row 1: 'Επιλογή υδάτινου σώματος' → [Κορώνεια, Πολυφύτου, Γαδουρά, Αξιός]
-    Row 2: 'Επιλογή Δείκτη' → [Πραγματικό, Χλωροφύλλη, CDOM, Colour]
-    Row 3: 'Είδος Ανάλυσης' → [Lake Processing, Water Processing, Water Quality Dashboard,
-                               Burned Areas, Water level]
+    Presents three selection boxes for:
+      - Επιλογή υδάτινου σώματος
+      - Επιλογή Δείκτη
+      - Είδος Ανάλυσης
     """
-    st.markdown('<div class="card">', unsafe_allow_html=True)
     st.header("Παραμετροποίηση Ανάλυσης")
     
-    waterbody_options = ["Κορώνεια", "Πολυφύτου", "Γαδουρά", "Αξιός"]
-    index_options = ["Πραγματικό", "Χλωροφύλλη", "CDOM", "Colour"]
-    analysis_options = ["Lake Processing", "Water Processing", "Water Quality Dashboard",
-                        "Burned Areas", "Water level"]
-
-    st.session_state.waterbody_choice = st.selectbox("Επιλογή υδάτινου σώματος", waterbody_options, key="waterbody_choice")
-    st.session_state.index_choice = st.selectbox("Επιλογή Δείκτη", index_options, key="index_choice")
-    st.session_state.analysis_choice = st.selectbox("Είδος Ανάλυσης", analysis_options, key="analysis_choice")
-    
+    waterbody = st.selectbox("Επιλογή υδάτινου σώματος", ["Κορώνεια", "Πολυφύτου", "Γαδουρά", "Αξιός"], key="waterbody_choice")
+    index = st.selectbox("Επιλογή Δείκτη", ["Πραγματικό", "Χλωροφύλλη", "CDOM", "Colour"], key="index_choice")
+    analysis = st.selectbox("Είδος Ανάλυσης", ["Lake Processing", "Water Processing", "Water Quality Dashboard",
+                                                 "Burned Areas", "Water level"], key="analysis_choice")
     st.markdown(f"""
     <div style="padding: 0.5rem; background-color:#e9ecef; border-radius:5px; margin-top:1rem;">
-        <strong>Επιλεγμένο υδάτινο σώμα:</strong> {st.session_state.get("waterbody_choice", "None")} &nbsp;&nbsp; | &nbsp;&nbsp;
-        <strong>Επιλεγμένος Δείκτης:</strong> {st.session_state.get("index_choice", "None")} &nbsp;&nbsp; | &nbsp;&nbsp;
-        <strong>Επιλεγμένη Ανάλυση:</strong> {st.session_state.get("analysis_choice", "None")}
+        <strong>Επιλεγμένο υδάτινο σώμα:</strong> {waterbody} &nbsp;&nbsp; | &nbsp;&nbsp;
+        <strong>Επιλεγμένος Δείκτης:</strong> {index} &nbsp;&nbsp; | &nbsp;&nbsp;
+        <strong>Επιλεγμένη Ανάλυση:</strong> {analysis}
     </div>
     """, unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
 # 10) Main
@@ -1307,21 +1297,17 @@ def main():
     """
     1) Show the Intro Page (with logo, headline, and short text)
     2) Show the Custom UI (3‑row selection via modern select boxes)
-    3) If user picks (Κορώνεια + Χλωροφύλλη) then run the chosen analysis page.
-       Otherwise, show a warning that other combinations are placeholders.
+    3) Depending on the selections, run the appropriate analysis page.
+       (Currently, detailed data are only available for the combination (Κορώνεια + Χλωροφύλλη).)
     """
-    # 1) Intro
     run_intro_page()
-
-    # 2) Custom UI
     run_custom_ui()
 
-    # 3) Decide which page to run
     wb = st.session_state.get("waterbody_choice", None)
     idx = st.session_state.get("index_choice", None)
     analysis = st.session_state.get("analysis_choice", None)
 
-    # Currently real data only for (Κορώνεια + Χλωροφύλλη)
+    # Only provide full data if the combination is available.
     if wb == "Κορώνεια" and idx == "Χλωροφύλλη":
         if analysis == "Lake Processing":
             run_lake_processing_app()
@@ -1334,7 +1320,7 @@ def main():
         elif analysis == "Water level":
             run_water_level_profiles()
         else:
-            st.info("Παρακαλώ επιλέξτε ένα είδος ανάλυσης (3rd row).")
+            st.info("Παρακαλώ επιλέξτε ένα είδος ανάλυσης.")
     else:
         if analysis is not None:
             st.warning(
