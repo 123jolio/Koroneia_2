@@ -503,91 +503,96 @@ def run_lake_processing_app():
     fig_monthly.update_layout(height=1400)
     st.plotly_chart(fig_monthly, use_container_width=True)
 
-    # Group 2: Yearly Days in Range
-    st.header("Yearly Days in Range Analysis")
-    st.write("Number of days each pixel is in range for selected months in the selected years.")
-    selected_months_yearly = st.sidebar.multiselect(
-        "Select Months for Yearly Days In Range Analysis",
-        options=list(range(1, 13)),
-        default=list(range(1, 13)),
-        format_func=lambda m: datetime(2000, m, 1).strftime('%B'),
-        key="yearly_days_months"
+   # Group 2: Yearly Days in Range
+st.header("Yearly Days in Range Analysis")
+st.write("Number of days each pixel is in range for selected months in the selected years.")
+selected_months_yearly = st.sidebar.multiselect(
+    "Select Months for Yearly Days In Range Analysis",
+    options=list(range(1, 13)),
+    default=list(range(1, 13)),
+    format_func=lambda m: datetime(2000, m, 1).strftime('%B'),
+    key="yearly_days_months"
+)
+if not selected_years_analysis:
+    st.warning("Please select at least one year for yearly analysis.")
+elif not selected_months_yearly:
+    st.warning("Please select at least one month for yearly analysis.")
+else:
+    n_rows = len(selected_years_analysis)
+    n_cols = len(selected_months_yearly)
+    subplot_titles = [
+        f"{year} - {datetime(2000, m, 1).strftime('%B')}"
+        for year in selected_years_analysis for m in selected_months_yearly
+    ]
+    # Dynamically compute figure width and height (at least 1200 x 600)
+    fig_width = max(300 * n_cols, 1200)
+    fig_height = max(300 * n_rows, 600)
+    
+    fig_yearly = make_subplots(
+        rows=n_rows, cols=n_cols,
+        subplot_titles=subplot_titles,
+        horizontal_spacing=0.05, vertical_spacing=0.15
     )
-    if not selected_years_analysis:
-        st.warning("Please select at least one year for yearly analysis.")
-    elif not selected_months_yearly:
-        st.warning("Please select at least one month for yearly analysis.")
-    else:
-        n_rows = len(selected_years_analysis)
-        n_cols = len(selected_months_yearly)
-        subplot_titles = [
-            f"{year} - {datetime(2000, m, 1).strftime('%B')}"
-            for year in selected_years_analysis for m in selected_months_yearly
-        ]
-        fig_yearly = make_subplots(
-            rows=n_rows, cols=n_cols,
-            subplot_titles=subplot_titles,
-            horizontal_spacing=0.03, vertical_spacing=0.08
-        )
-        yearly_days_in_range = {}
-        for i, year in enumerate(selected_years_analysis):
-            for j, m in enumerate(selected_months_yearly):
-                indices_ym = [k for k, d in enumerate(DATES) if d.year == year and d.month == m]
-                if indices_ym:
-                    count_img = np.sum(stack_full_in_range[indices_ym, :, :], axis=0)
-                    yearly_days_in_range[(year, m)] = count_img
-                    fig_yearly.add_trace(
-                        go.Heatmap(
-                            z=np.flipud(count_img),
-                            colorscale="plasma",
-                            coloraxis="coloraxis",
-                            showscale=False
-                        ),
-                        row=i+1, col=j+1
-                    )
-                else:
-                    yearly_days_in_range[(year, m)] = None
-                    fig_yearly.add_annotation(
-                        text="No data",
-                        showarrow=False, row=i+1, col=j+1
-                    )
-        fig_yearly.update_layout(
-            coloraxis=dict(
+    yearly_days_in_range = {}
+    for i, year in enumerate(selected_years_analysis):
+        for j, m in enumerate(selected_months_yearly):
+            indices_ym = [k for k, d in enumerate(DATES) if d.year == year and d.month == m]
+            if indices_ym:
+                count_img = np.sum(stack_full_in_range[indices_ym, :, :], axis=0)
+                yearly_days_in_range[(year, m)] = count_img
+                fig_yearly.add_trace(
+                    go.Heatmap(
+                        z=np.flipud(count_img),
+                        colorscale="plasma",
+                        coloraxis="coloraxis",
+                        showscale=False
+                    ),
+                    row=i+1, col=j+1
+                )
+            else:
+                yearly_days_in_range[(year, m)] = None
+                fig_yearly.add_annotation(
+                    text="No data",
+                    showarrow=False, row=i+1, col=j+1
+                )
+    fig_yearly.update_layout(
+        coloraxis=dict(
+            colorscale="plasma",
+            colorbar=dict(title="Days In Range", len=0.75)
+        ),
+        height=fig_height,
+        width=fig_width,
+        margin=dict(l=50, r=50, t=50, b=50)
+    )
+    st.plotly_chart(fig_yearly, use_container_width=True)
+
+    available_pairs = [(y, mm) for (y, mm), data in yearly_days_in_range.items() if data is not None]
+    if available_pairs:
+        pair_labels = [f"{y} - {datetime(2000, mm, 1).strftime('%B')}" for y, mm in available_pairs]
+        selected_pair_label = st.selectbox("Select a Year-Month pair for larger view", options=pair_labels)
+        selected_index = pair_labels.index(selected_pair_label)
+        selected_pair = available_pairs[selected_index]
+        large_img = yearly_days_in_range[selected_pair]
+        fig_large = go.Figure(
+            data=go.Heatmap(
+                z=np.flipud(large_img),
                 colorscale="plasma",
-                colorbar=dict(title="Days In Range", len=0.75)
-            ),
-            height=3000 * n_rows,
-            width=1200,
+                colorbar=dict(title="Days In Range")
+            )
+        )
+        fig_large.update_layout(
+            title=f"Larger View: {selected_pair[0]} - {datetime(2000, selected_pair[1], 1).strftime('%B')}",
+            width=800,
+            height=800,
             margin=dict(l=50, r=50, t=50, b=50)
         )
-        st.plotly_chart(fig_yearly, use_container_width=True)
+        st.plotly_chart(fig_large, use_container_width=False)
+    else:
+        st.info("No valid yearly data available for enlarged view.")
 
-        available_pairs = [(y, mm) for (y, mm), data in yearly_days_in_range.items() if data is not None]
-        if available_pairs:
-            pair_labels = [f"{y} - {datetime(2000, mm, 1).strftime('%B')}" for y, mm in available_pairs]
-            selected_pair_label = st.selectbox("Select a Year-Month pair for larger view", options=pair_labels)
-            selected_index = pair_labels.index(selected_pair_label)
-            selected_pair = available_pairs[selected_index]
-            large_img = yearly_days_in_range[selected_pair]
-            fig_large = go.Figure(
-                data=go.Heatmap(
-                    z=np.flipud(large_img),
-                    colorscale="plasma",
-                    colorbar=dict(title="Days In Range")
-                )
-            )
-            fig_large.update_layout(
-                title=f"Larger View: {selected_pair[0]} - {datetime(2000, selected_pair[1], 1).strftime('%B')}",
-                width=800,
-                height=800,
-                margin=dict(l=50, r=50, t=50, b=50)
-            )
-            st.plotly_chart(fig_large, use_container_width=False)
-        else:
-            st.info("No valid yearly data available for enlarged view.")
+st.info("End of Lake Processing section.")
+st.markdown('</div>', unsafe_allow_html=True)
 
-    st.info("End of Lake Processing section.")
-    st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
 # 4) Water Processing (Placeholder)
