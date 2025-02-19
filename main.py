@@ -323,10 +323,10 @@ def run_custom_ui():
     """, unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# Επεξεργασία Λίμνης (Lake Processing) με Ανάλυση Μηνιαίας και Ετήσιας Κατανομής
+# Επεξεργασία Λίμνης (Lake Processing) με Μηνιαία και Ετήσια Ανάλυση
 # -----------------------------------------------------------------------------
 def run_lake_processing_app(waterbody: str, index: str):
-    """Κύρια συνάρτηση για την ανάλυση λίμνης με μηνιαία και ετήσια διαγράμματα."""
+    """Κύρια συνάρτηση για την ανάλυση μιας λίμνης με μηνιαία και ετήσια διαγράμματα."""
     with st.container():
         st.markdown('<div class="card">', unsafe_allow_html=True)
         st.title(f"Επεξεργασία Λίμνης ({waterbody} - {index})")
@@ -409,18 +409,16 @@ def run_lake_processing_app(waterbody: str, index: str):
         fig_mean = px.imshow(mean_day, color_continuous_scale="RdBu",
                              title="Διάγραμμα: Μέση Ημέρα Εμφάνισης", labels={"color": "Μέση Ημέρα"})
         fig_mean.update_layout(width=800, height=600)
-        fig_mean.update_layout(coloraxis_colorbar=dict(tickmode='array',
-                                                       tickvals=[1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 365],
-                                                       ticktext=["1 (Ιαν)", "32 (Φεβ)", "60 (Μαρ)", "91 (Απρ)",
-                                                                 "121 (Μαΐ)", "152 (Ιουν)", "182 (Ιουλ)",
-                                                                 "213 (Αυγ)", "244 (Σεπ)", "274 (Οκτ)",
-                                                                 "305 (Νοε)", "335 (Δεκ)", "365 (Δεκ)"]))
+        tick_vals = [1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 365]
+        tick_text = ["1 (Ιαν)", "32 (Φεβ)", "60 (Μαρ)", "91 (Απρ)",
+                     "121 (Μαΐ)", "152 (Ιουν)", "182 (Ιουλ)", "213 (Αυγ)",
+                     "244 (Σεπ)", "274 (Οκτ)", "305 (Νοε)", "335 (Δεκ)", "365 (Δεκ)"]
+        fig_mean.update_layout(coloraxis_colorbar=dict(tickmode='array', tickvals=tick_vals, ticktext=tick_text))
         with st.expander("Επεξήγηση διαγράμματος: Μέση Ημέρα Εμφάνισης"):
-            st.write("Αυτό το διάγραμμα παρουσιάζει τη μέση ημέρα εμφάνισης για τα pixels που πληρούν το "
-                     "επιλεγμένο εύρος τιμών. Ρυθμίστε το 'Εύρος τιμών pixel' για να δείτε πως αλλάζει η μέση ημέρα "
-                     "σε διαφορετικές τιμές.")
+            st.write("Αυτό το διάγραμμα παρουσιάζει τη μέση ημέρα εμφάνισης για τα pixels που πληρούν το επιλεγμένο εύρος τιμών. "
+                     "Ρυθμίστε το 'Εύρος τιμών pixel' για να δείτε πώς αλλάζει η μέση ημέρα σε διαφορετικές τιμές.")
 
-        # Διάγραμμα "Δείγμα Εικόνας"
+        # Διάγραμμα "Μέσο Δείγμα Εικόνας"
         if display_option.lower() == "thresholded":
             filtered_stack = np.where(in_range, stack_filtered, np.nan)
         else:
@@ -438,8 +436,8 @@ def run_lake_processing_app(waterbody: str, index: str):
                                title="Διάγραμμα: Μέσο Δείγμα Εικόνας", labels={"color": "Τιμή Pixel"})
         fig_sample.update_layout(width=800, height=600)
         with st.expander("Επεξήγηση διαγράμματος: Μέσο Δείγμα Εικόνας"):
-            st.write("Αυτό το διάγραμμα δείχνει το μέσο δείγμα της εικόνας αφού εφαρμοστεί το φίλτρο. "
-                     "Μπορείτε να αλλάξετε το 'Τρόπο εμφάνισης' για να δείτε την αρχική ή την φιλτραρισμένη εικόνα.")
+            st.write("Αυτό το διάγραμμα δείχνει το μέσο δείγμα της εικόνας μετά την εφαρμογή του φίλτρου. "
+                     "Μπορείτε να αλλάξετε τον 'Τρόπο εμφάνισης' για να δείτε την αρχική ή την φιλτραρισμένη εικόνα.")
 
         # Διάγραμμα "Χρόνος Μέγιστης Εμφάνισης"
         filtered_day_of_year = np.array([d.timetuple().tm_yday for d in filtered_dates])
@@ -458,8 +456,8 @@ def run_lake_processing_app(waterbody: str, index: str):
         fig_time.update_layout(width=800, height=600)
         fig_time.update_layout(coloraxis_colorbar=dict(tickmode='array', tickvals=tick_vals, ticktext=tick_text))
         with st.expander("Επεξήγηση διαγράμματος: Χρόνος Μέγιστης Εμφάνισης"):
-            st.write("Αυτό το διάγραμμα δείχνει την ημέρα (μετατρεπόμενη σε αριθμό ημέρας του έτους) κατά την οποία κάθε pixel "
-                     "έφτασε στη μέγιστη τιμή (μέσα στο επιλεγμένο εύρος).")
+            st.write("Αυτό το διάγραμμα δείχνει την ημέρα του έτους (ως αριθμό) κατά την οποία κάθε pixel έφτασε στη μέγιστη τιμή "
+                     "εντός του επιλεγμένου εύρους. Μπορείτε να δείτε πως αλλάζει αυτό με την τροποποίηση του 'Εύρους τιμών pixel'.")
 
         st.header("Χάρτες Ανάλυσης")
         col1, col2 = st.columns(2)
@@ -476,10 +474,9 @@ def run_lake_processing_app(waterbody: str, index: str):
             st.plotly_chart(fig_time, use_container_width=True)
 
         # ------------------------------
-        # Επιπρόσθετη Ετήσια Ανάλυση: Μηνιαία Δείκτης
+        # Επιπρόσθετη Ετήσια Ανάλυση: Μηνιαία Κατανομή Ημερών σε Εύρος
         # ------------------------------
         st.header("Επιπρόσθετη Ετήσια Ανάλυση: Μηνιαία Κατανομή Ημερών σε Εύρος")
-        # Μηνιαία ανάλυση για όλα τα δεδομένα (χωρίς επιπλέον φίλτρα)
         stack_full_in_range = (STACK >= lower_thresh) & (STACK <= upper_thresh)
         monthly_days_in_range = {}
         for m in range(1, 13):
@@ -520,14 +517,13 @@ def run_lake_processing_app(waterbody: str, index: str):
         fig_monthly.update_layout(height=1400)
         st.plotly_chart(fig_monthly, use_container_width=True)
         with st.expander("Επεξήγηση διαγράμματος: Μηνιαία Κατανομή Ημερών σε Εύρος"):
-            st.write("Για κάθε μήνα, αυτό το διάγραμμα δείχνει πόσες ημέρες (από όλα τα δεδομένα) κάθε pixel "
-                     "βρέθηκε εντός του επιλεγμένου εύρους τιμών. Το εύρος τιμών ορίζεται από το slider 'Εύρος τιμών pixel'.")
+            st.write("Για κάθε μήνα, αυτό το διάγραμμα δείχνει πόσες ημέρες κάθε pixel βρέθηκε εντός του επιλεγμένου εύρους τιμών. "
+                     "Το εύρος τιμών ορίζεται από το slider 'Εύρος τιμών pixel'.")
 
         # ------------------------------
         # Επιπρόσθετη Ετήσια Ανάλυση: Ετήσια Κατανομή Ημερών σε Εύρος
         # ------------------------------
         st.header("Επιπρόσθετη Ετήσια Ανάλυση: Ετήσια Κατανομή Ημερών σε Εύρος")
-
         unique_years_full = sorted({d.year for d in DATES if d is not None})
         if not unique_years_full:
             st.error("Δεν βρέθηκαν έγκυρα έτη στα δεδομένα.")
@@ -543,9 +539,7 @@ def run_lake_processing_app(waterbody: str, index: str):
                 yearly_days_in_range[year] = None
 
         n_years = len(unique_years_full)
-        # Διάλεξε ένα μικρό vertical_spacing, π.χ. 0.05, για να χωρέσουν όλες οι γραμμές.
-        vertical_spacing = 0.05
-
+        vertical_spacing = 0.05  # Χρησιμοποιούμε μικρό vertical_spacing
         fig_yearly = make_subplots(
             rows=n_years, cols=1,
             subplot_titles=[f"Έτος: {year}" for year in unique_years_full],
@@ -574,14 +568,14 @@ def run_lake_processing_app(waterbody: str, index: str):
         )
         st.plotly_chart(fig_yearly, use_container_width=True)
         with st.expander("Επεξήγηση διαγράμματος: Ετήσια Κατανομή Ημερών σε Εύρος"):
-            st.write("Για κάθε έτος, αυτό το διάγραμμα δείχνει πόσες ημέρες κάθε pixel βρέθηκε εντός του επιλεγμένου εύρους τιμών. "
-                     "Αυτό επιτρέπει τη σύγκριση των ετήσιων αλλαγών στη γεωχωρική κατανομή του δείκτη.")
+            st.write("Για κάθε έτος, αυτό το διάγραμμα δείχνει πόσες ημέρες κάθε pixel βρέθηκε εντός του επιλεγμένου εύρους τιμών, "
+                     "επιτρέποντάς σας να συγκρίνετε τις ετήσιες αλλαγές στη γεωχωρική κατανομή του δείκτη.")
 
         st.info("Τέλος Επεξεργασίας Λίμνης.")
         st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# Water Processing (Placeholder)
+# Επεξεργασία Υδάτινου Σώματος (Placeholder)
 # -----------------------------------------------------------------------------
 def run_water_processing(waterbody: str, index: str):
     with st.container():
@@ -591,7 +585,7 @@ def run_water_processing(waterbody: str, index: str):
         st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# Water Quality Dashboard
+# Πίνακας Ποιότητας Ύδατος
 # -----------------------------------------------------------------------------
 def run_water_quality_dashboard(waterbody: str, index: str):
     with st.container():
@@ -676,7 +670,7 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                         points.append((f"Point {idx+1}", float(lon_str), float(lat_str)))
                 return points
             except Exception as e:
-                st.error("Σφάλμα κατά την ανάλυση του KML:", e)
+                st.error("Σφάλμα ανάλυσης KML:", e)
                 return []
 
         def geographic_to_pixel(lon: float, lat: float, transform) -> tuple:
@@ -713,6 +707,7 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                              images_folder: str, lake_height_path: str, selected_points: list = None):
             results_colors = {name: [] for name, _, _ in sampling_points}
             results_mg = {name: [] for name, _, _ in sampling_points}
+
             for filename in sorted(os.listdir(images_folder)):
                 if filename.lower().endswith(('.tif', '.tiff')):
                     match = re.search(r'(\d{4}_\d{2}_\d{2})', filename)
@@ -740,6 +735,7 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                                 results_mg[name].append((date_obj, mg_value))
                                 pixel_color = (r / 255, g / 255, b / 255)
                                 results_colors[name].append((date_obj, pixel_color))
+
             rgb_image = first_image_data.transpose((1, 2, 0)) / 255.0
             fig_geo = px.imshow(rgb_image, title='Εικόνα GeoTIFF με Σημεία Δειγματοληψίας')
             for name, lon, lat in sampling_points:
@@ -762,6 +758,7 @@ def run_water_quality_dashboard(waterbody: str, index: str):
             point_names = list(results_colors.keys())
             if selected_points is not None:
                 point_names = [p for p in point_names if p in selected_points]
+
             for idx, name in enumerate(point_names):
                 data_list = results_colors[name]
                 if not data_list:
@@ -984,11 +981,11 @@ def run_water_quality_dashboard(waterbody: str, index: str):
             else:
                 st.info("Παρακαλώ ανεβάστε ένα αρχείο KML για νέα σημεία δειγματοληψίας.")
 
-        st.info("Τέλος πίνακα ποιότητας ύδατος.")
+        st.info("Τέλος Πίνακα Ποιότητας Ύδατος.")
         st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# Burned Areas (Placeholder)
+# Επεξεργασία Καμένων Περιοχών (Placeholder)
 # -----------------------------------------------------------------------------
 def run_burned_areas():
     with st.container():
@@ -998,17 +995,17 @@ def run_burned_areas():
         st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# Water Level Profiles (Placeholder)
+# Προφίλ Ύψους (Placeholder)
 # -----------------------------------------------------------------------------
 def run_water_level_profiles(waterbody: str, index: str):
     with st.container():
         st.markdown('<div class="card">', unsafe_allow_html=True)
-        st.title(f"Προφίλ Ύψους ( {waterbody} ) [Placeholder]")
+        st.title(f"Προφίλ Ύψους ({waterbody}) [Placeholder]")
         st.info("Δεν υπάρχουν δεδομένα ή λειτουργίες για προφίλ ύψους νερού.")
         st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# Pattern Analysis
+# Ανάλυση Προτύπων
 # -----------------------------------------------------------------------------
 def run_pattern_analysis(waterbody: str, index: str):
     with st.container():
@@ -1120,7 +1117,7 @@ def run_pattern_analysis(waterbody: str, index: str):
             fig_class = go.Figure()
 
         st.header("Ανάλυση Προτύπων")
-        st.markdown("Αυτή η ανάλυση παρουσιάζει το χρονολογικό πρότυπο (μηνιαία) και την χωρική ταξινόμηση των δεδομένων.")
+        st.markdown("Η ανάλυση αυτή παρουσιάζει το χρονολογικό πρότυπο (μηνιαία) και την χωρική ταξινόμηση των δεδομένων.")
         st.subheader("Χρονολογικό Πρότυπο")
         st.plotly_chart(fig_temporal, use_container_width=True)
         st.subheader("Χωρική Ταξινόμηση")
@@ -1133,6 +1130,26 @@ def run_pattern_analysis(waterbody: str, index: str):
                                file_name="χρονική_ανάλυση.csv", mime="text/csv")
 
         st.info("Τέλος Ανάλυσης Προτύπων.")
+        st.markdown('</div>', unsafe_allow_html=True)
+
+# -----------------------------------------------------------------------------
+# Επεξεργασία Καμένων Περιοχών (Placeholder)
+# -----------------------------------------------------------------------------
+def run_burned_areas():
+    with st.container():
+        st.markdown('<div class="card">', unsafe_allow_html=True)
+        st.title("Burned Areas γύρω από το ταμιευτήριο (μόνο Γαδουρά)")
+        st.info("Δεν υπάρχουν δεδομένα ή λειτουργίες για ανάλυση καμένων περιοχών.")
+        st.markdown('</div>', unsafe_allow_html=True)
+
+# -----------------------------------------------------------------------------
+# Προφίλ Ύψους (Placeholder)
+# -----------------------------------------------------------------------------
+def run_water_level_profiles(waterbody: str, index: str):
+    with st.container():
+        st.markdown('<div class="card">', unsafe_allow_html=True)
+        st.title(f"Προφίλ Ύψους ({waterbody}) [Placeholder]")
+        st.info("Δεν υπάρχουν δεδομένα ή λειτουργίες για προφίλ ύψους νερού.")
         st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
