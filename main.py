@@ -545,7 +545,9 @@ def run_lake_processing_app(waterbody: str, index: str):
                 yearly_days_in_range[year] = None
 
         n_years = len(unique_years_full)
-        vertical_spacing = 0.25  # Μικρή τιμή για επαρκή χώρος ανά σειρά
+        # Adjust vertical_spacing to a safe value (e.g., 0.02) to satisfy subplot spacing constraints
+        vertical_spacing = 0.02
+
         fig_yearly = make_subplots(
             rows=n_years, cols=1,
             subplot_titles=[f"Έτος: {year}" for year in unique_years_full],
@@ -661,7 +663,6 @@ def run_water_quality_dashboard(waterbody: str, index: str):
             st.error("Δεν έχει επιλεγεί έγκυρη ημερομηνία για το background.")
             st.stop()
 
-        # Ομοειδείς βοηθητικές συναρτήσεις για το Dashboard (παρόμοιες με πριν)
         def parse_sampling_kml(kml_file) -> list:
             try:
                 tree = ET.parse(kml_file)
