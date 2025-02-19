@@ -65,6 +65,8 @@ def get_data_folder(waterbody: str, index: str) -> str:
         waterbody_folder = "polyphytou"
     elif waterbody == "Γαδουρά":
         waterbody_folder = "Gadoura"
+    elif waterbody == "Αξιός":  # NEW: handle Axios
+        waterbody_folder = "Axios"
     else:
         waterbody_folder = None
 
@@ -1098,8 +1100,8 @@ def main():
             st.warning("Το Water Quality Dashboard για Burned Areas είναι διαθέσιμο μόνο στη Γαδουρά.")
         return
 
-    # 3) Otherwise, handle Χλωροφύλλη for the known lakes
-    if idx == "Χλωροφύλλη" and wb in ["Κορώνεια", "Πολυφύτου", "Γαδουρά"]:
+    # 3) Otherwise, handle Χλωροφύλλη for the known lakes (including Αξιός)
+    if idx == "Χλωροφύλλη" and wb in ["Κορώνεια", "Πολυφύτου", "Γαδουρά", "Αξιός"]:
         if analysis == "Lake Processing":
             run_lake_processing_app(wb, idx)
         elif analysis == "Water Processing":
@@ -1122,7 +1124,7 @@ def main():
         # Catch-all for unsupported combos
         st.warning(
             "Δεν υπάρχουν διαθέσιμα δεδομένα για αυτόν τον συνδυασμό δείκτη / υδάτινου σώματος. "
-            "Π.χ. Χλωροφύλλη υπάρχει μόνο για (Κορώνεια, Πολυφύτου, Γαδουρά). "
+            "Π.χ. Χλωροφύλλη υπάρχει μόνο για (Κορώνεια, Πολυφύτου, Γαδουρά, Αξιός). "
             "Burned Areas ισχύει μόνο για Γαδουρά (ή Κορώνεια_2, αν data exist)."
         )
 
