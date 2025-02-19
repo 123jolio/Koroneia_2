@@ -259,7 +259,6 @@ def run_lake_processing_app(waterbody: str):
 
     try:
         STACK, DAYS, DATES = load_data(input_folder)
-        # Debug message hidden
     except Exception as e:
         st.error(f"Error loading data: {e}")
         st.stop()
@@ -353,6 +352,8 @@ def run_lake_processing_app(waterbody: str):
     valid_mask = ~np.isnan(max_index)
     max_index_int = np.zeros_like(max_index, dtype=int)
     max_index_int[valid_mask] = max_index[valid_mask].astype(int)
+    # Clip indices to the valid range before assignment:
+    max_index_int[valid_mask] = np.clip(max_index_int[valid_mask], 0, len(filtered_day_of_year) - 1)
     time_max[valid_mask] = filtered_day_of_year[max_index_int[valid_mask]]
 
     sample_title = ("Average Sample Image (Filtered)" if display_option.lower() == "thresholded" else "Original Average Sample Image")
@@ -371,7 +372,6 @@ def run_lake_processing_app(waterbody: str):
     time_max_fig.update_traces(colorbar=dict(len=0.4))
     time_max_fig.update_layout(coloraxis_colorbar=dict(tickmode='array', tickvals=tick_vals, ticktext=tick_text, len=0.4))
 
-    # Debug message hidden
     st.header("Analysis Maps")
     col1, col2 = st.columns(2)
     with col1:
