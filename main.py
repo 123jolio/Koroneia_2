@@ -59,15 +59,14 @@ def get_data_folder(waterbody: str, index: str) -> str:
     debug("DEBUG: Called get_data_folder with waterbody =", waterbody, "index =", index)
 
     # Map waterbody to a base folder.
-    # If your actual folder for Axios is named "Axios" (in English), use that.
-    # If it is named in Greek (e.g. "Αξιός"), update accordingly.
+    # For Axios, ensure the folder name is exactly as on disk.
     if waterbody == "Κορώνεια":
         waterbody_folder = "Koroneia"
     elif waterbody == "Πολυφύτου":
         waterbody_folder = "polyphytou"
     elif waterbody == "Γαδουρά":
         waterbody_folder = "Gadoura"
-    elif waterbody == "Αξιός":  # For Axios – change if needed
+    elif waterbody == "Αξιός":  # For Axios – adjust if needed
         waterbody_folder = "Axios"
     else:
         waterbody_folder = None
@@ -299,6 +298,7 @@ def run_lake_processing_app(waterbody: str, index: str):
     max_date = max(DATES)
     unique_years = sorted({d.year for d in DATES})
 
+    # --- Sidebar filters ---
     st.sidebar.header(f"Filters (Lake Processing: {waterbody})")
     threshold_range = st.sidebar.slider("Select pixel value threshold range", 0, 255, (0, 255))
     broad_date_range = st.sidebar.slider("Select a broad date range", min_value=min_date, max_value=max_date, value=(min_date, max_date))
@@ -328,10 +328,8 @@ def run_lake_processing_app(waterbody: str, index: str):
         selected_years = []
 
     start_dt, end_dt = refined_date_range
-    selected_indices = [
-        i for i, d in enumerate(DATES)
-        if start_dt <= d <= end_dt and d.month in selected_months and d.year in selected_years
-    ]
+    selected_indices = [i for i, d in enumerate(DATES)
+                        if start_dt <= d <= end_dt and d.month in selected_months and d.year in selected_years]
     if not selected_indices:
         st.error("No data for the selected date range and month/year combination.")
         st.stop()
@@ -377,10 +375,8 @@ def run_lake_processing_app(waterbody: str, index: str):
         avg_max = float(np.nanmax(average_sample_img))
 
     filtered_day_of_year = np.array([d.timetuple().tm_yday for d in filtered_dates])
-
     def nanargmax_or_nan(arr):
         return np.nan if np.all(np.isnan(arr)) else np.nanargmax(arr)
-
     max_index = np.apply_along_axis(nanargmax_or_nan, 0, filtered_stack)
     time_max = np.full(max_index.shape, np.nan, dtype=float)
     valid_mask = ~np.isnan(max_index)
@@ -389,14 +385,10 @@ def run_lake_processing_app(waterbody: str, index: str):
     max_index_int[valid_mask] = np.clip(max_index_int[valid_mask], 0, len(filtered_day_of_year) - 1)
     time_max[valid_mask] = filtered_day_of_year[max_index_int[valid_mask]]
 
-    sample_title = (
-        "Average Sample Image (Filtered)" if display_option.lower() == "thresholded"
-        else "Original Average Sample Image"
-    )
-    time_title = (
-        "Time-of-Maximum Map (Day-of-Year)" if display_option.lower() == "thresholded"
-        else "Original Time-of-Maximum Map (Day-of-Year)"
-    )
+    sample_title = ("Average Sample Image (Filtered)" if display_option.lower() == "thresholded"
+                    else "Original Average Sample Image")
+    time_title = ("Time-of-Maximum Map (Day-of-Year)" if display_option.lower() == "thresholded"
+                  else "Original Time-of-Maximum Map (Day-of-Year)")
 
     sample_img_fig = px.imshow(average_sample_img, color_continuous_scale="jet",
                                range_color=[avg_min, avg_max],
@@ -424,6 +416,156 @@ def run_lake_processing_app(waterbody: str, index: str):
         st.plotly_chart(sample_img_fig, use_container_width=True)
     with col4:
         st.plotly_chart(time_max_fig, use_container_width=True)
+
+    # --- Additional Annual Analysis ---
+    st.header("Additional Annual Analysis")
+    unique_years_full = sorted({d.year for d in DATES})
+    if not unique_years_full:
+        st.error("No valid years found in the data.")
+        st.stop()
+    min_year = unique_years_full[0]
+    max_year = unique_years_full[-1]
+
+    st.sidebar.header("Additional Analysis Controls")
+    selected_years_analysis = st.sidebar.multiselect(
+        "Select Years for Days In Range Analysis",
+        options=unique_years_full,
+        default=unique_years_full,
+        key="additional_years"
+    )
+    if selected_years_analysis:
+        monthly_year_range = (min(selected_years_analysis), max(selected_years_analysis))
+    else:
+        monthly_year_range = (min_year, max_year)
+    st.sidebar.write("Monthly Analysis Year Range is set to:", monthly_year_range)
+
+    # Group 1: Monthly Days in Range
+    st.subheader("Monthly Days in Range Analysis")
+    st.write("Number of days each pixel is in range for each month over the selected years.")
+    stack_full_in_range = (STACK >= lower_thresh) & (STACK <= upper_thresh)
+    monthly_days_in_range = {}
+    for m in range(1, 13):
+        indices_m = [i for i, d in enumerate(DATES)
+                     if monthly_year_range[0] <= d.year <= monthly_year_range[1] and d.month == m]
+        if indices_m:
+            monthly_days_in_range[m] = np.sum(stack_full_in_range[indices_m, :, :], axis=0)
+        else:
+            monthly_days_in_range[m] = None
+
+    fig_monthly = make_subplots(
+        rows=3, cols=4,
+        subplot_titles=[datetime(2000, m, 1).strftime('%B') for m in range(1, 13)],
+        horizontal_spacing=0.05, vertical_spacing=0.1
+    )
+    trace_count = 0
+    for m in range(1, 13):
+        row = (m - 1) // 4 + 1
+        col = (m - 1) % 4 + 1
+        img = monthly_days_in_range[m]
+        if img is not None:
+            showscale = True if trace_count == 0 else False
+            fig_monthly.add_trace(
+                go.Heatmap(
+                    z=np.flipud(img),
+                    colorscale="plasma",
+                    showscale=showscale,
+                    colorbar=dict(title="Days In Range") if showscale else None
+                ),
+                row=row, col=col
+            )
+            trace_count += 1
+        else:
+            fig_monthly.add_annotation(
+                text="No data",
+                showarrow=False, row=row, col=col
+            )
+    fig_monthly.update_layout(height=1400)
+    st.plotly_chart(fig_monthly, use_container_width=True)
+
+    # Group 2: Yearly Days in Range
+    st.subheader("Yearly Days in Range Analysis")
+    st.write("Number of days each pixel is in range for selected months in the selected years.")
+    selected_months_yearly = st.sidebar.multiselect(
+        "Select Months for Yearly Days In Range Analysis",
+        options=list(range(1, 13)),
+        default=list(range(1, 13)),
+        format_func=lambda m: datetime(2000, m, 1).strftime('%B'),
+        key="yearly_days_months"
+    )
+    if not selected_years_analysis:
+        st.warning("Please select at least one year for yearly analysis.")
+    elif not selected_months_yearly:
+        st.warning("Please select at least one month for yearly analysis.")
+    else:
+        n_rows = len(selected_years_analysis)
+        n_cols = len(selected_months_yearly)
+        subplot_titles = [
+            f"{year} - {datetime(2000, m, 1).strftime('%B')}"
+            for year in selected_years_analysis for m in selected_months_yearly
+        ]
+        fig_yearly = make_subplots(
+            rows=n_rows, cols=n_cols,
+            subplot_titles=subplot_titles,
+            horizontal_spacing=0.03, vertical_spacing=0.08
+        )
+        yearly_days_in_range = {}
+        for i, year in enumerate(selected_years_analysis):
+            for j, m in enumerate(selected_months_yearly):
+                indices_ym = [k for k, d in enumerate(DATES) if d.year == year and d.month == m]
+                if indices_ym:
+                    count_img = np.sum(stack_full_in_range[indices_ym, :, :], axis=0)
+                    yearly_days_in_range[(year, m)] = count_img
+                    fig_yearly.add_trace(
+                        go.Heatmap(
+                            z=np.flipud(count_img),
+                            colorscale="plasma",
+                            coloraxis="coloraxis",
+                            showscale=False
+                        ),
+                        row=i+1, col=j+1
+                    )
+                else:
+                    yearly_days_in_range[(year, m)] = None
+                    fig_yearly.add_annotation(
+                        text="No data",
+                        showarrow=False, row=i+1, col=j+1
+                    )
+        fig_yearly.update_layout(
+            coloraxis=dict(
+                colorscale="plasma",
+                colorbar=dict(title="Days In Range", len=0.75)
+            ),
+            height=3000 * n_rows,
+            width=1200,
+            margin=dict(l=50, r=50, t=50, b=50)
+        )
+        st.plotly_chart(fig_yearly, use_container_width=True)
+
+        available_pairs = [(y, mm) for (y, mm), data in yearly_days_in_range.items() if data is not None]
+        if available_pairs:
+            pair_labels = [f"{y} - {datetime(2000, mm, 1).strftime('%B')}" for y, mm in available_pairs]
+            selected_pair_label = st.selectbox("Select a Year-Month pair for larger view", options=pair_labels)
+            selected_index = pair_labels.index(selected_pair_label)
+            selected_pair = available_pairs[selected_index]
+            large_img = yearly_days_in_range[selected_pair]
+            fig_large = go.Figure(
+                data=go.Heatmap(
+                    z=np.flipud(large_img),
+                    colorscale="plasma",
+                    colorbar=dict(title="Days In Range")
+                )
+            )
+            fig_large.update_layout(
+                title=f"Larger View: {selected_pair[0]} - {datetime(2000, selected_pair[1], 1).strftime('%B')}",
+                width=800,
+                height=800,
+                margin=dict(l=50, r=50, t=50, b=50)
+            )
+            st.plotly_chart(fig_large, use_container_width=False)
+        else:
+            st.info("No valid yearly data available for enlarged view.")
+
+    # --- End Additional Annual Analysis ---
 
     st.info("End of Lake Processing section.")
     st.markdown('</div>', unsafe_allow_html=True)
@@ -457,7 +599,6 @@ def run_water_quality_dashboard(waterbody: str, index: str):
     lake_height_path = os.path.join(data_folder, "lake height.xlsx")
     sampling_kml_path = os.path.join(data_folder, "sampling.kml")
 
-    # Debug: list files in images_folder
     if os.path.exists(images_folder):
         debug("DEBUG: Files in images_folder:", os.listdir(images_folder))
     else:
@@ -948,10 +1089,8 @@ def run_pattern_analysis(waterbody: str, index: str):
         st.error("Please select at least one year and one month.")
         st.stop()
 
-    indices = [
-        i for i, d in enumerate(DATES)
-        if d.year in selected_years_pattern and d.month in selected_months_pattern
-    ]
+    indices = [i for i, d in enumerate(DATES)
+               if d.year in selected_years_pattern and d.month in selected_months_pattern]
     if not indices:
         st.error("No data for the selected years/months in pattern analysis.")
         st.stop()
@@ -990,11 +1129,9 @@ def run_pattern_analysis(waterbody: str, index: str):
     if temporal_data:
         months, means = zip(*temporal_data)
         month_names = [datetime(2000, mm, 1).strftime('%B') for mm in months]
-        fig_temporal = px.bar(
-            x=month_names, y=means,
-            labels={'x': 'Month', 'y': 'Average Fraction In Range'},
-            title="Temporal Pattern: Average Fraction In Range per Month"
-        )
+        fig_temporal = px.bar(x=month_names, y=means,
+                              labels={'x': 'Month', 'y': 'Average Fraction In Range'},
+                              title="Temporal Pattern: Average Fraction In Range per Month")
     else:
         fig_temporal = go.Figure()
 
@@ -1014,25 +1151,18 @@ def run_pattern_analysis(waterbody: str, index: str):
             [0.66, "red"],     # High
             [1.00, "gray"]     # Unclassified
         ]
-
-        fig_class = px.imshow(
-            numeric_class,
-            color_continuous_scale=discrete_colorscale,
-            title="Spatial Pattern Classification"
-        )
-        fig_class.update_traces(colorbar=dict(
-            tickvals=[0,1,2,3],
-            ticktext=["Low", "Medium", "High", "Unclassified"]
-        ))
+        fig_class = px.imshow(numeric_class,
+                              color_continuous_scale=discrete_colorscale,
+                              title="Spatial Pattern Classification")
+        fig_class.update_traces(colorbar=dict(tickvals=[0,1,2,3],
+                                              ticktext=["Low", "Medium", "High", "Unclassified"]))
     else:
         fig_class = go.Figure()
 
     st.header("Pattern Analysis")
     st.markdown("Analyzes monthly days-in-range data, plus a spatial classification of persistent in-range fractions.")
-
     st.subheader("Temporal Pattern")
     st.plotly_chart(fig_temporal, use_container_width=True)
-
     st.subheader("Spatial Pattern Classification")
     st.plotly_chart(fig_class, use_container_width=True)
 
@@ -1050,29 +1180,12 @@ def run_pattern_analysis(waterbody: str, index: str):
 # -----------------------------------------------------------------------------
 def run_custom_ui():
     st.header("Παραμετροποίηση Ανάλυσης")
-
-    waterbody = st.selectbox(
-        "Επιλογή υδάτινου σώματος",
-        ["Κορώνεια", "Πολυφύτου", "Γαδουρά", "Αξιός"],
-        key="waterbody_choice"
-    )
-
+    waterbody = st.selectbox("Επιλογή υδάτινου σώματος", ["Κορώνεια", "Πολυφύτου", "Γαδουρά", "Αξιός"], key="waterbody_choice")
     # Include "Burned Areas" in the index
-    index = st.selectbox(
-        "Επιλογή Δείκτη",
-        ["Πραγματικό", "Χλωροφύλλη", "CDOM", "Colour", "Burned Areas"],
-        key="index_choice"
-    )
-
+    index = st.selectbox("Επιλογή Δείκτη", ["Πραγματικό", "Χλωροφύλλη", "CDOM", "Colour", "Burned Areas"], key="index_choice")
     # Also include "Burned Areas" in the analysis
-    analysis = st.selectbox(
-        "Είδος Ανάλυσης",
-        ["Lake Processing", "Water Processing", "Water Quality Dashboard",
-         "Burned Areas",
-         "Water level", "Pattern Analysis"],
-        key="analysis_choice"
-    )
-
+    analysis = st.selectbox("Είδος Ανάλυσης", ["Lake Processing", "Water Processing", "Water Quality Dashboard",
+                                                  "Burned Areas", "Water level", "Pattern Analysis"], key="analysis_choice")
     st.markdown(f"""
     <div style="padding: 0.5rem; background-color:#1f1e1e; border-radius:5px; margin-top:1rem;">
         <strong>Επιλεγμένο υδάτινο σώμα:</strong> {waterbody} &nbsp;&nbsp; | &nbsp;&nbsp;
@@ -1088,12 +1201,10 @@ def main():
     debug("DEBUG: Entered main()")
     run_intro_page()
     run_custom_ui()
-
     wb = st.session_state.get("waterbody_choice", None)
     idx = st.session_state.get("index_choice", None)
     analysis = st.session_state.get("analysis_choice", None)
     debug("DEBUG: In main(), user selected waterbody =", wb, "index =", idx, "analysis =", analysis)
-
     # 1) If user picks index=Burned Areas & analysis=Burned Areas => re-use Lake Processing
     if idx == "Burned Areas" and analysis == "Burned Areas":
         if wb == "Γαδουρά" or wb == "Κορώνεια":
@@ -1101,7 +1212,6 @@ def main():
         else:
             st.warning("Τα Burned Areas είναι διαθέσιμα μόνο για Γαδουρά (ή Κορώνεια, αν data exist).")
         return
-
     # 2) If user picks index=Burned Areas & analysis=Water Quality Dashboard => run dashboard
     if idx == "Burned Areas" and analysis == "Water Quality Dashboard":
         if wb == "Γαδουρά":
@@ -1109,7 +1219,6 @@ def main():
         else:
             st.warning("Το Water Quality Dashboard για Burned Areas είναι διαθέσιμο μόνο στη Γαδουρά.")
         return
-
     # 3) Otherwise, handle Χλωροφύλλη for the known lakes (including Αξιός)
     if idx == "Χλωροφύλλη" and wb in ["Κορώνεια", "Πολυφύτου", "Γαδουρά", "Αξιός"]:
         if analysis == "Lake Processing":
@@ -1125,7 +1234,6 @@ def main():
         else:
             st.info("Παρακαλώ επιλέξτε ένα είδος ανάλυσης.")
     elif analysis == "Burned Areas":
-        # If user picks analysis=Burned Areas but didn't pick index=Burned Areas
         if wb == "Γαδουρά":
             run_burned_areas()
         else:
