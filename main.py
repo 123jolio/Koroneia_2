@@ -451,7 +451,7 @@ def run_lake_processing_app(waterbody: str, index: str):
         fig_monthly = make_subplots(
             rows=3, cols=4,
             subplot_titles=[datetime(2000, m, 1).strftime('%B') for m in range(1, 13)],
-            horizontal_spacing=0.05, vertical_spacing=1.15
+            horizontal_spacing=0.05, vertical_spacing=0.35
         )
         trace_count = 0
         for m in range(1, 13):
