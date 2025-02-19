@@ -61,27 +61,6 @@ def inject_custom_css():
             color: #e0e0e0;
             padding: 1rem;
         }
-        /* Top header styling */
-        .top-header {
-            width: 100%;
-            background: linear-gradient(90deg, #1a237e, #283593);
-            padding: 1rem 2rem;
-            margin-bottom: 2rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.4);
-        }
-        .top-header h1 {
-            margin: 0;
-            color: #ffffff;
-            font-weight: 500;
-            font-size: 1.75rem;
-        }
-        .top-header img {
-            height: 50px;
-            margin-right: 1rem;
-        }
         /* Sidebar styling */
         .sidebar .sidebar-content {
             background: #1b1b1b;
@@ -137,28 +116,6 @@ def inject_custom_css():
 
 
 inject_custom_css()
-
-
-# -----------------------------------------------------------------------------
-# Top Navigation Header
-# -----------------------------------------------------------------------------
-def render_top_header():
-    # Use st.markdown with unsafe_allow_html to insert a full-width header.
-    header_html = """
-    <div class="top-header">
-        <div style="display: flex; align-items: center;">
-            <img src="https://via.placeholder.com/50" alt="Logo">
-            <h1>Ποιοτικά χαρακτηριστικά Επιφανειακού Ύδατος</h1>
-        </div>
-        <div style="font-size: 0.9rem; color: #c5cae9;">
-            Enterprise Dashboard
-        </div>
-    </div>
-    """
-    st.markdown(header_html, unsafe_allow_html=True)
-
-
-render_top_header()
 
 
 # -----------------------------------------------------------------------------
