@@ -1,0 +1,117 @@
+// -----------------------------------
+// USER-DEFINED PARAMETERS
+// -----------------------------------
+
+// Choose which parameter to display (similar to "FLAGparam" in your water script)
+var FLAGparam = 1;  
+// 0 = NBR (Normalized Burn Ratio)
+// 1 = BAI (Burned Area Index)
+// 2 = NDVI (Normalized Difference Vegetation Index)
+// 3 = BSI (Bare Soil Index) – example
+
+// Choose what to show in "background" areas (similar to "FLAGbackGround")
+var FLAGbackGround = 2;  
+// 0 = Black
+// 1 = "NDVI green" background
+// 2 = True color
+
+// -----------------------------------
+// HELPER FUNCTIONS & BACKGROUND
+// -----------------------------------
+
+// Basic "black" background
+var Black = [2];
+
+// NDVI-based green background
+// We'll reuse NDVI in the code below, so let's define it once:
+var NDVI = (B08 - B04) / (B08 + B04);
+// If you want to use the built-in "index()" function in Sentinel Hub scripts:
+// var NDVI = index(B08, B04);
+
+// True Color
+var TrueColor = [2.5 * B04, 2.5 * B03, 2.5 * B02];
+
+// -----------------------------------
+// DEFINE THE INDICES WE WANT TO MAP
+// -----------------------------------
+
+// 1) NBR (Normalized Burn Ratio) — often used to detect burn scars
+//    Typically uses NIR (B08) and SWIR (B12).
+var NBR = (B08 - B12) / (B08 + B12);
+
+// 2) BAI (Burned Area Index)
+//    1 / ((0.1 - RED)^2 + (0.06 - NIR)^2)
+var BAI = 1.0 / (Math.pow(0.1 - B04, 2) + Math.pow(0.06 - B08, 2));
+
+// 3) NDVI (already defined above)
+
+// 4) BSI (Bare Soil Index), one of several possible soil indices
+//    (SWIR + RED - NIR - BLUE) / (SWIR + RED + NIR + BLUE)
+var BSI = (B11 + B04 - B08 - B02) / (B11 + B04 + B08 + B02);
+
+// -----------------------------------
+// DEFINE COLOR SCALES FOR EACH PARAM
+// -----------------------------------
+// Adjust these ranges to match typical values in your area
+
+// NBR often ranges from -1 to +1
+var scaleNBR = [-1.0, -0.2, 0.0, 0.2, 0.4, 1.0];
+
+// BAI can get quite large, but typical “burn scar” ranges might be ~0 to 300
+var scaleBAI = [0, 50, 100, 150, 200, 300];
+
+// NDVI from -1 to +1
+var scaleNDVI = [-1.0, -0.2, 0.0, 0.2, 0.4, 1.0];
+
+// BSI from about -1 to +1
+var scaleBSI = [-1.0, -0.2, 0.0, 0.2, 0.4, 1.0];
+
+// A shared color scale for demonstration; you can customize each index separately
+var s = 255.0;
+var colorScale = [
+  [0/s,   0/s,   255/s],  // Blue
+  [0/s,   255/s, 0/s],    // Green
+  [255/s, 255/s, 0/s],    // Yellow
+  [255/s, 127/s, 0/s],    // Orange
+  [255/s, 0/s,   0/s],    // Red
+  [127/s, 0/s,   0/s]     // Dark Red
+];
+
+// -----------------------------------
+// LOGIC FOR BACKGROUND VS. FIRE/VEG PARAM
+// -----------------------------------
+// In your water script, you used NDWI < 0 => land => background
+// Here, we might do NDVI < 0 => background => e.g., water/bare surfaces
+// Then NDVI >= 0 => show the selected fire/vegetation parameter
+
+if (NDVI < 0) {
+  // Show background for low or negative NDVI (likely water, bare ground, etc.)
+  if (FLAGbackGround === 0) {
+    return Black;
+  } else if (FLAGbackGround === 1) {
+    // A simple green gradient based on NDVI
+    // (Though NDVI < 0 is negative, so you can tweak this if you like)
+    return [0, 0.5 * (NDVI + 1.0), 0];
+  } else if (FLAGbackGround === 2) {
+    return TrueColor;
+  }
+} else {
+  // NDVI >= 0 => we visualize the chosen index
+  switch (FLAGparam) {
+    case 0:
+      // NBR
+      return colorBlend(NBR, scaleNBR, colorScale);
+    case 1:
+      // BAI
+      return colorBlend(BAI, scaleBAI, colorScale);
+    case 2:
+      // NDVI
+      return colorBlend(NDVI, scaleNDVI, colorScale);
+    case 3:
+      // BSI
+      return colorBlend(BSI, scaleBSI, colorScale);
+    default:
+      // If we pick an undefined FLAGparam, default to True Color
+      return TrueColor;
+  }
+}
