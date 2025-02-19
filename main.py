@@ -2,10 +2,9 @@
 # -*- coding: utf-8 -*-
 
 """
-DEBUG Version of the Water Quality App
---------------------------------------
-Includes debugging lines (marked with "# DEBUG:") to show which paths/files are being searched.
-This consolidated version is ready to run after copy-pasting.
+Water Quality App
+-----------------
+This version hides debugging messages by default.
 """
 
 import os
@@ -26,6 +25,13 @@ from rasterio.errors import NotGeoreferencedWarning
 import warnings
 warnings.filterwarnings("ignore", category=NotGeoreferencedWarning)
 
+# Global debug flag
+DEBUG = False
+
+def debug(*args, **kwargs):
+    if DEBUG:
+        st.write(*args, **kwargs)
+
 # -------------------------------------------------------------------------
 # Streamlit page config
 # -------------------------------------------------------------------------
@@ -36,10 +42,10 @@ st.set_page_config(
 )
 
 # -----------------------------------------------------------------------------
-# 1) Debugging: Print out our working directory
+# 1) Get current file directory (debug hidden)
 # -----------------------------------------------------------------------------
 current_file_dir = os.path.dirname(os.path.abspath(__file__))
-st.write("DEBUG: Current file directory:", current_file_dir)
+debug("DEBUG: Current file directory:", current_file_dir)
 
 # -----------------------------------------------------------------------------
 # 2) Helper to get correct data folder for each lake
@@ -50,14 +56,11 @@ def get_data_folder(waterbody: str) -> str:
     Adjust folder names to match your actual structure.
     """
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    st.write("DEBUG: Called get_data_folder with waterbody =", waterbody)
-    st.write("DEBUG: base_dir =", base_dir)
+    debug("DEBUG: Called get_data_folder with waterbody =", waterbody)
+    debug("DEBUG: base_dir =", base_dir)
 
     data_folder = None
-
     if waterbody == "Κορώνεια":
-        # If your actual data for Κορώνεια is directly under base_dir/Chlorophyll,
-        # update this line accordingly.
         data_folder = os.path.join(base_dir, "Koroneia", "Chlorophyll")
     elif waterbody == "Πολυφύτου":
         data_folder = os.path.join(base_dir, "polyphytou", "Chlorophyll")
@@ -66,9 +69,9 @@ def get_data_folder(waterbody: str) -> str:
     else:
         data_folder = None
 
-    st.write("DEBUG: Constructed data_folder path:", data_folder)
+    debug("DEBUG: Constructed data_folder path:", data_folder)
     if data_folder is not None and not os.path.exists(data_folder):
-        st.error(f"DEBUG: Folder does NOT exist on disk: {data_folder}")
+        st.error(f"Folder does NOT exist on disk: {data_folder}")
         return None
 
     return data_folder
@@ -105,20 +108,20 @@ inject_custom_css()
 # -----------------------------------------------------------------------------
 def extract_date_from_filename(filename: str):
     basename = os.path.basename(filename)
-    st.write("DEBUG: Extracting date from filename:", basename)
+    debug("DEBUG: Extracting date from filename:", basename)
     match = re.search(r'(\d{4})[_-](\d{2})[_-](\d{2})', basename)
     if match:
         year, month, day = match.groups()
         date_obj = datetime(int(year), int(month), int(day))
         day_of_year = date_obj.timetuple().tm_yday
-        st.write("DEBUG: Extracted date:", date_obj)
+        debug("DEBUG: Extracted date:", date_obj)
         return day_of_year, date_obj
-    st.write("DEBUG: Date pattern not found in", basename)
+    debug("DEBUG: Date pattern not found in", basename)
     return None, None
 
 def load_lake_shape_from_xml(xml_file: str, bounds: tuple = None,
                              xml_width: float = 518.0, xml_height: float = 505.0):
-    st.write("DEBUG: Loading lake shape from:", xml_file)
+    debug("DEBUG: Loading lake shape from:", xml_file)
     try:
         tree = ET.parse(xml_file)
         root = tree.getroot()
@@ -130,7 +133,7 @@ def load_lake_shape_from_xml(xml_file: str, bounds: tuple = None,
                 continue
             points.append([float(x_str), float(y_str)])
         if not points:
-            st.warning("DEBUG: No points found in the shapefile XML/TXT:", xml_file)
+            st.warning("No points found in the shapefile XML/TXT:", xml_file)
             return None
         if bounds is not None:
             minx, miny, maxx, maxy = bounds
@@ -142,14 +145,14 @@ def load_lake_shape_from_xml(xml_file: str, bounds: tuple = None,
             points = transformed_points
         if points and (points[0] != points[-1]):
             points.append(points[0])
-        st.write("DEBUG: Loaded lake shape with", len(points), "points.")
+        debug("DEBUG: Loaded lake shape with", len(points), "points.")
         return {"type": "Polygon", "coordinates": [points]}
     except Exception as e:
-        st.error(f"DEBUG: Error reading lake shape from file {xml_file}: {e}")
+        st.error(f"Error reading lake shape from file {xml_file}: {e}")
         return None
 
 def read_image(file_path: str, lake_shape: dict = None):
-    st.write("DEBUG: Reading image from:", file_path)
+    debug("DEBUG: Reading image from:", file_path)
     with rasterio.open(file_path) as src:
         img = src.read(1).astype(np.float32)
         profile = src.profile.copy()
@@ -165,38 +168,38 @@ def read_image(file_path: str, lake_shape: dict = None):
     return img, profile
 
 def load_data(input_folder: str, shapefile_name="shapefile.xml"):
-    st.write("DEBUG: load_data called with input_folder =", input_folder)
+    debug("DEBUG: load_data called with input_folder =", input_folder)
     if not os.path.exists(input_folder):
         raise Exception(f"Folder does not exist: {input_folder}")
     shapefile_path_xml = os.path.join(input_folder, shapefile_name)
     shapefile_path_txt = os.path.join(input_folder, "shapefile.txt")
-    st.write("DEBUG: Checking for shapefile at:", shapefile_path_xml)
-    st.write("DEBUG: Checking for shapefile at:", shapefile_path_txt)
+    debug("DEBUG: Checking for shapefile at:", shapefile_path_xml)
+    debug("DEBUG: Checking for shapefile at:", shapefile_path_txt)
     lake_shape = None
     if os.path.exists(shapefile_path_xml):
-        st.write(f"DEBUG: Found lake shape file at {shapefile_path_xml}")
+        debug("DEBUG: Found lake shape file at", shapefile_path_xml)
         shape_file = shapefile_path_xml
     elif os.path.exists(shapefile_path_txt):
-        st.write(f"DEBUG: Found lake shape file at {shapefile_path_txt}")
+        debug("DEBUG: Found lake shape file at", shapefile_path_txt)
         shape_file = shapefile_path_txt
     else:
         shape_file = None
-        st.write("DEBUG: No shapefile found in", input_folder, ". Skipping lake shape masking.")
+        debug("DEBUG: No shapefile found in", input_folder, ". Skipping lake shape masking.")
     all_tif_files = sorted(glob.glob(os.path.join(input_folder, "*.tif")))
-    st.write("DEBUG: Found", len(all_tif_files), "TIF files in", input_folder)
+    debug("DEBUG: Found", len(all_tif_files), "TIF files in", input_folder)
     tif_files = [fp for fp in all_tif_files if os.path.basename(fp).lower() != "mask.tif"]
     if not tif_files:
         raise Exception("No GeoTIFF files found in the specified folder.")
     with rasterio.open(tif_files[0]) as src:
         bounds = src.bounds
-        st.write("DEBUG: Using bounds from first TIF:", bounds)
+        debug("DEBUG: Using bounds from first TIF:", bounds)
     if shape_file is not None:
         lake_shape = load_lake_shape_from_xml(shape_file, bounds=bounds)
     images, days, date_list = [], [], []
     for file_path in tif_files:
         day_of_year, date_obj = extract_date_from_filename(file_path)
         if day_of_year is None:
-            st.write("DEBUG: Skipping file (no valid date):", file_path)
+            debug("DEBUG: Skipping file (no valid date):", file_path)
             continue
         img, _ = read_image(file_path, lake_shape=lake_shape)
         images.append(img)
@@ -204,7 +207,7 @@ def load_data(input_folder: str, shapefile_name="shapefile.xml"):
         date_list.append(date_obj)
     if not images:
         raise Exception("No valid images were loaded after applying the shapefile/date filter.")
-    st.write("DEBUG: Loaded", len(images), "valid images.")
+    debug("DEBUG: Loaded", len(images), "valid images.")
     stack = np.stack(images, axis=0)
     return stack, np.array(days), date_list
 
@@ -217,11 +220,11 @@ def run_intro_page():
     with col_logo:
         base_dir = os.path.dirname(os.path.abspath(__file__))
         logo_path = os.path.join(base_dir, "logo.jpg")
-        st.write("DEBUG: Looking for logo at:", logo_path)
+        debug("DEBUG: Looking for logo at:", logo_path)
         if os.path.exists(logo_path):
             st.image(logo_path, width=150)
         else:
-            st.write("DEBUG: Logo not found.")
+            debug("DEBUG: Logo not found.")
     with col_text:
         st.markdown(
             "<h2 style='text-align: center;'>Ποιοτικά χαρακτηριστικά Επιφανειακού Ύδατος σε Λίμνες, "
@@ -242,7 +245,7 @@ def run_intro_page():
 # 6) Lake Processing (Full Analysis)
 # -----------------------------------------------------------------------------
 def run_lake_processing_app(waterbody: str):
-    st.write("DEBUG: Entered run_lake_processing_app for waterbody =", waterbody)
+    debug("DEBUG: Entered run_lake_processing_app for waterbody =", waterbody)
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.title(f"Lake Processing ({waterbody} - Χλωροφύλλη)")
 
@@ -252,17 +255,17 @@ def run_lake_processing_app(waterbody: str):
         st.stop()
 
     input_folder = os.path.join(data_folder, "GeoTIFFs")
-    st.write("DEBUG: Lake Processing will load from:", input_folder)
+    debug("DEBUG: Lake Processing will load from:", input_folder)
 
     try:
         STACK, DAYS, DATES = load_data(input_folder)
-        st.success("DEBUG: Data loaded successfully.")
+        # Debug message hidden
     except Exception as e:
-        st.error(f"DEBUG: Error loading data: {e}")
+        st.error(f"Error loading data: {e}")
         st.stop()
 
     if not DATES:
-        st.error("DEBUG: No date information available.")
+        st.error("No date information available.")
         st.stop()
 
     min_date = min(DATES)
@@ -300,7 +303,7 @@ def run_lake_processing_app(waterbody: str):
     start_dt, end_dt = refined_date_range
     selected_indices = [i for i, d in enumerate(DATES) if start_dt <= d <= end_dt and d.month in selected_months and d.year in selected_years]
     if not selected_indices:
-        st.error("DEBUG: No data for the selected date range and month/year combination.")
+        st.error("No data for the selected date range and month/year combination.")
         st.stop()
 
     stack_filtered = STACK[selected_indices, :, :]
@@ -368,7 +371,7 @@ def run_lake_processing_app(waterbody: str):
     time_max_fig.update_traces(colorbar=dict(len=0.4))
     time_max_fig.update_layout(coloraxis_colorbar=dict(tickmode='array', tickvals=tick_vals, ticktext=tick_text, len=0.4))
 
-    st.write(f"DEBUG: Threshold range: {lower_thresh} to {upper_thresh} | Refined date range: {start_dt.strftime('%Y-%m-%d')} to {end_dt.strftime('%Y-%m-%d')} ({len(selected_indices)} images matched)")
+    # Debug message hidden
     st.header("Analysis Maps")
     col1, col2 = st.columns(2)
     with col1:
@@ -388,7 +391,7 @@ def run_lake_processing_app(waterbody: str):
 # 7) Water Processing (Placeholder)
 # -----------------------------------------------------------------------------
 def run_water_processing(waterbody: str):
-    st.write("DEBUG: Entered run_water_processing for waterbody =", waterbody)
+    debug("DEBUG: Entered run_water_processing for waterbody =", waterbody)
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.title(f"Water Processing ({waterbody} - Χλωροφύλλη) [Placeholder]")
     st.info("No data or functionality yet for Water Processing.")
@@ -398,7 +401,7 @@ def run_water_processing(waterbody: str):
 # 8) Water Quality Dashboard
 # -----------------------------------------------------------------------------
 def run_water_quality_dashboard(waterbody: str):
-    st.write("DEBUG: Entered run_water_quality_dashboard for waterbody =", waterbody)
+    debug("DEBUG: Entered run_water_quality_dashboard for waterbody =", waterbody)
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.title(f"Water Quality Dashboard ({waterbody} - Χλωροφύλλη)")
 
@@ -410,9 +413,9 @@ def run_water_quality_dashboard(waterbody: str):
     images_folder = os.path.join(data_folder, "GeoTIFFs")
     lake_height_path = os.path.join(data_folder, "lake height.xlsx")
     sampling_kml_path = os.path.join(data_folder, "sampling.kml")
-    st.write("DEBUG: Dashboard checking images_folder:", images_folder)
-    st.write("DEBUG: Dashboard checking lake_height_path:", lake_height_path)
-    st.write("DEBUG: Dashboard checking sampling_kml_path:", sampling_kml_path)
+    debug("DEBUG: Dashboard checking images_folder:", images_folder)
+    debug("DEBUG: Dashboard checking lake_height_path:", lake_height_path)
+    debug("DEBUG: Dashboard checking sampling_kml_path:", sampling_kml_path)
 
     possible_video = [
         os.path.join(data_folder, "timelapse.mp4"),
@@ -421,13 +424,13 @@ def run_water_quality_dashboard(waterbody: str):
     ]
     video_path = None
     for v in possible_video:
-        st.write("DEBUG: Checking for video file at:", v)
+        debug("DEBUG: Checking for video file at:", v)
         if os.path.exists(v):
             video_path = v
-            st.write("DEBUG: Found a timelapse file at:", v)
+            debug("DEBUG: Found a timelapse file at:", v)
             break
     if video_path is None:
-        st.write("DEBUG: No timelapse file found in the checked paths.")
+        debug("DEBUG: No timelapse file found in the checked paths.")
 
     st.sidebar.header(f"Ρυθμίσεις Ανάλυσης ({waterbody} - Dashboard)")
     x_start = st.date_input("Έναρξη", date(2015, 1, 1))
@@ -436,23 +439,23 @@ def run_water_quality_dashboard(waterbody: str):
     x_end_dt = datetime.combine(x_end, datetime.min.time())
 
     if not os.path.exists(images_folder):
-        st.error(f"DEBUG: Images folder not found: {images_folder}")
+        st.error(f"Images folder not found: {images_folder}")
         st.stop()
 
     tif_files = [f for f in os.listdir(images_folder) if f.lower().endswith('.tif')]
-    st.write("DEBUG: Found", len(tif_files), "TIF files in images_folder.")
+    debug("DEBUG: Found", len(tif_files), "TIF files in images_folder.")
     available_dates = {}
     for filename in tif_files:
-        st.write("DEBUG: Checking TIF filename for date pattern:", filename)
+        debug("DEBUG: Checking TIF filename for date pattern:", filename)
         match = re.search(r'(\d{4}_\d{2}_\d{2})', filename)
         if match:
             date_str = match.group(1)
             try:
                 date_obj = datetime.strptime(date_str, '%Y_%m_%d').date()
                 available_dates[str(date_obj)] = filename
-                st.write("DEBUG: Extracted date", date_obj, "from", filename)
+                debug("DEBUG: Extracted date", date_obj, "from", filename)
             except Exception as e:
-                st.write("DEBUG: Error parsing date from", filename, ":", e)
+                debug("DEBUG: Error parsing date from", filename, ":", e)
                 continue
 
     if available_dates:
@@ -460,29 +463,29 @@ def run_water_quality_dashboard(waterbody: str):
         selected_bg_date = st.selectbox("Επιλέξτε ημερομηνία για το background της GeoTIFF εικόνας", sorted_dates)
     else:
         selected_bg_date = None
-        st.warning("DEBUG: Δεν βρέθηκαν GeoTIFF εικόνες με ημερομηνία στον τίτλο.")
+        st.warning("Δεν βρέθηκαν GeoTIFF εικόνες με ημερομηνία στον τίτλο.")
 
     if selected_bg_date is not None:
         bg_filename = available_dates[selected_bg_date]
         bg_path = os.path.join(images_folder, bg_filename)
-        st.write("DEBUG: Chosen background TIF =", bg_path)
+        debug("DEBUG: Chosen background TIF =", bg_path)
         if os.path.exists(bg_path):
             with rasterio.open(bg_path) as src:
                 if src.count >= 3:
                     first_image_data = src.read([1, 2, 3])
                     first_transform = src.transform
                 else:
-                    st.error("DEBUG: Το επιλεγμένο GeoTIFF δεν περιέχει τουλάχιστον 3 κανάλια.")
+                    st.error("Το επιλεγμένο GeoTIFF δεν περιέχει τουλάχιστον 3 κανάλια.")
                     st.stop()
         else:
-            st.error(f"DEBUG: GeoTIFF background file not found: {bg_path}")
+            st.error(f"GeoTIFF background file not found: {bg_path}")
             st.stop()
     else:
-        st.error("DEBUG: Δεν έχει επιλεγεί έγκυρη ημερομηνία για το background.")
+        st.error("Δεν έχει επιλεγεί έγκυρη ημερομηνία για το background.")
         st.stop()
 
     def parse_sampling_kml(kml_file) -> list:
-        st.write("DEBUG: Parsing sampling KML file:", kml_file)
+        debug("DEBUG: Parsing sampling KML file:", kml_file)
         try:
             tree = ET.parse(kml_file)
             root = tree.getroot()
@@ -494,10 +497,10 @@ def run_water_quality_dashboard(waterbody: str):
                 for idx, coord in enumerate(coords):
                     lon_str, lat_str, *_ = coord.split(',')
                     points.append((f"Point {idx+1}", float(lon_str), float(lat_str)))
-            st.write("DEBUG: Found", len(points), "sampling points in", kml_file)
+            debug("DEBUG: Found", len(points), "sampling points in", kml_file)
             return points
         except Exception as e:
-            st.error("DEBUG: Error parsing sampling KML:", e)
+            st.error("Error parsing sampling KML:", e)
             return []
 
     def geographic_to_pixel(lon: float, lat: float, transform) -> tuple:
@@ -532,28 +535,28 @@ def run_water_quality_dashboard(waterbody: str):
 
     def analyze_sampling(sampling_points: list, first_image_data, first_transform,
                          images_folder: str, lake_height_path: str, selected_points: list = None):
-        st.write("DEBUG: analyze_sampling called with", len(sampling_points), "sampling points.")
+        debug("DEBUG: analyze_sampling called with", len(sampling_points), "sampling points.")
         results_colors = {name: [] for name, _, _ in sampling_points}
         results_mg = {name: [] for name, _, _ in sampling_points}
         for filename in sorted(os.listdir(images_folder)):
             if filename.lower().endswith(('.tif', '.tiff')):
-                st.write("DEBUG: Processing TIF file:", filename)
+                debug("DEBUG: Processing TIF file:", filename)
                 match = re.search(r'(\d{4}_\d{2}_\d{2})', filename)
                 if not match:
-                    st.write("DEBUG: Date pattern not found in", filename)
+                    debug("DEBUG: Date pattern not found in", filename)
                     continue
                 date_str = match.group(1)
                 try:
                     date_obj = datetime.strptime(date_str, '%Y_%m_%d')
                 except ValueError:
-                    st.write("DEBUG: Error parsing date from", filename)
+                    debug("DEBUG: Error parsing date from", filename)
                     continue
                 image_path = os.path.join(images_folder, filename)
                 with rasterio.open(image_path) as src:
                     transform = src.transform
                     width, height = src.width, src.height
                     if src.count < 3:
-                        st.write("DEBUG: Skipping file (less than 3 bands):", filename)
+                        debug("DEBUG: Skipping file (less than 3 bands):", filename)
                         continue
                     for name, lon, lat in sampling_points:
                         col, row = geographic_to_pixel(lon, lat, transform)
@@ -580,7 +583,7 @@ def run_water_quality_dashboard(waterbody: str):
             lake_data['Date'] = pd.to_datetime(lake_data.iloc[:, 0])
             lake_data.sort_values('Date', inplace=True)
         except Exception as e:
-            st.error(f"DEBUG: Error reading lake height file: {e}")
+            st.error(f"Error reading lake height file: {e}")
             lake_data = pd.DataFrame()
         scatter_traces = []
         point_names = list(results_colors.keys())
@@ -640,11 +643,11 @@ def run_water_quality_dashboard(waterbody: str):
         st.header("Ανάλυση για Δειγματοληψία 1 (Default)")
         default_sampling_points = []
         if os.path.exists(sampling_kml_path):
-            st.write("DEBUG: Found default sampling KML at:", sampling_kml_path)
+            debug("DEBUG: Found default sampling KML at:", sampling_kml_path)
             default_sampling_points = parse_sampling_kml(sampling_kml_path)
         else:
-            st.warning("DEBUG: Default sampling.kml not found at:", sampling_kml_path)
-        st.write("DEBUG: Using default sampling points:", default_sampling_points)
+            st.warning("Default sampling.kml not found at:", sampling_kml_path)
+        debug("DEBUG: Using default sampling points:", default_sampling_points)
         point_names = [name for name, _, _ in default_sampling_points]
         selected_points = st.multiselect("Select points to display mg/m³ concentrations",
                                          options=point_names, default=point_names)
@@ -658,7 +661,7 @@ def run_water_quality_dashboard(waterbody: str):
             if isinstance(results, tuple) and len(results) == 7:
                 fig_geo, fig_dual, fig_colors, fig_mg, results_colors, results_mg, lake_data = results
             else:
-                st.error("DEBUG: Analysis result format error. Please run the analysis again.")
+                st.error("Analysis result format error. Please run the analysis again.")
                 st.stop()
             nested_tabs = st.tabs(["GeoTIFF", "Video/GIF", "Pixel Colors", "Average mg", "Dual Plots", "Detail mg"])
             with nested_tabs[0]:
@@ -670,7 +673,7 @@ def run_water_quality_dashboard(waterbody: str):
                     else:
                         st.image(video_path)
                 else:
-                    st.info("DEBUG: No timelapse file found.")
+                    st.info("No timelapse file found.")
             with nested_tabs[2]:
                 st.plotly_chart(fig_colors, use_container_width=True, config={'scrollZoom': True})
             with nested_tabs[3]:
@@ -695,7 +698,7 @@ def run_water_quality_dashboard(waterbody: str):
                                                 xaxis_title="Date", yaxis_title="mg/m³")
                         st.plotly_chart(fig_detail, use_container_width=True)
                     else:
-                        st.info("DEBUG: No mg data for this point.")
+                        st.info("No mg data for this point.")
     with tabs[1]:
         st.header("Analysis for Uploaded Sampling")
         uploaded_file = st.file_uploader("Upload a KML file for new sampling points", type="kml", key="upload_tab")
@@ -703,9 +706,9 @@ def run_water_quality_dashboard(waterbody: str):
             try:
                 new_sampling_points = parse_sampling_kml(uploaded_file)
             except Exception as e:
-                st.error(f"DEBUG: Error processing the uploaded file: {e}")
+                st.error(f"Error processing the uploaded file: {e}")
                 new_sampling_points = []
-            st.write("DEBUG: Using the following new sampling points:", new_sampling_points)
+            debug("DEBUG: Using the following new sampling points:", new_sampling_points)
             point_names = [name for name, _, _ in new_sampling_points]
             selected_points = st.multiselect("Select points to display mg/m³ concentrations",
                                              options=point_names, default=point_names)
@@ -719,7 +722,7 @@ def run_water_quality_dashboard(waterbody: str):
                 if isinstance(results, tuple) and len(results) == 7:
                     fig_geo, fig_dual, fig_colors, fig_mg, results_colors, results_mg, lake_data = results
                 else:
-                    st.error("DEBUG: Analysis result format error (Upload). Please run the analysis again.")
+                    st.error("Analysis result format error (Upload). Please run the analysis again.")
                     st.stop()
                 nested_tabs = st.tabs(["GeoTIFF", "Video/GIF", "Pixel Colors", "Average mg", "Dual Plots", "Detail mg"])
                 with nested_tabs[0]:
@@ -731,7 +734,7 @@ def run_water_quality_dashboard(waterbody: str):
                         else:
                             st.image(video_path)
                     else:
-                        st.info("DEBUG: Video/GIF file not found.")
+                        st.info("Video/GIF file not found.")
                 with nested_tabs[2]:
                     st.plotly_chart(fig_colors, use_container_width=True, config={'scrollZoom': True})
                 with nested_tabs[3]:
@@ -757,9 +760,9 @@ def run_water_quality_dashboard(waterbody: str):
                                                      xaxis_title="Date", yaxis_title="mg/m³")
                             st.plotly_chart(fig_detail, use_container_width=True)
                         else:
-                            st.info("DEBUG: No mg data for this point.")
+                            st.info("No mg data for this point.")
         else:
-            st.info("DEBUG: Please upload a KML file for new sampling points.")
+            st.info("Please upload a KML file for new sampling points.")
     st.info("End of Water Quality Dashboard section.")
     st.markdown('</div>', unsafe_allow_html=True)
 
@@ -776,7 +779,7 @@ def run_burned_areas():
 # 10) Water Level (Placeholder)
 # -----------------------------------------------------------------------------
 def run_water_level_profiles(waterbody: str):
-    st.write("DEBUG: Entered run_water_level_profiles for waterbody =", waterbody)
+    debug("DEBUG: Entered run_water_level_profiles for waterbody =", waterbody)
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.title(f"Water level Height Profiles ({waterbody}) [Placeholder]")
     st.info("No data or functionality yet for water-level height profiles.")
@@ -786,7 +789,7 @@ def run_water_level_profiles(waterbody: str):
 # 11) Pattern Analysis (Optional)
 # -----------------------------------------------------------------------------
 def run_pattern_analysis(waterbody: str):
-    st.write("DEBUG: Entered run_pattern_analysis for waterbody =", waterbody)
+    debug("DEBUG: Entered run_pattern_analysis for waterbody =", waterbody)
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.title(f"Pattern Analysis ({waterbody} - Χλωροφύλλη)")
     data_folder = get_data_folder(waterbody)
@@ -796,9 +799,8 @@ def run_pattern_analysis(waterbody: str):
     input_folder = os.path.join(data_folder, "GeoTIFFs")
     try:
         STACK, DAYS, DATES = load_data(input_folder)
-        st.success("DEBUG: Data loaded successfully for pattern analysis.")
     except Exception as e:
-        st.error(f"DEBUG: Error loading data: {e}")
+        st.error(f"Error loading data: {e}")
         st.stop()
     st.sidebar.header("Pattern Analysis Controls")
     unique_years = sorted({d.year for d in DATES})
@@ -808,11 +810,11 @@ def run_pattern_analysis(waterbody: str):
     threshold_range = st.sidebar.slider("Select pixel value threshold range", 0, 255, (0, 255), key="pattern_threshold")
     lower_thresh, upper_thresh = threshold_range
     if not selected_years_pattern or not selected_months_pattern:
-        st.error("DEBUG: Please select at least one year and one month.")
+        st.error("Please select at least one year and one month.")
         st.stop()
     indices = [i for i, d in enumerate(DATES) if d.year in selected_years_pattern and d.month in selected_months_pattern]
     if not indices:
-        st.error("DEBUG: No data for the selected years/months in pattern analysis.")
+        st.error("No data for the selected years/months in pattern analysis.")
         st.stop()
     STACK_filtered = STACK[indices, :, :]
     stack_full_in_range = (STACK_filtered >= lower_thresh) & (STACK_filtered <= upper_thresh)
@@ -895,13 +897,13 @@ def run_custom_ui():
 # 13) Main
 # -----------------------------------------------------------------------------
 def main():
-    st.write("DEBUG: Entered main()")
+    debug("DEBUG: Entered main()")
     run_intro_page()
     run_custom_ui()
     wb = st.session_state.get("waterbody_choice", None)
     idx = st.session_state.get("index_choice", None)
     analysis = st.session_state.get("analysis_choice", None)
-    st.write("DEBUG: In main(), user selected waterbody =", wb, "index =", idx, "analysis =", analysis)
+    debug("DEBUG: In main(), user selected waterbody =", wb, "index =", idx, "analysis =", analysis)
     if analysis == "Burned Areas":
         if wb == "Γαδουρά":
             run_burned_areas()
