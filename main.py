@@ -4,8 +4,8 @@
 """
 Water Quality App (Enterprise-Grade UI)
 -----------------------------------------
-This version hides debugging messages by default and features a highly polished,
-enterprise-level, user-friendly interface.
+Αυτή η έκδοση κρύβει τα μηνύματα αποσφαλμάτωσης εξ ορισμού και διαθέτει ένα
+πολύ επαγγελματικό, φιλικό προς το χρήστη περιβάλλον.
 """
 
 import os
@@ -30,12 +30,12 @@ warnings.filterwarnings("ignore", category=NotGeoreferencedWarning)
 DEBUG = False
 
 def debug(*args, **kwargs):
-    """Helper function for conditional debugging prints."""
+    """Βοηθητική συνάρτηση για την εμφάνιση μηνυμάτων αποσφαλμάτωσης, εάν είναι ενεργοποιημένη."""
     if DEBUG:
         st.write(*args, **kwargs)
 
 # -------------------------------------------------------------------------
-# Streamlit page configuration
+# Διαμόρφωση σελίδας Streamlit
 # -------------------------------------------------------------------------
 st.set_page_config(
     page_title="Ποιοτικά χαρακτηριστικά Επιφανειακού Ύδατος",
@@ -44,13 +44,13 @@ st.set_page_config(
 )
 
 # -----------------------------------------------------------------------------
-# Custom CSS for an Enterprise Look and Feel
+# Εξατομίκευση CSS για επαγγελματική εμφάνιση
 # -----------------------------------------------------------------------------
 def inject_custom_css():
     custom_css = """
     <link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700&display=swap" rel="stylesheet">
     <style>
-        /* Global styling */
+        /* Γενική μορφοποίηση */
         html, body, [class*="css"] {
             font-family: 'Roboto', sans-serif;
         }
@@ -59,12 +59,12 @@ def inject_custom_css():
             color: #e0e0e0;
             padding: 1rem;
         }
-        /* Sidebar styling */
+        /* Μορφοποίηση πλαϊνής μπάρας */
         .sidebar .sidebar-content {
             background: #1b1b1b;
             border: none;
         }
-        /* Card styling */
+        /* Μορφοποίηση καρτών */
         .card {
             background: #1e1e1e;
             padding: 2rem;
@@ -78,7 +78,7 @@ def inject_custom_css():
             font-size: 1.75rem;
             text-align: center;
         }
-        /* Navigation section inside sidebar */
+        /* Ενότητα πλοήγησης στην πλαϊνή μπάρα */
         .nav-section {
             padding: 1rem;
             background: #262626;
@@ -90,7 +90,7 @@ def inject_custom_css():
             color: #ffca28;
             font-weight: 500;
         }
-        /* Button styling */
+        /* Μορφοποίηση κουμπιών */
         .stButton button {
             background-color: #3949ab;
             color: #fff;
@@ -103,7 +103,7 @@ def inject_custom_css():
         .stButton button:hover {
             background-color: #5c6bc0;
         }
-        /* Plotly figure container */
+        /* Μορφοποίηση Plotly διαγραμμάτων */
         .plotly-graph-div {
             border: 1px solid #333;
             border-radius: 8px;
@@ -115,15 +115,15 @@ def inject_custom_css():
 inject_custom_css()
 
 # -----------------------------------------------------------------------------
-# Data Folder Helper
+# Βοηθητική Συνάρτηση για Επιλογή φακέλου δεδομένων
 # -----------------------------------------------------------------------------
 def get_data_folder(waterbody: str, index: str) -> str:
     """
-    Maps the chosen waterbody and index to the correct data folder on disk.
-    Returns None if folder doesn't exist.
+    Αντιστοιχεί το επιλεγμένο υδάτινο σώμα και δείκτη στον σωστό φάκελο δεδομένων.
+    Επιστρέφει None αν δεν υπάρχει ο φάκελος.
     """
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    debug("DEBUG: Current base directory:", base_dir)
+    debug("DEBUG: Τρέχων φάκελος:", base_dir)
 
     waterbody_map = {
         "Κορώνεια": "Koroneia",
@@ -142,23 +142,23 @@ def get_data_folder(waterbody: str, index: str) -> str:
     else:
         data_folder = os.path.join(base_dir, waterbody_folder, index)
 
-    debug("DEBUG: Data folder resolved to:", data_folder)
+    debug("DEBUG: Ο φάκελος δεδομένων επιλύθηκε σε:", data_folder)
     if data_folder is not None and not os.path.exists(data_folder):
-        st.error(f"Folder does NOT exist on disk: {data_folder}")
+        st.error(f"Ο φάκελος δεν υπάρχει: {data_folder}")
         return None
 
     return data_folder
 
 # -----------------------------------------------------------------------------
-# Helper Functions for Data Extraction & Image Processing
+# Βοηθητικές Συναρτήσεις για Εξαγωγή Δεδομένων και Επεξεργασία Εικόνας
 # -----------------------------------------------------------------------------
 def extract_date_from_filename(filename: str):
     """
-    Extracts a date (YYYY-MM-DD) from the filename using a regex.
-    Returns (day_of_year, datetime_obj) or (None, None) if no match.
+    Εξάγει ημερομηνία (YYYY-MM-DD) από το όνομα του αρχείου χρησιμοποιώντας regex.
+    Επιστρέφει (day_of_year, datetime_obj) ή (None, None) αν δεν βρεθεί ταίριασμα.
     """
     basename = os.path.basename(filename)
-    debug("DEBUG: Extracting date from filename:", basename)
+    debug("DEBUG: Εξαγωγή ημερομηνίας από το όνομα:", basename)
     match = re.search(r'(\d{4})[_-](\d{2})[_-](\d{2})', basename)
     if match:
         year, month, day = match.groups()
@@ -170,10 +170,10 @@ def extract_date_from_filename(filename: str):
 def load_lake_shape_from_xml(xml_file: str, bounds: tuple = None,
                              xml_width: float = 518.0, xml_height: float = 505.0):
     """
-    Loads a lake shape from a custom XML file with <point x=.. y=..>.
-    Optionally transforms to geocoordinates if bounds is provided.
+    Φορτώνει το περίγραμμα μιας λίμνης από ένα προσαρμοσμένο XML αρχείο.
+    Εάν δοθούν όρια, μετατρέπει τις συντεταγμένες.
     """
-    debug("DEBUG: Loading lake shape from:", xml_file)
+    debug("DEBUG: Φόρτωση περιγράμματος από:", xml_file)
     try:
         tree = ET.parse(xml_file)
         root = tree.getroot()
@@ -185,7 +185,7 @@ def load_lake_shape_from_xml(xml_file: str, bounds: tuple = None,
                 continue
             points.append([float(x_str), float(y_str)])
         if not points:
-            st.warning("No points found in the shapefile XML/TXT:", xml_file)
+            st.warning("Δεν βρέθηκαν σημεία στο XML:", xml_file)
             return None
         if bounds is not None:
             minx, miny, maxx, maxy = bounds
@@ -197,18 +197,18 @@ def load_lake_shape_from_xml(xml_file: str, bounds: tuple = None,
             points = transformed_points
         if points and (points[0] != points[-1]):
             points.append(points[0])
-        debug("DEBUG: Loaded lake shape with", len(points), "points.")
+        debug("DEBUG: Φορτώθηκαν", len(points), "σημεία.")
         return {"type": "Polygon", "coordinates": [points]}
     except Exception as e:
-        st.error(f"Error reading lake shape from file {xml_file}: {e}")
+        st.error(f"Σφάλμα φόρτωσης περιγράμματος από {xml_file}: {e}")
         return None
 
 def read_image(file_path: str, lake_shape: dict = None):
     """
-    Reads a single-band GeoTIFF file and optionally applies a polygon mask (lake_shape).
-    Returns (image_array, profile).
+    Διαβάζει ένα GeoTIFF αρχείο (1 κανάλι) και, εάν δοθεί, εφαρμόζει μάσκα βάσει του περιγράμματος.
+    Επιστρέφει (εικόνα, profile).
     """
-    debug("DEBUG: Reading image from:", file_path)
+    debug("DEBUG: Ανάγνωση εικόνας από:", file_path)
     with rasterio.open(file_path) as src:
         img = src.read(1).astype(np.float32)
         profile = src.profile.copy()
@@ -225,12 +225,12 @@ def read_image(file_path: str, lake_shape: dict = None):
 
 def load_data(input_folder: str, shapefile_name="shapefile.xml"):
     """
-    Loads all TIF files from input_folder, applies optional shapefile mask, and extracts date info.
-    Returns (stack, days_array, date_list).
+    Διαβάζει όλα τα TIF αρχεία από το input_folder, εφαρμόζει μάσκα εάν υπάρχει, και εξάγει πληροφορίες ημερομηνίας.
+    Επιστρέφει (stack, array ημερών, λίστα ημερομηνιών).
     """
-    debug("DEBUG: load_data called with input_folder =", input_folder)
+    debug("DEBUG: load_data καλεσμένη με:", input_folder)
     if not os.path.exists(input_folder):
-        raise Exception(f"Folder does not exist: {input_folder}")
+        raise Exception(f"Ο φάκελος δεν υπάρχει: {input_folder}")
 
     shapefile_path_xml = os.path.join(input_folder, shapefile_name)
     shapefile_path_txt = os.path.join(input_folder, "shapefile.txt")
@@ -241,12 +241,12 @@ def load_data(input_folder: str, shapefile_name="shapefile.xml"):
         shape_file = shapefile_path_txt
     else:
         shape_file = None
-        debug("DEBUG: No shapefile found in", input_folder)
+        debug("DEBUG: Δεν βρέθηκε XML περιγράμματος στον φάκελο", input_folder)
 
     all_tif_files = sorted(glob.glob(os.path.join(input_folder, "*.tif")))
     tif_files = [fp for fp in all_tif_files if os.path.basename(fp).lower() != "mask.tif"]
     if not tif_files:
-        raise Exception("No GeoTIFF files found in the specified folder.")
+        raise Exception("Δεν βρέθηκαν GeoTIFF αρχεία.")
 
     with rasterio.open(tif_files[0]) as src:
         bounds = src.bounds
@@ -265,16 +265,16 @@ def load_data(input_folder: str, shapefile_name="shapefile.xml"):
         date_list.append(date_obj)
 
     if not images:
-        raise Exception("No valid images were loaded after applying the shapefile/date filter.")
+        raise Exception("Δεν φορτώθηκαν έγκυρες εικόνες.")
 
     stack = np.stack(images, axis=0)
     return stack, np.array(days), date_list
 
 # -----------------------------------------------------------------------------
-# Introductory Page
+# Σελίδα Εισαγωγής
 # -----------------------------------------------------------------------------
 def run_intro_page():
-    """Renders an introductory card with a logo and title."""
+    """Εμφανίζει μια κάρτα εισαγωγής με λογότυπο και τίτλο."""
     with st.container():
         st.markdown('<div class="card">', unsafe_allow_html=True)
         col_logo, col_text = st.columns([1, 3])
@@ -284,7 +284,7 @@ def run_intro_page():
             if os.path.exists(logo_path):
                 st.image(logo_path, width=250)
             else:
-                debug("DEBUG: Logo not found.")
+                debug("DEBUG: Δεν βρέθηκε το λογότυπο.")
         with col_text:
             st.markdown(
                 "<h2 class='header-title'>Ποιοτικά χαρακτηριστικά Επιφανειακού Ύδατος</h2>",
@@ -292,17 +292,17 @@ def run_intro_page():
             )
             st.markdown(
                 "<p style='text-align: center; font-size: 1.1rem;'>"
-                "Εφαρμογή ανάλυσης με χρήση εργαλείων δορυφορικής τηλεπισκόπησης. "
+                "Αυτή η εφαρμογή ανάλυσης χρησιμοποιεί εργαλεία δορυφορικής τηλεπισκόπησης. "
                 "Επιλέξτε τις ρυθμίσεις στην πλαϊνή μπάρα και εξερευνήστε τα δεδομένα.</p>",
                 unsafe_allow_html=True
             )
         st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# Sidebar Navigation (Custom UI)
+# Πλαϊνή Μπάρα Πλοήγησης (Custom UI)
 # -----------------------------------------------------------------------------
 def run_custom_ui():
-    """Creates the sidebar for waterbody, index, and analysis choice."""
+    """Δημιουργεί την πλαϊνή μπάρα για επιλογή υδάτινου σώματος, δείκτη και είδους ανάλυσης."""
     st.sidebar.markdown("<div class='nav-section'><h4>Παραμετροποίηση Ανάλυσης</h4></div>", unsafe_allow_html=True)
     waterbody = st.sidebar.selectbox("Επιλογή υδάτινου σώματος",
                                      ["Κορώνεια", "Πολυφύτου", "Γαδουρά", "Αξιός"],
@@ -323,44 +323,43 @@ def run_custom_ui():
     """, unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# Lake Processing (Full Analysis) with Monthly and Yearly Analysis
+# Επεξεργασία Λίμνης (Lake Processing) με Ανάλυση Μηνιαίας και Ετήσιας Κατανομής
 # -----------------------------------------------------------------------------
 def run_lake_processing_app(waterbody: str, index: str):
-    """Main function for Lake Processing with monthly & yearly analyses."""
+    """Κύρια συνάρτηση για την ανάλυση λίμνης με μηνιαία και ετήσια διαγράμματα."""
     with st.container():
         st.markdown('<div class="card">', unsafe_allow_html=True)
-        st.title(f"Lake Processing ({waterbody} - {index})")
+        st.title(f"Επεξεργασία Λίμνης ({waterbody} - {index})")
 
         data_folder = get_data_folder(waterbody, index)
         if data_folder is None:
-            st.error("Δεν υπάρχει φάκελος δεδομένων για το επιλεγμένο υδάτινο σώμα / δείκτη.")
+            st.error("Δεν υπάρχει φάκελος δεδομένων για το επιλεγμένο υδάτινο σώμα/δείκτη.")
             st.stop()
 
         input_folder = os.path.join(data_folder, "GeoTIFFs")
         try:
             STACK, DAYS, DATES = load_data(input_folder)
         except Exception as e:
-            st.error(f"Error loading data: {e}")
+            st.error(f"Σφάλμα φόρτωσης δεδομένων: {e}")
             st.stop()
 
         if not DATES:
-            st.error("No date information available.")
+            st.error("Δεν υπάρχουν διαθέσιμες πληροφορίες ημερομηνίας.")
             st.stop()
 
-        # Basic filters in the sidebar
+        # Βασικά φίλτρα από την πλαϊνή μπάρα
         min_date = min(DATES)
         max_date = max(DATES)
         unique_years = sorted({d.year for d in DATES if d is not None})
 
-        st.sidebar.header(f"Filters (Lake Processing: {waterbody})")
-        threshold_range = st.sidebar.slider("Pixel value threshold range", 0, 255, (0, 255))
-        broad_date_range = st.sidebar.slider("Broad date range", min_value=min_date, max_value=max_date,
+        st.sidebar.header(f"Φίλτρα (Επεξεργασία Λίμνης: {waterbody})")
+        threshold_range = st.sidebar.slider("Εύρος τιμών pixel", 0, 255, (0, 255))
+        broad_date_range = st.sidebar.slider("Γενική περίοδος", min_value=min_date, max_value=max_date,
                                              value=(min_date, max_date))
-        refined_date_range = st.sidebar.slider("Refine date range", min_value=min_date, max_value=max_date,
+        refined_date_range = st.sidebar.slider("Εξειδικευμένη περίοδος", min_value=min_date, max_value=max_date,
                                                value=(min_date, max_date))
-        display_option = st.sidebar.radio("Display mode", options=["Thresholded", "Original"], index=0)
+        display_option = st.sidebar.radio("Τρόπος εμφάνισης", options=["Thresholded", "Original"], index=0)
 
-        # Month/Year selection
         st.sidebar.markdown("### Επιλογή Μηνών")
         month_options = {i: datetime(2000, i, 1).strftime('%B') for i in range(1, 13)}
         if "selected_months" not in st.session_state:
@@ -378,49 +377,50 @@ def run_lake_processing_app(waterbody: str, index: str):
 
         start_dt, end_dt = refined_date_range
         selected_indices = [i for i, d in enumerate(DATES)
-                            if start_dt <= d <= end_dt
-                            and d.month in selected_months
-                            and d.year in selected_years]
+                            if start_dt <= d <= end_dt and d.month in selected_months and d.year in selected_years]
 
         if not selected_indices:
-            st.error("No data for the selected date range/month/year combination.")
+            st.error("Δεν υπάρχουν δεδομένα για την επιλεγμένη περίοδο/μήνες/έτη.")
             st.stop()
 
-        # Filter the main stack
         stack_filtered = STACK[selected_indices, :, :]
         days_filtered = np.array(DAYS)[selected_indices]
         filtered_dates = np.array(DATES)[selected_indices]
 
-        # Create a boolean mask for in-range pixels
         lower_thresh, upper_thresh = threshold_range
         in_range = np.logical_and(stack_filtered >= lower_thresh, stack_filtered <= upper_thresh)
 
-        # 1) Days In Range
+        # Διάγραμμα "Ημέρες σε Εύρος"
         days_in_range = np.nansum(in_range, axis=0)
+        fig_days = px.imshow(days_in_range, color_continuous_scale="plasma",
+                             title="Διάγραμμα: Ημέρες σε Εύρος", labels={"color": "Ημέρες σε Εύρος"})
+        fig_days.update_layout(width=800, height=600)
+        with st.expander("Επεξήγηση διαγράμματος: Ημέρες σε Εύρος"):
+            st.write("Αυτό το διάγραμμα δείχνει πόσες ημέρες κάθε pixel βρίσκεται εντός του επιλεγμένου εύρους τιμών. "
+                     "Μπορείτε να τροποποιήσετε το εύρος τιμών με το slider 'Εύρος τιμών pixel' στην πλαϊνή μπάρα.")
 
-        # 2) Mean Day (of In Range)
+        # Διάγραμμα "Μέση Ημέρα Εμφάνισης"
         days_array = days_filtered.reshape((-1, 1, 1))
         sum_days = np.nansum(days_array * in_range, axis=0)
         count_in_range = np.nansum(in_range, axis=0)
         mean_day = np.divide(sum_days, count_in_range,
                              out=np.full(sum_days.shape, np.nan),
                              where=(count_in_range != 0))
-
-        # For display
-        fig_days = px.imshow(days_in_range, color_continuous_scale="plasma",
-                             title="Days In Range Map", labels={"color": "Days In Range"})
-        fig_days.update_layout(width=800, height=600)
-
         fig_mean = px.imshow(mean_day, color_continuous_scale="RdBu",
-                             title="Mean Day of In-Range Exceedance", labels={"color": "Mean Day"})
+                             title="Διάγραμμα: Μέση Ημέρα Εμφάνισης", labels={"color": "Μέση Ημέρα"})
         fig_mean.update_layout(width=800, height=600)
-        tick_vals = [1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 365]
-        tick_text = ["1 (Jan)", "32 (Feb)", "60 (Mar)", "91 (Apr)",
-                     "121 (May)", "152 (Jun)", "182 (Jul)", "213 (Aug)",
-                     "244 (Sep)", "274 (Oct)", "305 (Nov)", "335 (Dec)", "365 (Dec)"]
-        fig_mean.update_layout(coloraxis_colorbar=dict(tickmode='array', tickvals=tick_vals, ticktext=tick_text))
+        fig_mean.update_layout(coloraxis_colorbar=dict(tickmode='array',
+                                                       tickvals=[1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 365],
+                                                       ticktext=["1 (Ιαν)", "32 (Φεβ)", "60 (Μαρ)", "91 (Απρ)",
+                                                                 "121 (Μαΐ)", "152 (Ιουν)", "182 (Ιουλ)",
+                                                                 "213 (Αυγ)", "244 (Σεπ)", "274 (Οκτ)",
+                                                                 "305 (Νοε)", "335 (Δεκ)", "365 (Δεκ)"]))
+        with st.expander("Επεξήγηση διαγράμματος: Μέση Ημέρα Εμφάνισης"):
+            st.write("Αυτό το διάγραμμα παρουσιάζει τη μέση ημέρα εμφάνισης για τα pixels που πληρούν το "
+                     "επιλεγμένο εύρος τιμών. Ρυθμίστε το 'Εύρος τιμών pixel' για να δείτε πως αλλάζει η μέση ημέρα "
+                     "σε διαφορετικές τιμές.")
 
-        # Thresholded vs Original
+        # Διάγραμμα "Δείγμα Εικόνας"
         if display_option.lower() == "thresholded":
             filtered_stack = np.where(in_range, stack_filtered, np.nan)
         else:
@@ -433,11 +433,18 @@ def run_lake_processing_app(waterbody: str, index: str):
         else:
             avg_min, avg_max = 0, 0
 
-        # 3) Time-of-Max analysis
+        fig_sample = px.imshow(average_sample_img, color_continuous_scale="jet",
+                               range_color=[avg_min, avg_max],
+                               title="Διάγραμμα: Μέσο Δείγμα Εικόνας", labels={"color": "Τιμή Pixel"})
+        fig_sample.update_layout(width=800, height=600)
+        with st.expander("Επεξήγηση διαγράμματος: Μέσο Δείγμα Εικόνας"):
+            st.write("Αυτό το διάγραμμα δείχνει το μέσο δείγμα της εικόνας αφού εφαρμοστεί το φίλτρο. "
+                     "Μπορείτε να αλλάξετε το 'Τρόπο εμφάνισης' για να δείτε την αρχική ή την φιλτραρισμένη εικόνα.")
+
+        # Διάγραμμα "Χρόνος Μέγιστης Εμφάνισης"
         filtered_day_of_year = np.array([d.timetuple().tm_yday for d in filtered_dates])
         def nanargmax_or_nan(arr):
             return np.nan if np.all(np.isnan(arr)) else np.nanargmax(arr)
-
         max_index = np.apply_along_axis(nanargmax_or_nan, 0, filtered_stack)
         time_max = np.full(max_index.shape, np.nan, dtype=float)
         valid_mask = ~np.isnan(max_index)
@@ -445,44 +452,34 @@ def run_lake_processing_app(waterbody: str, index: str):
         max_index_int[valid_mask] = max_index[valid_mask].astype(int)
         max_index_int[valid_mask] = np.clip(max_index_int[valid_mask], 0, len(filtered_day_of_year) - 1)
         time_max[valid_mask] = filtered_day_of_year[max_index_int[valid_mask]]
+        fig_time = px.imshow(time_max, color_continuous_scale="RdBu",
+                             range_color=[1, 365],
+                             title="Διάγραμμα: Χρόνος Μέγιστης Εμφάνισης", labels={"color": "Ημέρα"})
+        fig_time.update_layout(width=800, height=600)
+        fig_time.update_layout(coloraxis_colorbar=dict(tickmode='array', tickvals=tick_vals, ticktext=tick_text))
+        with st.expander("Επεξήγηση διαγράμματος: Χρόνος Μέγιστης Εμφάνισης"):
+            st.write("Αυτό το διάγραμμα δείχνει την ημέρα (μετατρεπόμενη σε αριθμό ημέρας του έτους) κατά την οποία κάθε pixel "
+                     "έφτασε στη μέγιστη τιμή (μέσα στο επιλεγμένο εύρος).")
 
-        sample_title = "Average Sample Image (Filtered)" if display_option.lower() == "thresholded" \
-                       else "Original Average Sample Image"
-        time_title = "Time-of-Maximum Map (Day-of-Year)" if display_option.lower() == "thresholded" \
-                     else "Original Time-of-Maximum Map (Day-of-Year)"
-
-        sample_img_fig = px.imshow(average_sample_img, color_continuous_scale="jet",
-                                   range_color=[avg_min, avg_max],
-                                   title=sample_title, labels={"color": "Pixel Value"})
-        sample_img_fig.update_layout(width=800, height=600)
-
-        time_max_fig = px.imshow(time_max, color_continuous_scale="RdBu",
-                                 range_color=[1, 365],
-                                 title=time_title, labels={"color": "Day-of-Year"})
-        time_max_fig.update_layout(width=800, height=600)
-        time_max_fig.update_layout(coloraxis_colorbar=dict(tickmode='array', tickvals=tick_vals, ticktext=tick_text))
-
-        # Display results
-        st.header("Analysis Maps")
+        st.header("Χάρτες Ανάλυσης")
         col1, col2 = st.columns(2)
         with col1:
             st.plotly_chart(fig_days, use_container_width=True)
         with col2:
             st.plotly_chart(fig_mean, use_container_width=True)
 
-        st.header("Sample Image Analysis")
+        st.header("Ανάλυση Δείγματος Εικόνας")
         col3, col4 = st.columns(2)
         with col3:
-            st.plotly_chart(sample_img_fig, use_container_width=True)
+            st.plotly_chart(fig_sample, use_container_width=True)
         with col4:
-            st.plotly_chart(time_max_fig, use_container_width=True)
+            st.plotly_chart(fig_time, use_container_width=True)
 
         # ------------------------------
-        # Additional Annual Analysis: Monthly Days In Range
+        # Επιπρόσθετη Ετήσια Ανάλυση: Μηνιαία Δείκτης
         # ------------------------------
-        st.header("Additional Annual Analysis: Monthly Days In Range Analysis")
-
-        # Use the full STACK (unfiltered by date) for monthly analysis
+        st.header("Επιπρόσθετη Ετήσια Ανάλυση: Μηνιαία Κατανομή Ημερών σε Εύρος")
+        # Μηνιαία ανάλυση για όλα τα δεδομένα (χωρίς επιπλέον φίλτρα)
         stack_full_in_range = (STACK >= lower_thresh) & (STACK <= upper_thresh)
         monthly_days_in_range = {}
         for m in range(1, 13):
@@ -496,7 +493,7 @@ def run_lake_processing_app(waterbody: str, index: str):
             rows=3, cols=4,
             subplot_titles=[datetime(2000, m, 1).strftime('%B') for m in range(1, 13)],
             horizontal_spacing=0.05,
-            vertical_spacing=0.04  # Keep this small enough for multiple rows
+            vertical_spacing=0.04
         )
         trace_count = 0
         for m in range(1, 13):
@@ -510,32 +507,33 @@ def run_lake_processing_app(waterbody: str, index: str):
                         z=np.flipud(img),
                         colorscale="plasma",
                         showscale=showscale,
-                        colorbar=dict(title="Days In Range") if showscale else None
+                        colorbar=dict(title="Ημέρες σε Εύρος") if showscale else None
                     ),
                     row=row, col=col
                 )
                 trace_count += 1
             else:
                 fig_monthly.add_annotation(
-                    text="No data",
+                    text="Δεν υπάρχουν δεδομένα",
                     showarrow=False, row=row, col=col
                 )
         fig_monthly.update_layout(height=1400)
         st.plotly_chart(fig_monthly, use_container_width=True)
+        with st.expander("Επεξήγηση διαγράμματος: Μηνιαία Κατανομή Ημερών σε Εύρος"):
+            st.write("Για κάθε μήνα, αυτό το διάγραμμα δείχνει πόσες ημέρες (από όλα τα δεδομένα) κάθε pixel "
+                     "βρέθηκε εντός του επιλεγμένου εύρους τιμών. Το εύρος τιμών ορίζεται από το slider 'Εύρος τιμών pixel'.")
 
         # ------------------------------
-        # Additional Annual Analysis: Yearly Days In Range
+        # Επιπρόσθετη Ετήσια Ανάλυση: Ετήσια Κατανομή Ημερών σε Εύρος
         # ------------------------------
-        st.header("Additional Annual Analysis: Yearly Days In Range Analysis")
+        st.header("Επιπρόσθετη Ετήσια Ανάλυση: Ετήσια Κατανομή Ημερών σε Εύρος")
 
         unique_years_full = sorted({d.year for d in DATES if d is not None})
         if not unique_years_full:
-            st.error("No valid years found in the data.")
+            st.error("Δεν βρέθηκαν έγκυρα έτη στα δεδομένα.")
             st.stop()
 
-        # Reuse the in-range mask for the entire dataset
         stack_full_in_range = (STACK >= lower_thresh) & (STACK <= upper_thresh)
-
         yearly_days_in_range = {}
         for year in unique_years_full:
             indices_y = [i for i, d in enumerate(DATES) if d.year == year]
@@ -544,14 +542,13 @@ def run_lake_processing_app(waterbody: str, index: str):
             else:
                 yearly_days_in_range[year] = None
 
-        # Each year in its own row
         n_years = len(unique_years_full)
-        # Keep vertical_spacing small enough for multiple rows
-        vertical_spacing = 0.92 if n_years == 1 else min(0.92, 0.1 / n_years)
+        # Διάλεξε ένα μικρό vertical_spacing, π.χ. 0.05, για να χωρέσουν όλες οι γραμμές.
+        vertical_spacing = 0.05
 
         fig_yearly = make_subplots(
             rows=n_years, cols=1,
-            subplot_titles=[f"Year: {year}" for year in unique_years_full],
+            subplot_titles=[f"Έτος: {year}" for year in unique_years_full],
             vertical_spacing=vertical_spacing
         )
         for idx, year in enumerate(unique_years_full, start=1):
@@ -561,25 +558,26 @@ def run_lake_processing_app(waterbody: str, index: str):
                     go.Heatmap(
                         z=np.flipud(img),
                         colorscale="plasma",
-                        colorbar=dict(title="Days In Range", len=0.5) if idx == 1 else dict(showticklabels=False)
+                        colorbar=dict(title="Ημέρες σε Εύρος", len=0.5) if idx == 1 else dict(showticklabels=False)
                     ),
                     row=idx, col=1
                 )
             else:
                 fig_yearly.add_annotation(
-                    text="No data",
+                    text="Δεν υπάρχουν δεδομένα",
                     row=idx, col=1,
                     showarrow=False
                 )
-
-        # 300 px per year is a decent baseline
         fig_yearly.update_layout(
             height=300 * n_years,
-            title_text="Yearly Days In Range Analysis"
+            title_text="Ετήσια Κατανομή Ημερών σε Εύρος"
         )
         st.plotly_chart(fig_yearly, use_container_width=True)
+        with st.expander("Επεξήγηση διαγράμματος: Ετήσια Κατανομή Ημερών σε Εύρος"):
+            st.write("Για κάθε έτος, αυτό το διάγραμμα δείχνει πόσες ημέρες κάθε pixel βρέθηκε εντός του επιλεγμένου εύρους τιμών. "
+                     "Αυτό επιτρέπει τη σύγκριση των ετήσιων αλλαγών στη γεωχωρική κατανομή του δείκτη.")
 
-        st.info("End of Lake Processing section.")
+        st.info("Τέλος Επεξεργασίας Λίμνης.")
         st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
@@ -588,8 +586,8 @@ def run_lake_processing_app(waterbody: str, index: str):
 def run_water_processing(waterbody: str, index: str):
     with st.container():
         st.markdown('<div class="card">', unsafe_allow_html=True)
-        st.title(f"Water Processing ({waterbody} - {index}) [Placeholder]")
-        st.info("No data or functionality yet for Water Processing.")
+        st.title(f"Επεξεργασία Υδάτινου Σώματος ({waterbody} - {index}) [Placeholder]")
+        st.info("Δεν υπάρχουν δεδομένα ή λειτουργίες για την επεξεργασία υδάτινου σώματος.")
         st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
@@ -598,11 +596,11 @@ def run_water_processing(waterbody: str, index: str):
 def run_water_quality_dashboard(waterbody: str, index: str):
     with st.container():
         st.markdown('<div class="card">', unsafe_allow_html=True)
-        st.title(f"Water Quality Dashboard ({waterbody} - {index})")
+        st.title(f"Πίνακας Ποιότητας Ύδατος ({waterbody} - {index})")
 
         data_folder = get_data_folder(waterbody, index)
         if data_folder is None:
-            st.error("Δεν υπάρχει φάκελος δεδομένων για το επιλεγμένο υδάτινο σώμα / δείκτη.")
+            st.error("Δεν υπάρχει φάκελος δεδομένων για το επιλεγμένο υδάτινο σώμα/δείκτη.")
             st.stop()
 
         images_folder = os.path.join(data_folder, "GeoTIFFs")
@@ -619,7 +617,7 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                 video_path = v
                 break
 
-        st.sidebar.header(f"Ρυθμίσεις Ανάλυσης ({waterbody} - Dashboard)")
+        st.sidebar.header(f"Ρυθμίσεις Πίνακα ({waterbody} - Dashboard)")
         x_start = st.sidebar.date_input("Έναρξη", date(2015, 1, 1))
         x_end = st.sidebar.date_input("Λήξη", date(2026, 12, 31))
         x_start_dt = datetime.combine(x_start, datetime.min.time())
@@ -635,7 +633,7 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                     date_obj = datetime.strptime(date_str, '%Y_%m_%d').date()
                     available_dates[str(date_obj)] = filename
                 except Exception as e:
-                    debug("DEBUG: Error parsing date from", filename, ":", e)
+                    debug("DEBUG: Σφάλμα εξαγωγής ημερομηνίας από", filename, ":", e)
                     continue
 
         if available_dates:
@@ -643,7 +641,7 @@ def run_water_quality_dashboard(waterbody: str, index: str):
             selected_bg_date = st.selectbox("Επιλέξτε ημερομηνία για το background", sorted_dates)
         else:
             selected_bg_date = None
-            st.warning("Δεν βρέθηκαν GeoTIFF εικόνες με ημερομηνία στον τίτλο.")
+            st.warning("Δεν βρέθηκαν GeoTIFF εικόνες με ημερομηνία.")
 
         if selected_bg_date is not None:
             bg_filename = available_dates[selected_bg_date]
@@ -657,13 +655,13 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                         st.error("Το επιλεγμένο GeoTIFF δεν περιέχει τουλάχιστον 3 κανάλια.")
                         st.stop()
             else:
-                st.error(f"GeoTIFF background file not found: {bg_path}")
+                st.error(f"Δεν βρέθηκε το GeoTIFF background: {bg_path}")
                 st.stop()
         else:
             st.error("Δεν έχει επιλεγεί έγκυρη ημερομηνία για το background.")
             st.stop()
 
-        # KML parsing and analysis functions (similar to before)
+        # Ομοειδείς βοηθητικές συναρτήσεις για το Dashboard (παρόμοιες με πριν)
         def parse_sampling_kml(kml_file) -> list:
             try:
                 tree = ET.parse(kml_file)
@@ -678,7 +676,7 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                         points.append((f"Point {idx+1}", float(lon_str), float(lat_str)))
                 return points
             except Exception as e:
-                st.error("Error parsing sampling KML:", e)
+                st.error("Σφάλμα κατά την ανάλυση του KML:", e)
                 return []
 
         def geographic_to_pixel(lon: float, lat: float, transform) -> tuple:
@@ -715,7 +713,6 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                              images_folder: str, lake_height_path: str, selected_points: list = None):
             results_colors = {name: [] for name, _, _ in sampling_points}
             results_mg = {name: [] for name, _, _ in sampling_points}
-
             for filename in sorted(os.listdir(images_folder)):
                 if filename.lower().endswith(('.tif', '.tiff')):
                     match = re.search(r'(\d{4}_\d{2}_\d{2})', filename)
@@ -726,7 +723,6 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                         date_obj = datetime.strptime(date_str, '%Y_%m_%d')
                     except ValueError:
                         continue
-
                     image_path = os.path.join(images_folder, filename)
                     with rasterio.open(image_path) as src:
                         transform = src.transform
@@ -744,10 +740,8 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                                 results_mg[name].append((date_obj, mg_value))
                                 pixel_color = (r / 255, g / 255, b / 255)
                                 results_colors[name].append((date_obj, pixel_color))
-
-            # Build the base image figure with sampling points
             rgb_image = first_image_data.transpose((1, 2, 0)) / 255.0
-            fig_geo = px.imshow(rgb_image, title='GeoTIFF Image with Sampling Points')
+            fig_geo = px.imshow(rgb_image, title='Εικόνα GeoTIFF με Σημεία Δειγματοληψίας')
             for name, lon, lat in sampling_points:
                 col, row = geographic_to_pixel(lon, lat, first_transform)
                 fig_geo.add_trace(go.Scatter(x=[col], y=[row], mode='markers',
@@ -761,14 +755,13 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                 lake_data['Date'] = pd.to_datetime(lake_data.iloc[:, 0])
                 lake_data.sort_values('Date', inplace=True)
             except Exception as e:
-                st.error(f"Error reading lake height file: {e}")
+                st.error(f"Σφάλμα ανάγνωσης αρχείου ύψους λίμνης: {e}")
                 lake_data = pd.DataFrame()
 
             scatter_traces = []
             point_names = list(results_colors.keys())
             if selected_points is not None:
                 point_names = [p for p in point_names if p in selected_points]
-
             for idx, name in enumerate(point_names):
                 data_list = results_colors[name]
                 if not data_list:
@@ -780,7 +773,6 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                                                  mode='markers',
                                                  marker=dict(color=colors, size=10),
                                                  name=name))
-
             fig_colors = make_subplots(specs=[[{"secondary_y": True}]])
             for trace in scatter_traces:
                 fig_colors.add_trace(trace, secondary_y=False)
@@ -789,17 +781,16 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                 trace_height = go.Scatter(
                     x=lake_data['Date'],
                     y=lake_data[lake_data.columns[1]],
-                    name='Lake Height', mode='lines', line=dict(color='blue', width=2)
+                    name='Ύψος Λίμνης', mode='lines', line=dict(color='blue', width=2)
                 )
                 fig_colors.add_trace(trace_height, secondary_y=True)
 
-            fig_colors.update_layout(title='Pixel Colors and Lake Height Over Time',
-                                     xaxis_title='Date',
-                                     yaxis_title='Sampling Points',
+            fig_colors.update_layout(title='Χρώματα Pixel και Ύψος Λίμνης με την πάροδο του χρόνου',
+                                     xaxis_title='Ημερομηνία',
+                                     yaxis_title='Σημεία Δειγματοληψίας',
                                      showlegend=True)
-            fig_colors.update_yaxes(title_text="Lake Height", secondary_y=True)
+            fig_colors.update_yaxes(title_text="Ύψος Λίμνης", secondary_y=True)
 
-            # Compute an average mg for each date (all sampling points)
             all_dates_dict = {}
             for data_list in results_mg.values():
                 for date_obj, mg_val in data_list:
@@ -814,10 +805,10 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                 mode='markers',
                 marker=dict(color=avg_mg, colorscale='Viridis', reversescale=True,
                             colorbar=dict(title='mg/m³'), size=10),
-                name='Average mg/m³'
+                name='Μέσο mg/m³'
             ))
-            fig_mg.update_layout(title='Average mg/m³ Over Time',
-                                 xaxis_title='Date', yaxis_title='mg/m³',
+            fig_mg.update_layout(title='Μέσο mg/m³ με την πάροδο του χρόνου',
+                                 xaxis_title='Ημερομηνία', yaxis_title='mg/m³',
                                  showlegend=False)
 
             fig_dual = make_subplots(specs=[[{"secondary_y": True}]])
@@ -825,25 +816,24 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                 fig_dual.add_trace(go.Scatter(
                     x=lake_data['Date'],
                     y=lake_data[lake_data.columns[1]],
-                    name='Lake Height', mode='lines'
+                    name='Ύψος Λίμνης', mode='lines'
                 ), secondary_y=False)
-
             fig_dual.add_trace(go.Scatter(
                 x=sorted_dates,
                 y=avg_mg,
-                name='Average mg/m³',
+                name='Μέσο mg/m³',
                 mode='markers',
                 marker=dict(color=avg_mg, colorscale='Viridis', reversescale=True,
                             colorbar=dict(title='mg/m³'), size=10)
             ), secondary_y=True)
-            fig_dual.update_layout(title='Lake Height and Average mg/m³ Over Time',
-                                   xaxis_title='Date', showlegend=True)
-            fig_dual.update_yaxes(title_text="Lake Height", secondary_y=False)
+            fig_dual.update_layout(title='Ύψος Λίμνης και Μέσο mg/m³ με την πάροδο του χρόνου',
+                                   xaxis_title='Ημερομηνία', showlegend=True)
+            fig_dual.update_yaxes(title_text="Ύψος Λίμνης", secondary_y=False)
             fig_dual.update_yaxes(title_text="mg/m³", secondary_y=True)
 
             return fig_geo, fig_dual, fig_colors, fig_mg, results_colors, results_mg, lake_data
 
-        # Two main sampling tabs
+        # Δύο καρτέλες δειγματοληψίας
         if "default_results" not in st.session_state:
             st.session_state.default_results = None
         if "upload_results" not in st.session_state:
@@ -852,21 +842,20 @@ def run_water_quality_dashboard(waterbody: str, index: str):
         tab_names = ["Δειγματοληψία 1 (Default)", "Δειγματοληψία 2 (Upload)"]
         tabs = st.tabs(tab_names)
 
-        # -- Tab 1 (Default)
+        # Καρτέλα 1 (Default)
         with tabs[0]:
             st.header("Ανάλυση για Δειγματοληψία 1 (Default)")
             default_sampling_points = []
             if os.path.exists(sampling_kml_path):
                 default_sampling_points = parse_sampling_kml(sampling_kml_path)
             else:
-                st.warning("Default sampling.kml not found at:", sampling_kml_path)
-
+                st.warning("Το αρχείο δειγματοληψίας (sampling.kml) δεν βρέθηκε.")
             point_names = [name for name, _, _ in default_sampling_points]
-            selected_points = st.multiselect("Select points for mg/m³ concentrations",
+            selected_points = st.multiselect("Επιλέξτε σημεία για ανάλυση mg/m³",
                                              options=point_names,
                                              default=point_names)
-            if st.button("Run Analysis (Default)"):
-                with st.spinner("Running analysis..."):
+            if st.button("Εκτέλεση Ανάλυσης (Default)"):
+                with st.spinner("Εκτέλεση ανάλυσης..."):
                     st.session_state.default_results = analyze_sampling(
                         default_sampling_points,
                         first_image_data,
@@ -880,10 +869,9 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                 if isinstance(results, tuple) and len(results) == 7:
                     fig_geo, fig_dual, fig_colors, fig_mg, results_colors, results_mg, lake_data = results
                 else:
-                    st.error("Analysis result format error. Please run the analysis again.")
+                    st.error("Σφάλμα μορφοποίησης αποτελεσμάτων ανάλυσης. Παρακαλώ επαναλάβετε την ανάλυση.")
                     st.stop()
-
-                nested_tabs = st.tabs(["GeoTIFF", "Video/GIF", "Pixel Colors", "Average mg", "Dual Plots", "Detail mg"])
+                nested_tabs = st.tabs(["GeoTIFF", "Video/GIF", "Χρώματα Pixel", "Μέσο mg", "Διπλά Διαγράμματα", "Λεπτομερής ανάλυση mg"])
                 with nested_tabs[0]:
                     st.plotly_chart(fig_geo, use_container_width=True)
                 with nested_tabs[1]:
@@ -893,7 +881,7 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                         else:
                             st.image(video_path)
                     else:
-                        st.info("No timelapse file found.")
+                        st.info("Δεν βρέθηκε αρχείο timelapse.")
                 with nested_tabs[2]:
                     st.plotly_chart(fig_colors, use_container_width=True)
                 with nested_tabs[3]:
@@ -901,7 +889,7 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                 with nested_tabs[4]:
                     st.plotly_chart(fig_dual, use_container_width=True)
                 with nested_tabs[5]:
-                    selected_detail_point = st.selectbox("Select a point for detailed mg analysis",
+                    selected_detail_point = st.selectbox("Επιλέξτε σημείο για λεπτομερή ανάλυση mg",
                                                          options=list(results_mg.keys()))
                     if selected_detail_point:
                         mg_data = results_mg[selected_detail_point]
@@ -917,30 +905,28 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                                 line=dict(color="gray"),
                                 name=selected_detail_point
                             ))
-                            fig_detail.update_layout(title=f"Detailed mg analysis for {selected_detail_point}",
-                                                     xaxis_title="Date", yaxis_title="mg/m³")
+                            fig_detail.update_layout(title=f"Λεπτομερής ανάλυση mg για {selected_detail_point}",
+                                                     xaxis_title="Ημερομηνία", yaxis_title="mg/m³")
                             st.plotly_chart(fig_detail, use_container_width=True)
                         else:
-                            st.info("No mg data for this point.")
+                            st.info("Δεν υπάρχουν δεδομένα mg για αυτό το σημείο.")
 
-        # -- Tab 2 (Upload)
+        # Καρτέλα 2 (Upload)
         with tabs[1]:
-            st.header("Analysis for Uploaded Sampling")
-            uploaded_file = st.file_uploader("Upload a KML file for new sampling points", type="kml", key="upload_tab")
+            st.header("Ανάλυση για ανεβασμένη δειγματοληψία")
+            uploaded_file = st.file_uploader("Ανεβάστε αρχείο KML για νέα σημεία δειγματοληψίας", type="kml", key="upload_tab")
             if uploaded_file is not None:
                 try:
                     new_sampling_points = parse_sampling_kml(uploaded_file)
                 except Exception as e:
-                    st.error(f"Error processing the uploaded file: {e}")
+                    st.error(f"Σφάλμα επεξεργασίας ανεβασμένου αρχείου: {e}")
                     new_sampling_points = []
-
                 point_names = [name for name, _, _ in new_sampling_points]
-                selected_points = st.multiselect("Select points for mg/m³ concentrations",
+                selected_points = st.multiselect("Επιλέξτε σημεία για ανάλυση mg/m³",
                                                  options=point_names,
                                                  default=point_names)
-
-                if st.button("Run Analysis (Upload)"):
-                    with st.spinner("Running analysis..."):
+                if st.button("Εκτέλεση Ανάλυσης (Upload)"):
+                    with st.spinner("Εκτέλεση ανάλυσης..."):
                         st.session_state.upload_results = analyze_sampling(
                             new_sampling_points,
                             first_image_data,
@@ -954,10 +940,9 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                     if isinstance(results, tuple) and len(results) == 7:
                         fig_geo, fig_dual, fig_colors, fig_mg, results_colors, results_mg, lake_data = results
                     else:
-                        st.error("Analysis result format error (Upload). Please run the analysis again.")
+                        st.error("Σφάλμα μορφοποίησης αποτελεσμάτων ανάλυσης (Upload). Παρακαλώ επαναλάβετε.")
                         st.stop()
-
-                    nested_tabs = st.tabs(["GeoTIFF", "Video/GIF", "Pixel Colors", "Average mg", "Dual Plots", "Detail mg"])
+                    nested_tabs = st.tabs(["GeoTIFF", "Video/GIF", "Χρώματα Pixel", "Μέσο mg", "Διπλά Διαγράμματα", "Λεπτομερής ανάλυση mg"])
                     with nested_tabs[0]:
                         st.plotly_chart(fig_geo, use_container_width=True)
                     with nested_tabs[1]:
@@ -967,7 +952,7 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                             else:
                                 st.image(video_path)
                         else:
-                            st.info("Video/GIF file not found.")
+                            st.info("Δεν βρέθηκε αρχείο Video/GIF.")
                     with nested_tabs[2]:
                         st.plotly_chart(fig_colors, use_container_width=True)
                     with nested_tabs[3]:
@@ -975,7 +960,7 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                     with nested_tabs[4]:
                         st.plotly_chart(fig_dual, use_container_width=True)
                     with nested_tabs[5]:
-                        selected_detail_point = st.selectbox("Select a point for detailed mg analysis",
+                        selected_detail_point = st.selectbox("Επιλέξτε σημείο για λεπτομερή ανάλυση mg",
                                                              options=list(results_mg.keys()), key="detail_upload")
                         if selected_detail_point:
                             mg_data = results_mg[selected_detail_point]
@@ -991,15 +976,15 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                                     line=dict(color="gray"),
                                     name=selected_detail_point
                                 ))
-                                fig_detail.update_layout(title=f"Detailed mg analysis for {selected_detail_point}",
-                                                         xaxis_title="Date", yaxis_title="mg/m³")
+                                fig_detail.update_layout(title=f"Λεπτομερής ανάλυση mg για {selected_detail_point}",
+                                                         xaxis_title="Ημερομηνία", yaxis_title="mg/m³")
                                 st.plotly_chart(fig_detail, use_container_width=True)
                             else:
-                                st.info("No mg data for this point.")
+                                st.info("Δεν υπάρχουν δεδομένα mg για αυτό το σημείο.")
             else:
-                st.info("Please upload a KML file for new sampling points.")
+                st.info("Παρακαλώ ανεβάστε ένα αρχείο KML για νέα σημεία δειγματοληψίας.")
 
-        st.info("End of Water Quality Dashboard section.")
+        st.info("Τέλος πίνακα ποιότητας ύδατος.")
         st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
@@ -1008,8 +993,8 @@ def run_water_quality_dashboard(waterbody: str, index: str):
 def run_burned_areas():
     with st.container():
         st.markdown('<div class="card">', unsafe_allow_html=True)
-        st.title("Burned Areas around reservoir (Γαδουρά Only)")
-        st.info("No data or functionality yet for burned-area analysis.")
+        st.title("Burned Areas γύρω από το ταμιευτήριο (μόνο Γαδουρά)")
+        st.info("Δεν υπάρχουν δεδομένα ή λειτουργίες για ανάλυση καμένων περιοχών.")
         st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
@@ -1018,8 +1003,8 @@ def run_burned_areas():
 def run_water_level_profiles(waterbody: str, index: str):
     with st.container():
         st.markdown('<div class="card">', unsafe_allow_html=True)
-        st.title(f"Water Level Profiles ({waterbody}) [Placeholder]")
-        st.info("No data or functionality yet for water-level height profiles.")
+        st.title(f"Προφίλ Ύψους ( {waterbody} ) [Placeholder]")
+        st.info("Δεν υπάρχουν δεδομένα ή λειτουργίες για προφίλ ύψους νερού.")
         st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
@@ -1028,54 +1013,48 @@ def run_water_level_profiles(waterbody: str, index: str):
 def run_pattern_analysis(waterbody: str, index: str):
     with st.container():
         st.markdown('<div class="card">', unsafe_allow_html=True)
-        st.title(f"Pattern Analysis ({waterbody} - {index})")
+        st.title(f"Ανάλυση Προτύπων ({waterbody} - {index})")
 
         data_folder = get_data_folder(waterbody, index)
         if data_folder is None:
-            st.error("Δεν υπάρχει φάκελος δεδομένων για το επιλεγμένο υδάτινο σώμα / δείκτη.")
+            st.error("Δεν υπάρχει φάκελος δεδομένων για το επιλεγμένο υδάτινο σώμα/δείκτη.")
             st.stop()
 
         input_folder = os.path.join(data_folder, "GeoTIFFs")
         try:
             STACK, DAYS, DATES = load_data(input_folder)
         except Exception as e:
-            st.error(f"Error loading data: {e}")
+            st.error(f"Σφάλμα φόρτωσης δεδομένων: {e}")
             st.stop()
 
-        st.sidebar.header("Pattern Analysis Controls")
+        st.sidebar.header("Ελέγχοι Ανάλυσης Προτύπων")
         unique_years = sorted({d.year for d in DATES if d is not None})
-        selected_years_pattern = st.sidebar.multiselect(
-            "Select Years",
-            options=unique_years,
-            default=unique_years,
-            key="pattern_years"
-        )
-        selected_months_pattern = st.sidebar.multiselect(
-            "Select Months",
-            options=list(range(1, 13)),
-            default=list(range(1, 13)),
-            key="pattern_months",
-            format_func=lambda m: datetime(2000, m, 1).strftime('%B')
-        )
-        threshold_range = st.sidebar.slider("Pixel value threshold range", 0, 255, (0, 255), key="pattern_threshold")
+        selected_years_pattern = st.sidebar.multiselect("Επιλέξτε έτη",
+                                                        options=unique_years,
+                                                        default=unique_years,
+                                                        key="pattern_years")
+        selected_months_pattern = st.sidebar.multiselect("Επιλέξτε μήνες",
+                                                         options=list(range(1, 13)),
+                                                         default=list(range(1, 13)),
+                                                         key="pattern_months",
+                                                         format_func=lambda m: datetime(2000, m, 1).strftime('%B'))
+        threshold_range = st.sidebar.slider("Εύρος τιμών pixel", 0, 255, (0, 255), key="pattern_threshold")
         lower_thresh, upper_thresh = threshold_range
 
         if not selected_years_pattern or not selected_months_pattern:
-            st.error("Please select at least one year and one month.")
+            st.error("Παρακαλώ επιλέξτε τουλάχιστον ένα έτος και έναν μήνα.")
             st.stop()
 
-        # Filter by chosen months and years
         indices = [i for i, d in enumerate(DATES)
                    if d.year in selected_years_pattern and d.month in selected_months_pattern]
         if not indices:
-            st.error("No data for the selected years/months in pattern analysis.")
+            st.error("Δεν υπάρχουν δεδομένα για τα επιλεγμένα έτη/μήνες στην ανάλυση προτύπων.")
             st.stop()
 
         STACK_filtered = STACK[indices, :, :]
         stack_full_in_range = (STACK_filtered >= lower_thresh) & (STACK_filtered <= upper_thresh)
         filtered_dates = [DATES[i] for i in indices]
 
-        # Monthly average in-range fraction
         monthly_avg = {}
         for m in selected_months_pattern:
             month_indices = [i for i, dd in enumerate(filtered_dates) if dd.month == m]
@@ -1085,7 +1064,6 @@ def run_pattern_analysis(waterbody: str, index: str):
             else:
                 monthly_avg[m] = None
 
-        # Aggregate across chosen months
         agg_avg = None
         count = 0
         for m in monthly_avg:
@@ -1097,7 +1075,6 @@ def run_pattern_analysis(waterbody: str, index: str):
                 count += 1
         overall_avg = (agg_avg / count) if (agg_avg is not None and count > 0) else None
 
-        # Prepare temporal data for a bar chart
         temporal_data = []
         for mm in sorted(monthly_avg.keys()):
             if monthly_avg[mm] is not None:
@@ -1110,23 +1087,20 @@ def run_pattern_analysis(waterbody: str, index: str):
             fig_temporal = px.bar(
                 x=month_names,
                 y=means,
-                labels={'x': 'Month', 'y': 'Average Fraction In Range'},
-                title="Temporal Pattern per Month"
+                labels={'x': 'Μήνας', 'y': 'Μέσο Ποσοστό σε Εύρος'},
+                title="Χρονολογικό Πρότυπο ανά Μήνα"
             )
         else:
             fig_temporal = go.Figure()
 
-        # Spatial classification map
         if overall_avg is not None:
-            classification = np.full(overall_avg.shape, "Unclassified", dtype=object)
+            classification = np.full(overall_avg.shape, "Μη Ταξινομημένο", dtype=object)
             valid_mask = ~np.isnan(overall_avg)
-            classification[valid_mask & (overall_avg < 0.3)] = "Low"
-            classification[valid_mask & (overall_avg >= 0.3) & (overall_avg < 0.7)] = "Medium"
-            classification[valid_mask & (overall_avg >= 0.7)] = "High"
-
-            mapping_dict = {"Low": 0, "Medium": 1, "High": 2, "Unclassified": 3}
+            classification[valid_mask & (overall_avg < 0.3)] = "Χαμηλό"
+            classification[valid_mask & (overall_avg >= 0.3) & (overall_avg < 0.7)] = "Μέτριο"
+            classification[valid_mask & (overall_avg >= 0.7)] = "Υψηλό"
+            mapping_dict = {"Χαμηλό": 0, "Μέτριο": 1, "Υψηλό": 2, "Μη Ταξινομημένο": 3}
             numeric_class = np.vectorize(lambda x: mapping_dict[x])(classification)
-
             discrete_colorscale = [
                 [0.00, "blue"],
                 [0.33, "yellow"],
@@ -1136,39 +1110,36 @@ def run_pattern_analysis(waterbody: str, index: str):
             fig_class = px.imshow(
                 numeric_class,
                 color_continuous_scale=discrete_colorscale,
-                title="Spatial Pattern Classification"
+                title="Χωρική Ταξινόμηση"
             )
             fig_class.update_traces(
                 colorbar=dict(tickvals=[0, 1, 2, 3],
-                              ticktext=["Low", "Medium", "High", "Unclassified"])
+                              ticktext=["Χαμηλό", "Μέτριο", "Υψηλό", "Μη Ταξινομημένο"])
             )
         else:
             fig_class = go.Figure()
 
-        st.header("Pattern Analysis")
-        st.markdown(
-            "Analysis of monthly days-in-range data and spatial classification of persistent in-range fractions."
-        )
-        st.subheader("Temporal Pattern")
+        st.header("Ανάλυση Προτύπων")
+        st.markdown("Αυτή η ανάλυση παρουσιάζει το χρονολογικό πρότυπο (μηνιαία) και την χωρική ταξινόμηση των δεδομένων.")
+        st.subheader("Χρονολογικό Πρότυπο")
         st.plotly_chart(fig_temporal, use_container_width=True)
-
-        st.subheader("Spatial Classification")
+        st.subheader("Χωρική Ταξινόμηση")
         st.plotly_chart(fig_class, use_container_width=True)
 
         if temporal_data:
-            df_temporal = pd.DataFrame(temporal_data, columns=["Month", "Average Fraction In Range"])
+            df_temporal = pd.DataFrame(temporal_data, columns=["Μήνας", "Μέσο Ποσοστό σε Εύρος"])
             csv = df_temporal.to_csv(index=False).encode('utf-8')
-            st.download_button("Download Analysis CSV", data=csv,
-                               file_name="temporal_analysis.csv", mime="text/csv")
+            st.download_button("Λήψη CSV ανάλυσης", data=csv,
+                               file_name="χρονική_ανάλυση.csv", mime="text/csv")
 
-        st.info("End of Pattern Analysis section.")
+        st.info("Τέλος Ανάλυσης Προτύπων.")
         st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
 # Main Entry Point
 # -----------------------------------------------------------------------------
 def main():
-    debug("DEBUG: Entered main()")
+    debug("DEBUG: Εισήχθη η main()")
     run_intro_page()
     run_custom_ui()
 
@@ -1176,9 +1147,9 @@ def main():
     idx = st.session_state.get("index_choice", None)
     analysis = st.session_state.get("analysis_choice", None)
 
-    debug("DEBUG: User selected waterbody =", wb, "index =", idx, "analysis =", analysis)
+    debug("DEBUG: Επιλεγμένα: υδάτινο σώμα =", wb, "δείκτης =", idx, "ανάλυση =", analysis)
 
-    # Routing to the appropriate function
+    # Δρομολόγηση στην αντίστοιχη λειτουργία
     if idx == "Burned Areas" and analysis == "Burned Areas":
         if wb in ["Γαδουρά", "Κορώνεια"]:
             run_lake_processing_app(wb, idx)
@@ -1208,12 +1179,12 @@ def main():
             st.info("Παρακαλώ επιλέξτε ένα είδος ανάλυσης.")
     elif analysis == "Burned Areas":
         if wb == "Γαδουρά":
-            st.warning("Burned Areas section is under development.")
+            st.warning("Η ενότητα Burned Areas είναι υπό ανάπτυξη.")
         else:
-            st.warning("Το 'Burned Areas' είναι διαθέσιμο μόνο για το υδάτινο σώμα 'Γαδουρά'.")
+            st.warning("Το 'Burned Areas' είναι διαθέσιμο μόνο για το υδάτινο σώμα Γαδουρά.")
     else:
         st.warning(
-            "Δεν υπάρχουν διαθέσιμα δεδομένα για αυτόν τον συνδυασμό δείκτη / υδάτινου σώματος. "
+            "Δεν υπάρχουν διαθέσιμα δεδομένα για αυτόν τον συνδυασμό δείκτη/υδάτινου σώματος. "
             "Για παράδειγμα, η Χλωροφύλλη είναι διαθέσιμη μόνο για (Κορώνεια, Πολυφύτου, Γαδουρά, Αξιός)."
         )
 
