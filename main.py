@@ -50,7 +50,7 @@ debug("DEBUG: Current file directory:", current_file_dir)
 # -----------------------------------------------------------------------------
 # 2) Helper to get correct data folder for each lake & index
 # -----------------------------------------------------------------------------
-def get_data_folder(waterbody: str, index: str) -> str:  # UPDATED: added index
+def get_data_folder(waterbody: str, index: str) -> str:
     """
     Returns the path to the data folder for the chosen lake and index.
     Adjust folder names to match your actual structure.
@@ -74,7 +74,7 @@ def get_data_folder(waterbody: str, index: str) -> str:  # UPDATED: added index
     # Switch on the chosen index
     if index == "Χλωροφύλλη":
         data_folder = os.path.join(base_dir, waterbody_folder, "Chlorophyll")
-    elif index == "Burned Areas":  # NEW
+    elif index == "Burned Areas":
         data_folder = os.path.join(base_dir, waterbody_folder, "Burned Areas")
     else:
         data_folder = None
@@ -262,10 +262,10 @@ def run_intro_page():
 # -----------------------------------------------------------------------------
 # 6) Lake Processing (Full Analysis)
 # -----------------------------------------------------------------------------
-def run_lake_processing_app(waterbody: str, index: str):  # UPDATED: added index
+def run_lake_processing_app(waterbody: str, index: str):
     debug("DEBUG: Entered run_lake_processing_app for waterbody =", waterbody, "index =", index)
 
-    # UPDATED: Dynamically change the title based on the index
+    # Title changes based on index
     if index == "Burned Areas":
         st.markdown('<div class="card">', unsafe_allow_html=True)
         st.title(f"Lake Processing ({waterbody} - Burned Areas)")
@@ -273,13 +273,11 @@ def run_lake_processing_app(waterbody: str, index: str):  # UPDATED: added index
         st.markdown('<div class="card">', unsafe_allow_html=True)
         st.title(f"Lake Processing ({waterbody} - Χλωροφύλλη)")
 
-    data_folder = get_data_folder(waterbody, index)  # pass index
+    data_folder = get_data_folder(waterbody, index)
     if data_folder is None:
         st.error("Δεν υπάρχει φάκελος δεδομένων για το επιλεγμένο υδάτινο σώμα / δείκτη.")
         st.stop()
 
-    # By convention, we assume there's a "GeoTIFFs" subfolder. 
-    # If your burned-area data is organized differently, adjust here.
     input_folder = os.path.join(data_folder, "GeoTIFFs")
     debug("DEBUG: Lake Processing will load from:", input_folder)
 
@@ -384,7 +382,6 @@ def run_lake_processing_app(waterbody: str, index: str):  # UPDATED: added index
     valid_mask = ~np.isnan(max_index)
     max_index_int = np.zeros_like(max_index, dtype=int)
     max_index_int[valid_mask] = max_index[valid_mask].astype(int)
-    # Clip indices to the valid range before assignment:
     max_index_int[valid_mask] = np.clip(max_index_int[valid_mask], 0, len(filtered_day_of_year) - 1)
     time_max[valid_mask] = filtered_day_of_year[max_index_int[valid_mask]]
 
@@ -430,7 +427,7 @@ def run_lake_processing_app(waterbody: str, index: str):  # UPDATED: added index
 # -----------------------------------------------------------------------------
 # 7) Water Processing (Placeholder)
 # -----------------------------------------------------------------------------
-def run_water_processing(waterbody: str, index: str):  # UPDATED: added index
+def run_water_processing(waterbody: str, index: str):
     debug("DEBUG: Entered run_water_processing for waterbody =", waterbody, "index =", index)
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.title(f"Water Processing ({waterbody} - {index}) [Placeholder]")
@@ -440,7 +437,7 @@ def run_water_processing(waterbody: str, index: str):  # UPDATED: added index
 # -----------------------------------------------------------------------------
 # 8) Water Quality Dashboard
 # -----------------------------------------------------------------------------
-def run_water_quality_dashboard(waterbody: str, index: str):  # UPDATED
+def run_water_quality_dashboard(waterbody: str, index: str):
     debug("DEBUG: Entered run_water_quality_dashboard for waterbody =", waterbody, "index =", index)
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.title(f"Water Quality Dashboard ({waterbody} - {index})")
@@ -553,7 +550,7 @@ def run_water_quality_dashboard(waterbody: str, index: str):  # UPDATED
 
     def mg_to_color(mg: float) -> str:
         scale = [
-            (0.00, "#0000ff"), (0.02, "#0007f2"), (0.04, "#0011de"), 
+            (0.00, "#0000ff"), (0.02, "#0007f2"), (0.04, "#0011de"),
             (0.06, "#0017d0"), (1.98, "#80007d"), (2.00, "#800080")
         ]
         if mg <= scale[0][0]:
@@ -878,7 +875,7 @@ def run_water_quality_dashboard(waterbody: str, index: str):  # UPDATED
     st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# 9) Burned Areas (Placeholder) -- no longer strictly needed if we reuse logic
+# 9) Burned Areas (Placeholder)
 # -----------------------------------------------------------------------------
 def run_burned_areas():
     st.markdown('<div class="card">', unsafe_allow_html=True)
@@ -889,7 +886,7 @@ def run_burned_areas():
 # -----------------------------------------------------------------------------
 # 10) Water Level (Placeholder)
 # -----------------------------------------------------------------------------
-def run_water_level_profiles(waterbody: str, index: str):  # UPDATED
+def run_water_level_profiles(waterbody: str, index: str):
     debug("DEBUG: Entered run_water_level_profiles for waterbody =", waterbody, "index =", index)
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.title(f"Water level Height Profiles ({waterbody}) [Placeholder]")
@@ -899,7 +896,7 @@ def run_water_level_profiles(waterbody: str, index: str):  # UPDATED
 # -----------------------------------------------------------------------------
 # 11) Pattern Analysis (Optional)
 # -----------------------------------------------------------------------------
-def run_pattern_analysis(waterbody: str, index: str):  # UPDATED
+def run_pattern_analysis(waterbody: str, index: str):
     debug("DEBUG: Entered run_pattern_analysis for waterbody =", waterbody, "index =", index)
 
     st.markdown('<div class="card">', unsafe_allow_html=True)
@@ -1048,18 +1045,18 @@ def run_custom_ui():
         key="waterbody_choice"
     )
 
-    # UPDATED: Add "Burned Areas" to the index list
+    # Include "Burned Areas" in the index
     index = st.selectbox(
         "Επιλογή Δείκτη",
-        ["Πραγματικό", "Χλωροφύλλη", "CDOM", "Colour", "Burned Areas"],  # NEW
+        ["Πραγματικό", "Χλωροφύλλη", "CDOM", "Colour", "Burned Areas"],
         key="index_choice"
     )
 
-    # Ensure "Burned Areas" is also an option in Είδος Ανάλυσης
+    # Also include "Burned Areas" in the analysis
     analysis = st.selectbox(
         "Είδος Ανάλυσης",
         ["Lake Processing", "Water Processing", "Water Quality Dashboard",
-         "Burned Areas",  # NEW
+         "Burned Areas",
          "Water level", "Pattern Analysis"],
         key="analysis_choice"
     )
@@ -1085,17 +1082,23 @@ def main():
     analysis = st.session_state.get("analysis_choice", None)
     debug("DEBUG: In main(), user selected waterbody =", wb, "index =", idx, "analysis =", analysis)
 
-    # NEW: If user selects index=Burned Areas AND analysis=Burned Areas,
-    # we can reuse the same Lake Processing logic:
+    # 1) If user picks index=Burned Areas & analysis=Burned Areas => re-use Lake Processing
     if idx == "Burned Areas" and analysis == "Burned Areas":
-        # If your Burned Areas data is only for Γαδουρά, you can enforce it here:
         if wb == "Γαδουρά" or wb == "Κορώνεια":
             run_lake_processing_app(wb, idx)
         else:
             st.warning("Τα Burned Areas είναι διαθέσιμα μόνο για Γαδουρά (ή Κορώνεια, αν data exist).")
         return
 
-    # Otherwise, handle chlorophyll or other indexes:
+    # 2) If user picks index=Burned Areas & analysis=Water Quality Dashboard => run dashboard
+    if idx == "Burned Areas" and analysis == "Water Quality Dashboard":
+        if wb == "Γαδουρά":
+            run_water_quality_dashboard(wb, idx)
+        else:
+            st.warning("Το Water Quality Dashboard για Burned Areas είναι διαθέσιμο μόνο στη Γαδουρά.")
+        return
+
+    # 3) Otherwise, handle Χλωροφύλλη for the known lakes
     if idx == "Χλωροφύλλη" and wb in ["Κορώνεια", "Πολυφύτου", "Γαδουρά"]:
         if analysis == "Lake Processing":
             run_lake_processing_app(wb, idx)
@@ -1110,16 +1113,17 @@ def main():
         else:
             st.info("Παρακαλώ επιλέξτε ένα είδος ανάλυσης.")
     elif analysis == "Burned Areas":
-        # If user picks analysis=Burned Areas but didn't pick index=Burned Areas:
+        # If user picks analysis=Burned Areas but didn't pick index=Burned Areas
         if wb == "Γαδουρά":
             run_burned_areas()
         else:
             st.warning("Το 'Burned Areas' είναι διαθέσιμο μόνο για το υδάτινο σώμα 'Γαδουρά'.")
     else:
+        # Catch-all for unsupported combos
         st.warning(
             "Δεν υπάρχουν διαθέσιμα δεδομένα για αυτόν τον συνδυασμό δείκτη / υδάτινου σώματος. "
             "Π.χ. Χλωροφύλλη υπάρχει μόνο για (Κορώνεια, Πολυφύτου, Γαδουρά). "
-            "Burned Areas ισχύει μόνο για Γαδουρά (ή Κορώνεια_2, αν διαθέσιμο)."
+            "Burned Areas ισχύει μόνο για Γαδουρά (ή Κορώνεια_2, αν data exist)."
         )
 
 # -----------------------------------------------------------------------------
