@@ -310,7 +310,7 @@ def run_custom_ui():
 
 
 # -----------------------------------------------------------------------------
-# Lake Processing (Full Analysis) with Monthly and Yearly Plots
+# Lake Processing (Full Analysis) with Monthly Analysis Only
 # -----------------------------------------------------------------------------
 def run_lake_processing_app(waterbody: str, index: str):
     with st.container():
@@ -446,7 +446,7 @@ def run_lake_processing_app(waterbody: str, index: str):
             st.plotly_chart(time_max_fig, use_container_width=True)
 
         # ------------------------------
-        # Additional Annual Analysis: Monthly & Yearly Plots
+        # Additional Annual Analysis: Monthly Analysis Only
         # ------------------------------
         st.header("Additional Annual Analysis")
 
@@ -514,65 +514,6 @@ def run_lake_processing_app(waterbody: str, index: str):
                 )
         fig_monthly.update_layout(height=1400)
         st.plotly_chart(fig_monthly, use_container_width=True)
-
-        # Yearly Days in Range Analysis
-        st.subheader("Yearly Days in Range Analysis")
-        st.write("Number of days each pixel is in range for selected months in the selected years.")
-        selected_months_yearly = st.sidebar.multiselect(
-            "Select Months for Yearly Days In Range Analysis",
-            options=list(range(1, 13)),
-            default=list(range(1, 13)),
-            format_func=lambda m: datetime(2000, m, 1).strftime('%B'),
-            key="yearly_days_months"
-        )
-        if not selected_years_analysis:
-            st.warning("Please select at least one year for yearly analysis.")
-        elif not selected_months_yearly:
-            st.warning("Please select at least one month for yearly analysis.")
-        else:
-            n_rows = len(selected_years_analysis)
-            n_cols = len(selected_months_yearly)
-            subplot_titles = [
-                f"{year} - {datetime(2000, m, 1).strftime('%B')}"
-                for year in selected_years_analysis for m in selected_months_yearly
-            ]
-            fig_yearly = make_subplots(
-                rows=n_rows, cols=n_cols,
-                subplot_titles=subplot_titles,
-                horizontal_spacing=0.03, vertical_spacing=0.07
-            )
-            yearly_days_in_range = {}
-            for i, year in enumerate(selected_years_analysis):
-                for j, m in enumerate(selected_months_yearly):
-                    indices_ym = [k for k, d in enumerate(DATES) if d.year == year and d.month == m]
-                    if indices_ym:
-                        count_img = np.sum(stack_full_in_range[indices_ym, :, :], axis=0)
-                        yearly_days_in_range[(year, m)] = count_img
-                        fig_yearly.add_trace(
-                            go.Heatmap(
-                                z=np.flipud(count_img),
-                                colorscale="plasma",
-                                coloraxis="coloraxis",
-                                showscale=False
-                            ),
-                            row=i+1, col=j+1
-                        )
-                    else:
-                        yearly_days_in_range[(year, m)] = None
-                        fig_yearly.add_annotation(
-                            text="No data",
-                            showarrow=False, row=i+1, col=j+1
-                        )
-            fig_yearly.update_layout(
-                coloraxis=dict(
-                    colorscale="plasma",
-                    colorbar=dict(title="Days In Range", len=0.75)
-                ),
-                height=3000 * n_rows,
-                width=1200,
-                margin=dict(l=50, r=50, t=50, b=50)
-            )
-            st.plotly_chart(fig_yearly, use_container_width=True)
 
         st.info("End of Lake Processing section.")
         st.markdown('</div>', unsafe_allow_html=True)
