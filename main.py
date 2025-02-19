@@ -1,36 +1,11 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 """
-Εφαρμογή Ποιότητας Νερού Ταμιευτήρων και Πίνακας Ελέγχου Ποιότητας Νερού
------------------------------------------------------------------------
-Πλέον υποστηρίζει τα εξής υδάτινα σώματα για Χλωροφύλλη:
-- Κορώνεια
-- Πολυφύτου
-- Γαδουρά
-
-Μενού:
-1) Επιλογή υδάτινου σώματος → [Κορώνεια, Πολυφύτου, Γαδουρά, Αξιός]
-2) Επιλογή Δείκτη         → [Πραγματικό, Χλωροφύλλη, CDOM, Colour]
-3) Είδος Ανάλυσης         → [Lake Processing, Water Processing, 
-                             Water Quality Dashboard, Burned Areas, 
-                             Water level, Pattern Analysis]
-
-Πριν εκτελέσετε, βεβαιωθείτε ότι τα αρχεία (GeoTIFF, shapefile, KML, Excel κλπ.)
-βρίσκονται στους σωστούς φακέλους, π.χ.:
-   Koroneia/Chlorophyll/
-       ├── GeoTIFFs/
-       ├── lake height.xlsx
-       ├── sampling.kml
-       └── shapefile.xml (ή shapefile.txt)
-   polyphytou/Chlorophyll/
-       ├── GeoTIFFs/
-       ├── lake height.xlsx
-       ├── sampling.kml
-       └── shapefile.txt
-   Gadoura/Chlorophyll/
-       ├── GeoTIFFs/
-       ├── lake height.xlsx
-       ├── sampling.kml
-       └── shapefile.txt
+DEBUG Version of the Water Quality App
+--------------------------------------
+Includes debugging lines (marked # DEBUG:) to help diagnose path issues
+and confirm the app’s flow.
 """
 
 import os
@@ -42,10 +17,10 @@ import xml.etree.ElementTree as ET
 import numpy as np
 import pandas as pd
 import rasterio
+import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-import streamlit as st
 
 from rasterio.errors import NotGeoreferencedWarning
 import warnings
@@ -61,7 +36,14 @@ st.set_page_config(
 )
 
 # -----------------------------------------------------------------------------
-# 1) Helper to get correct data folder for each lake
+# 1) Debugging: Print out our working directory
+# -----------------------------------------------------------------------------
+# DEBUG: Check where we are
+current_file_dir = os.path.dirname(os.path.abspath(__file__))
+st.write("DEBUG: Current file directory:", current_file_dir)
+
+# -----------------------------------------------------------------------------
+# 2) Helper to get correct data folder for each lake
 # -----------------------------------------------------------------------------
 def get_data_folder(waterbody: str) -> str:
     """
@@ -69,21 +51,35 @@ def get_data_folder(waterbody: str) -> str:
     Adjust folder names to match your actual structure.
     """
     base_dir = os.path.dirname(os.path.abspath(__file__))
+    # DEBUG:
+    st.write("DEBUG: Called get_data_folder with waterbody =", waterbody)
+    st.write("DEBUG: base_dir =", base_dir)
+
+    data_folder = None
 
     if waterbody == "Κορώνεια":
         data_folder = os.path.join(base_dir, "Koroneia", "Chlorophyll")
     elif waterbody == "Πολυφύτου":
+        # If your real folder is named differently, change "polyphytou" to match:
         data_folder = os.path.join(base_dir, "polyphytou", "Chlorophyll")
     elif waterbody == "Γαδουρά":
         data_folder = os.path.join(base_dir, "Gadoura", "Chlorophyll")
     else:
-        # Fallback or error
+        # Not supported
         data_folder = None
-    
+
+    # DEBUG:
+    st.write("DEBUG: Constructed data_folder path:", data_folder)
+
+    # Optional: check if folder actually exists
+    if data_folder is not None and not os.path.exists(data_folder):
+        st.error(f"DEBUG: Folder does NOT exist on disk: {data_folder}")
+        return None
+
     return data_folder
 
 # -----------------------------------------------------------------------------
-# 2) CSS injection (Dark Theme)
+# 3) CSS injection (Dark Theme)
 # -----------------------------------------------------------------------------
 def inject_custom_css():
     custom_css = """
@@ -131,7 +127,7 @@ def inject_custom_css():
 inject_custom_css()
 
 # -----------------------------------------------------------------------------
-# 3) Helper Functions
+# 4) Helper Functions
 # -----------------------------------------------------------------------------
 def extract_date_from_filename(filename: str):
     basename = os.path.basename(filename)
@@ -207,6 +203,9 @@ def load_data(input_folder: str, shapefile_name="shapefile.xml"):
     reads an optional shapefile (XML or TXT) to mask out the lake region,
     and returns a stacked array + day-of-year array + list of datetime objects.
     """
+    # DEBUG:
+    st.write("DEBUG: load_data called with input_folder =", input_folder)
+
     if not os.path.exists(input_folder):
         raise Exception(f"Folder does not exist: {input_folder}")
 
@@ -217,10 +216,10 @@ def load_data(input_folder: str, shapefile_name="shapefile.xml"):
     lake_shape = None
     # Check which shapefile exists
     if os.path.exists(shapefile_path_xml):
-        st.write(f"Found lake shape file at {shapefile_path_xml}.")
+        st.write(f"Found lake shape file at {shapefile_path_xml}")
         shape_file = shapefile_path_xml
     elif os.path.exists(shapefile_path_txt):
-        st.write(f"Found lake shape file at {shapefile_path_txt}.")
+        st.write(f"Found lake shape file at {shapefile_path_txt}")
         shape_file = shapefile_path_txt
     else:
         shape_file = None
@@ -257,7 +256,7 @@ def load_data(input_folder: str, shapefile_name="shapefile.xml"):
     return stack, np.array(days), date_list
 
 # -----------------------------------------------------------------------------
-# 4) Introductory Page
+# 5) Introductory Page
 # -----------------------------------------------------------------------------
 def run_intro_page():
     st.markdown('<div class="card">', unsafe_allow_html=True)
@@ -286,19 +285,25 @@ def run_intro_page():
     st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# 5) Lake Processing (Full Analysis)
+# 6) Lake Processing (Full Analysis)
 # -----------------------------------------------------------------------------
 def run_lake_processing_app(waterbody: str):
+    # DEBUG:
+    st.write("DEBUG: Entered run_lake_processing_app for waterbody =", waterbody)
+
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.title(f"Lake Processing ({waterbody} - Χλωροφύλλη)")
 
     # Decide which folder to read data from
-    data_folder = get_data_folder(waterbody)  # <-- Changed/Added
+    data_folder = get_data_folder(waterbody)  
     if data_folder is None:
         st.error("Δεν υπάρχει φάκελος δεδομένων για το επιλεγμένο υδάτινο σώμα.")
         st.stop()
 
     input_folder = os.path.join(data_folder, "GeoTIFFs")
+    # DEBUG:
+    st.write("DEBUG: Lake Processing will load from:", input_folder)
+
     try:
         STACK, DAYS, DATES = load_data(input_folder)
         st.success("Data loaded successfully.")
@@ -487,27 +492,32 @@ def run_lake_processing_app(waterbody: str):
     with col4:
         st.plotly_chart(time_max_fig, use_container_width=True)
 
-    # ... (Any additional monthly/yearly analysis you wish to include)
     st.info("End of Lake Processing section.")
     st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# 6) Water Processing (Placeholder)
+# 7) Water Processing (Placeholder)
 # -----------------------------------------------------------------------------
 def run_water_processing(waterbody: str):
+    # DEBUG:
+    st.write("DEBUG: Entered run_water_processing for waterbody =", waterbody)
+
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.title(f"Water Processing ({waterbody} - Χλωροφύλλη) [Placeholder]")
     st.info("No data or functionality yet for Water Processing.")
     st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# 7) Water Quality Dashboard
+# 8) Water Quality Dashboard
 # -----------------------------------------------------------------------------
 def run_water_quality_dashboard(waterbody: str):
+    # DEBUG:
+    st.write("DEBUG: Entered run_water_quality_dashboard for waterbody =", waterbody)
+
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.title(f"Water Quality Dashboard ({waterbody} - Χλωροφύλλη)")
 
-    data_folder = get_data_folder(waterbody)  # <-- Changed/Added
+    data_folder = get_data_folder(waterbody)
     if data_folder is None:
         st.error("Δεν υπάρχει φάκελος δεδομένων για το επιλεγμένο υδάτινο σώμα.")
         st.stop()
@@ -516,10 +526,12 @@ def run_water_quality_dashboard(waterbody: str):
     lake_height_path = os.path.join(data_folder, "lake height.xlsx")
     sampling_kml_path = os.path.join(data_folder, "sampling.kml")
 
-    # We'll assume your shapefile is only needed for the Lake Processing, 
-    # so we skip it here unless you want to add more logic.
+    # DEBUG:
+    st.write("DEBUG: Dashboard will look in images_folder =", images_folder)
+    st.write("DEBUG: Dashboard expects lake_height_path =", lake_height_path)
+    st.write("DEBUG: Dashboard expects sampling_kml_path =", sampling_kml_path)
 
-    # For timelapse, you might have .mp4 or .gif. Check whichever you have:
+    # For timelapse, you might have .mp4 or .gif:
     possible_video = [
         os.path.join(data_folder, "timelapse.mp4"),
         os.path.join(data_folder, "Sentinel-2_L1C-202307221755611-timelapse.gif"),
@@ -531,6 +543,11 @@ def run_water_quality_dashboard(waterbody: str):
             video_path = v
             break
 
+    if video_path:
+        st.write(f"DEBUG: Found a timelapse file at: {video_path}")
+    else:
+        st.write("DEBUG: No timelapse file found in possible paths.")
+
     # ~~~ Dashboard logic ~~~
     st.sidebar.header(f"Ρυθμίσεις Ανάλυσης ({waterbody} - Dashboard)")
     x_start = st.date_input("Έναρξη", date(2015, 1, 1))
@@ -539,6 +556,10 @@ def run_water_quality_dashboard(waterbody: str):
     x_end_dt = datetime.combine(x_end, datetime.min.time())
 
     # Gather GeoTIFFs with date in filename
+    if not os.path.exists(images_folder):
+        st.error(f"Images folder not found: {images_folder}")
+        st.stop()
+
     tif_files = [f for f in os.listdir(images_folder) if f.lower().endswith('.tif')]
     available_dates = {}
     for filename in tif_files:
@@ -561,25 +582,24 @@ def run_water_quality_dashboard(waterbody: str):
         selected_bg_date = None
         st.warning("Δεν βρέθηκαν GeoTIFF εικόνες με ημερομηνία στον τίτλο.")
 
-    # Attempt to open the selected background TIF
     if selected_bg_date is not None:
         bg_filename = available_dates[selected_bg_date]
-        with rasterio.open(os.path.join(images_folder, bg_filename)) as src:
-            if src.count >= 3:
-                first_image_data = src.read([1, 2, 3])
-                first_transform = src.transform
-            else:
-                st.error("Το επιλεγμένο GeoTIFF δεν περιέχει τουλάχιστον 3 κανάλια.")
-                st.stop()
+        bg_path = os.path.join(images_folder, bg_filename)
+        st.write("DEBUG: Chosen background TIF =", bg_path)
+        if os.path.exists(bg_path):
+            with rasterio.open(bg_path) as src:
+                if src.count >= 3:
+                    first_image_data = src.read([1, 2, 3])
+                    first_transform = src.transform
+                else:
+                    st.error("Το επιλεγμένο GeoTIFF δεν περιέχει τουλάχιστον 3 κανάλια.")
+                    st.stop()
+        else:
+            st.error(f"GeoTIFF background file not found: {bg_path}")
+            st.stop()
     else:
         st.error("Δεν έχει επιλεγεί έγκυρη ημερομηνία για το background.")
         st.stop()
-
-    # ~~~ Timelapse video/gif ~~~
-    if video_path is None:
-        st.info("Δεν βρέθηκε αρχείο timelapse (mp4 ή gif).")
-    else:
-        st.write(f"Βρέθηκε timelapse: {os.path.basename(video_path)}")
 
     # ~~~ Helper functions for sampling ~~~
     def parse_sampling_kml(kml_file) -> list:
@@ -631,6 +651,8 @@ def run_water_quality_dashboard(waterbody: str):
 
     def analyze_sampling(sampling_points: list, first_image_data, first_transform,
                          images_folder: str, lake_height_path: str, selected_points: list = None):
+        st.write("DEBUG: analyze_sampling called with # of sampling_points =", len(sampling_points))
+
         results_colors = {name: [] for name, _, _ in sampling_points}
         results_mg = {name: [] for name, _, _ in sampling_points}
 
@@ -810,7 +832,6 @@ def run_water_quality_dashboard(waterbody: str):
         st.header("Ανάλυση για Δειγματοληψία 1 (Default)")
         default_sampling_points = []
         if os.path.exists(sampling_kml_path):
-            # parse default
             default_sampling_points = parse_sampling_kml(sampling_kml_path)
         else:
             st.warning("Default sampling.kml not found.")
@@ -846,7 +867,7 @@ def run_water_quality_dashboard(waterbody: str):
             with nested_tabs[0]:
                 st.plotly_chart(fig_geo, use_container_width=True, config={'scrollZoom': True})
             with nested_tabs[1]:
-                if video_path is not None and (video_path.endswith(".mp4") or video_path.endswith(".gif")):
+                if video_path is not None:
                     if video_path.endswith(".mp4"):
                         st.video(video_path)
                     else:
@@ -917,7 +938,6 @@ def run_water_quality_dashboard(waterbody: str):
                         lake_height_path,
                         selected_points
                     )
-
             if st.session_state.upload_results is not None:
                 results = st.session_state.upload_results
                 if isinstance(results, tuple) and len(results) == 7:
@@ -936,7 +956,7 @@ def run_water_quality_dashboard(waterbody: str):
                         else:
                             st.image(video_path)
                     else:
-                        st.info("No timelapse file found.")
+                        st.info("Video/GIF file not found.")
                 with nested_tabs[2]:
                     st.plotly_chart(fig_colors, use_container_width=True, config={'scrollZoom': True})
                 with nested_tabs[3]:
@@ -979,7 +999,7 @@ def run_water_quality_dashboard(waterbody: str):
     st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# 8) Burned Areas (Placeholder)
+# 9) Burned Areas (Placeholder)
 # -----------------------------------------------------------------------------
 def run_burned_areas():
     st.markdown('<div class="card">', unsafe_allow_html=True)
@@ -988,18 +1008,24 @@ def run_burned_areas():
     st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# 9) Water Level (Placeholder)
+# 10) Water Level (Placeholder)
 # -----------------------------------------------------------------------------
 def run_water_level_profiles(waterbody: str):
+    # DEBUG:
+    st.write("DEBUG: Entered run_water_level_profiles for waterbody =", waterbody)
+
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.title(f"Water level Height Profiles ({waterbody}) [Placeholder]")
     st.info("No data or functionality yet for water-level height profiles.")
     st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# 10) Pattern Analysis (Optional)
+# 11) Pattern Analysis (Optional)
 # -----------------------------------------------------------------------------
 def run_pattern_analysis(waterbody: str):
+    # DEBUG:
+    st.write("DEBUG: Entered run_pattern_analysis for waterbody =", waterbody)
+
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.title(f"Pattern Analysis ({waterbody} - Χλωροφύλλη)")
 
@@ -1138,7 +1164,7 @@ def run_pattern_analysis(waterbody: str):
     st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# 11) Custom UI
+# 12) Custom UI
 # -----------------------------------------------------------------------------
 def run_custom_ui():
     st.header("Παραμετροποίηση Ανάλυσης")
@@ -1164,15 +1190,20 @@ def run_custom_ui():
     """, unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# 12) Main
+# 13) Main
 # -----------------------------------------------------------------------------
 def main():
+    # DEBUG:
+    st.write("DEBUG: Entered main()")
+
     run_intro_page()
     run_custom_ui()
 
     wb = st.session_state.get("waterbody_choice", None)
     idx = st.session_state.get("index_choice", None)
     analysis = st.session_state.get("analysis_choice", None)
+
+    st.write("DEBUG: In main(), user selected waterbody=", wb, " index=", idx, " analysis=", analysis)
 
     # 1) Burned Areas -> only for Γαδουρά
     if analysis == "Burned Areas":
@@ -1206,7 +1237,7 @@ def main():
         )
 
 # -----------------------------------------------------------------------------
-# 13) Entry Point
+# 14) Entry Point
 # -----------------------------------------------------------------------------
 if __name__ == "__main__":
     main()
