@@ -547,7 +547,7 @@ def run_lake_processing_app(waterbody: str, index: str):
         # Each year in its own row
         n_years = len(unique_years_full)
         # Keep vertical_spacing small enough for multiple rows
-        vertical_spacing = 0.2 if n_years == 1 else min(0.2, 0.5 / n_years)
+        vertical_spacing = 0.42 if n_years == 1 else min(0.42, 0.5 / n_years)
 
         fig_yearly = make_subplots(
             rows=n_years, cols=1,
