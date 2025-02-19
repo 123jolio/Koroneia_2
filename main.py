@@ -270,7 +270,7 @@ def run_intro_page():
             base_dir = os.path.dirname(os.path.abspath(__file__))
             logo_path = os.path.join(base_dir, "logo.jpg")
             if os.path.exists(logo_path):
-                st.image(logo_path, width=150)
+                st.image(logo_path, width=250)
             else:
                 debug("DEBUG: Logo not found.")
         with col_text:
