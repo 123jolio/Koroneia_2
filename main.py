@@ -30,6 +30,7 @@ warnings.filterwarnings("ignore", category=NotGeoreferencedWarning)
 DEBUG = False
 
 def debug(*args, **kwargs):
+    """Helper function for conditional debugging prints."""
     if DEBUG:
         st.write(*args, **kwargs)
 
@@ -117,6 +118,10 @@ inject_custom_css()
 # Data Folder Helper
 # -----------------------------------------------------------------------------
 def get_data_folder(waterbody: str, index: str) -> str:
+    """
+    Maps the chosen waterbody and index to the correct data folder on disk.
+    Returns None if folder doesn't exist.
+    """
     base_dir = os.path.dirname(os.path.abspath(__file__))
     debug("DEBUG: Current base directory:", base_dir)
 
@@ -148,6 +153,10 @@ def get_data_folder(waterbody: str, index: str) -> str:
 # Helper Functions for Data Extraction & Image Processing
 # -----------------------------------------------------------------------------
 def extract_date_from_filename(filename: str):
+    """
+    Extracts a date (YYYY-MM-DD) from the filename using a regex.
+    Returns (day_of_year, datetime_obj) or (None, None) if no match.
+    """
     basename = os.path.basename(filename)
     debug("DEBUG: Extracting date from filename:", basename)
     match = re.search(r'(\d{4})[_-](\d{2})[_-](\d{2})', basename)
@@ -160,6 +169,10 @@ def extract_date_from_filename(filename: str):
 
 def load_lake_shape_from_xml(xml_file: str, bounds: tuple = None,
                              xml_width: float = 518.0, xml_height: float = 505.0):
+    """
+    Loads a lake shape from a custom XML file with <point x=.. y=..>.
+    Optionally transforms to geocoordinates if bounds is provided.
+    """
     debug("DEBUG: Loading lake shape from:", xml_file)
     try:
         tree = ET.parse(xml_file)
@@ -191,6 +204,10 @@ def load_lake_shape_from_xml(xml_file: str, bounds: tuple = None,
         return None
 
 def read_image(file_path: str, lake_shape: dict = None):
+    """
+    Reads a single-band GeoTIFF file and optionally applies a polygon mask (lake_shape).
+    Returns (image_array, profile).
+    """
     debug("DEBUG: Reading image from:", file_path)
     with rasterio.open(file_path) as src:
         img = src.read(1).astype(np.float32)
@@ -207,6 +224,10 @@ def read_image(file_path: str, lake_shape: dict = None):
     return img, profile
 
 def load_data(input_folder: str, shapefile_name="shapefile.xml"):
+    """
+    Loads all TIF files from input_folder, applies optional shapefile mask, and extracts date info.
+    Returns (stack, days_array, date_list).
+    """
     debug("DEBUG: load_data called with input_folder =", input_folder)
     if not os.path.exists(input_folder):
         raise Exception(f"Folder does not exist: {input_folder}")
@@ -253,6 +274,7 @@ def load_data(input_folder: str, shapefile_name="shapefile.xml"):
 # Introductory Page
 # -----------------------------------------------------------------------------
 def run_intro_page():
+    """Renders an introductory card with a logo and title."""
     with st.container():
         st.markdown('<div class="card">', unsafe_allow_html=True)
         col_logo, col_text = st.columns([1, 3])
@@ -269,7 +291,9 @@ def run_intro_page():
                 unsafe_allow_html=True
             )
             st.markdown(
-                "<p style='text-align: center; font-size: 1.1rem;'>Εφαρμογή ανάλυσης με χρήση εργαλείων δορυφορικής τηλεπισκόπησης. Επιλέξτε τις ρυθμίσεις στην πλαϊνή μπάρα και εξερευνήστε τα δεδομένα.</p>",
+                "<p style='text-align: center; font-size: 1.1rem;'>"
+                "Εφαρμογή ανάλυσης με χρήση εργαλείων δορυφορικής τηλεπισκόπησης. "
+                "Επιλέξτε τις ρυθμίσεις στην πλαϊνή μπάρα και εξερευνήστε τα δεδομένα.</p>",
                 unsafe_allow_html=True
             )
         st.markdown('</div>', unsafe_allow_html=True)
@@ -278,6 +302,7 @@ def run_intro_page():
 # Sidebar Navigation (Custom UI)
 # -----------------------------------------------------------------------------
 def run_custom_ui():
+    """Creates the sidebar for waterbody, index, and analysis choice."""
     st.sidebar.markdown("<div class='nav-section'><h4>Παραμετροποίηση Ανάλυσης</h4></div>", unsafe_allow_html=True)
     waterbody = st.sidebar.selectbox("Επιλογή υδάτινου σώματος",
                                      ["Κορώνεια", "Πολυφύτου", "Γαδουρά", "Αξιός"],
@@ -301,13 +326,16 @@ def run_custom_ui():
 # Lake Processing (Full Analysis) with Monthly and Yearly Analysis
 # -----------------------------------------------------------------------------
 def run_lake_processing_app(waterbody: str, index: str):
+    """Main function for Lake Processing with monthly & yearly analyses."""
     with st.container():
         st.markdown('<div class="card">', unsafe_allow_html=True)
         st.title(f"Lake Processing ({waterbody} - {index})")
+
         data_folder = get_data_folder(waterbody, index)
         if data_folder is None:
             st.error("Δεν υπάρχει φάκελος δεδομένων για το επιλεγμένο υδάτινο σώμα / δείκτη.")
             st.stop()
+
         input_folder = os.path.join(data_folder, "GeoTIFFs")
         try:
             STACK, DAYS, DATES = load_data(input_folder)
@@ -319,7 +347,7 @@ def run_lake_processing_app(waterbody: str, index: str):
             st.error("No date information available.")
             st.stop()
 
-        # Basic Filters
+        # Basic filters in the sidebar
         min_date = min(DATES)
         max_date = max(DATES)
         unique_years = sorted({d.year for d in DATES if d is not None})
@@ -332,11 +360,13 @@ def run_lake_processing_app(waterbody: str, index: str):
                                                value=(min_date, max_date))
         display_option = st.sidebar.radio("Display mode", options=["Thresholded", "Original"], index=0)
 
+        # Month/Year selection
         st.sidebar.markdown("### Επιλογή Μηνών")
         month_options = {i: datetime(2000, i, 1).strftime('%B') for i in range(1, 13)}
         if "selected_months" not in st.session_state:
             st.session_state.selected_months = list(month_options.keys())
-        selected_months = st.sidebar.multiselect("Μήνες", options=list(month_options.keys()),
+        selected_months = st.sidebar.multiselect("Μήνες",
+                                                 options=list(month_options.keys()),
                                                  format_func=lambda x: month_options[x],
                                                  default=st.session_state.selected_months,
                                                  key="selected_months")
@@ -348,29 +378,39 @@ def run_lake_processing_app(waterbody: str, index: str):
 
         start_dt, end_dt = refined_date_range
         selected_indices = [i for i, d in enumerate(DATES)
-                            if start_dt <= d <= end_dt and d.month in selected_months and d.year in selected_years]
+                            if start_dt <= d <= end_dt
+                            and d.month in selected_months
+                            and d.year in selected_years]
+
         if not selected_indices:
             st.error("No data for the selected date range/month/year combination.")
             st.stop()
 
+        # Filter the main stack
         stack_filtered = STACK[selected_indices, :, :]
         days_filtered = np.array(DAYS)[selected_indices]
         filtered_dates = np.array(DATES)[selected_indices]
 
+        # Create a boolean mask for in-range pixels
         lower_thresh, upper_thresh = threshold_range
         in_range = np.logical_and(stack_filtered >= lower_thresh, stack_filtered <= upper_thresh)
+
+        # 1) Days In Range
         days_in_range = np.nansum(in_range, axis=0)
 
+        # 2) Mean Day (of In Range)
         days_array = days_filtered.reshape((-1, 1, 1))
         sum_days = np.nansum(days_array * in_range, axis=0)
         count_in_range = np.nansum(in_range, axis=0)
-        mean_day = np.divide(sum_days, count_in_range, out=np.full(sum_days.shape, np.nan),
-                               where=(count_in_range != 0))
+        mean_day = np.divide(sum_days, count_in_range,
+                             out=np.full(sum_days.shape, np.nan),
+                             where=(count_in_range != 0))
 
-        # Sample Image Analysis Figures
+        # For display
         fig_days = px.imshow(days_in_range, color_continuous_scale="plasma",
                              title="Days In Range Map", labels={"color": "Days In Range"})
         fig_days.update_layout(width=800, height=600)
+
         fig_mean = px.imshow(mean_day, color_continuous_scale="RdBu",
                              title="Mean Day of In-Range Exceedance", labels={"color": "Mean Day"})
         fig_mean.update_layout(width=800, height=600)
@@ -380,17 +420,21 @@ def run_lake_processing_app(waterbody: str, index: str):
                      "244 (Sep)", "274 (Oct)", "305 (Nov)", "335 (Dec)", "365 (Dec)"]
         fig_mean.update_layout(coloraxis_colorbar=dict(tickmode='array', tickvals=tick_vals, ticktext=tick_text))
 
+        # Thresholded vs Original
         if display_option.lower() == "thresholded":
             filtered_stack = np.where(in_range, stack_filtered, np.nan)
         else:
             filtered_stack = stack_filtered
 
         average_sample_img = np.nanmean(filtered_stack, axis=0)
-        avg_min = float(np.nanmin(average_sample_img)) if not np.all(np.isnan(average_sample_img)) else 0
-        avg_max = float(np.nanmax(average_sample_img)) if not np.all(np.isnan(average_sample_img)) else 0
+        if not np.all(np.isnan(average_sample_img)):
+            avg_min = float(np.nanmin(average_sample_img))
+            avg_max = float(np.nanmax(average_sample_img))
+        else:
+            avg_min, avg_max = 0, 0
 
+        # 3) Time-of-Max analysis
         filtered_day_of_year = np.array([d.timetuple().tm_yday for d in filtered_dates])
-
         def nanargmax_or_nan(arr):
             return np.nan if np.all(np.isnan(arr)) else np.nanargmax(arr)
 
@@ -402,23 +446,23 @@ def run_lake_processing_app(waterbody: str, index: str):
         max_index_int[valid_mask] = np.clip(max_index_int[valid_mask], 0, len(filtered_day_of_year) - 1)
         time_max[valid_mask] = filtered_day_of_year[max_index_int[valid_mask]]
 
-        sample_title = ("Average Sample Image (Filtered)"
-                        if display_option.lower() == "thresholded"
-                        else "Original Average Sample Image")
-        time_title = ("Time-of-Maximum Map (Day-of-Year)"
-                      if display_option.lower() == "thresholded"
-                      else "Original Time-of-Maximum Map (Day-of-Year)")
+        sample_title = "Average Sample Image (Filtered)" if display_option.lower() == "thresholded" \
+                       else "Original Average Sample Image"
+        time_title = "Time-of-Maximum Map (Day-of-Year)" if display_option.lower() == "thresholded" \
+                     else "Original Time-of-Maximum Map (Day-of-Year)"
 
         sample_img_fig = px.imshow(average_sample_img, color_continuous_scale="jet",
                                    range_color=[avg_min, avg_max],
                                    title=sample_title, labels={"color": "Pixel Value"})
         sample_img_fig.update_layout(width=800, height=600)
+
         time_max_fig = px.imshow(time_max, color_continuous_scale="RdBu",
                                  range_color=[1, 365],
                                  title=time_title, labels={"color": "Day-of-Year"})
         time_max_fig.update_layout(width=800, height=600)
         time_max_fig.update_layout(coloraxis_colorbar=dict(tickmode='array', tickvals=tick_vals, ticktext=tick_text))
 
+        # Display results
         st.header("Analysis Maps")
         col1, col2 = st.columns(2)
         with col1:
@@ -434,15 +478,15 @@ def run_lake_processing_app(waterbody: str, index: str):
             st.plotly_chart(time_max_fig, use_container_width=True)
 
         # ------------------------------
-        # Additional Annual Analysis: Monthly Days In Range Analysis
+        # Additional Annual Analysis: Monthly Days In Range
         # ------------------------------
         st.header("Additional Annual Analysis: Monthly Days In Range Analysis")
-        # Use the full STACK (without filtering by current selection) for monthly analysis
+
+        # Use the full STACK (unfiltered by date) for monthly analysis
         stack_full_in_range = (STACK >= lower_thresh) & (STACK <= upper_thresh)
         monthly_days_in_range = {}
         for m in range(1, 13):
-            indices_m = [i for i, d in enumerate(DATES)
-                         if d is not None and d.month == m]
+            indices_m = [i for i, d in enumerate(DATES) if d is not None and d.month == m]
             if indices_m:
                 monthly_days_in_range[m] = np.sum(stack_full_in_range[indices_m, :, :], axis=0)
             else:
@@ -451,7 +495,8 @@ def run_lake_processing_app(waterbody: str, index: str):
         fig_monthly = make_subplots(
             rows=3, cols=4,
             subplot_titles=[datetime(2000, m, 1).strftime('%B') for m in range(1, 13)],
-            horizontal_spacing=0.05, vertical_spacing=0.04
+            horizontal_spacing=0.05,
+            vertical_spacing=0.04  # Keep this small enough for multiple rows
         )
         trace_count = 0
         for m in range(1, 13):
@@ -479,17 +524,16 @@ def run_lake_processing_app(waterbody: str, index: str):
         st.plotly_chart(fig_monthly, use_container_width=True)
 
         # ------------------------------
-        # Additional Annual Analysis: Yearly Days In Range Analysis
+        # Additional Annual Analysis: Yearly Days In Range
         # ------------------------------
         st.header("Additional Annual Analysis: Yearly Days In Range Analysis")
 
-        # Extract unique years from DATES (filtering out None)
         unique_years_full = sorted({d.year for d in DATES if d is not None})
         if not unique_years_full:
             st.error("No valid years found in the data.")
             st.stop()
 
-        # Use the full STACK for yearly analysis (without further filtering)
+        # Reuse the in-range mask for the entire dataset
         stack_full_in_range = (STACK >= lower_thresh) & (STACK <= upper_thresh)
 
         yearly_days_in_range = {}
@@ -500,11 +544,15 @@ def run_lake_processing_app(waterbody: str, index: str):
             else:
                 yearly_days_in_range[year] = None
 
-        # Create subplots (one per year, arranged in a single column)
+        # Each year in its own row
+        n_years = len(unique_years_full)
+        # Keep vertical_spacing small enough for multiple rows
+        vertical_spacing = 0.16 if n_years == 1 else min(0.16, 0.5 / n_years)
+
         fig_yearly = make_subplots(
-            rows=len(unique_years_full), cols=1,
+            rows=n_years, cols=1,
             subplot_titles=[f"Year: {year}" for year in unique_years_full],
-            vertical_spacing=0.16
+            vertical_spacing=vertical_spacing
         )
         for idx, year in enumerate(unique_years_full, start=1):
             img = yearly_days_in_range[year]
@@ -523,7 +571,12 @@ def run_lake_processing_app(waterbody: str, index: str):
                     row=idx, col=1,
                     showarrow=False
                 )
-        fig_yearly.update_layout(height=300 * len(unique_years_full), title_text="Yearly Days In Range Analysis")
+
+        # 300 px per year is a decent baseline
+        fig_yearly.update_layout(
+            height=300 * n_years,
+            title_text="Yearly Days In Range Analysis"
+        )
         st.plotly_chart(fig_yearly, use_container_width=True)
 
         st.info("End of Lake Processing section.")
@@ -546,10 +599,12 @@ def run_water_quality_dashboard(waterbody: str, index: str):
     with st.container():
         st.markdown('<div class="card">', unsafe_allow_html=True)
         st.title(f"Water Quality Dashboard ({waterbody} - {index})")
+
         data_folder = get_data_folder(waterbody, index)
         if data_folder is None:
             st.error("Δεν υπάρχει φάκελος δεδομένων για το επιλεγμένο υδάτινο σώμα / δείκτη.")
             st.stop()
+
         images_folder = os.path.join(data_folder, "GeoTIFFs")
         lake_height_path = os.path.join(data_folder, "lake height.xlsx")
         sampling_kml_path = os.path.join(data_folder, "sampling.kml")
@@ -563,11 +618,13 @@ def run_water_quality_dashboard(waterbody: str, index: str):
             if os.path.exists(v):
                 video_path = v
                 break
+
         st.sidebar.header(f"Ρυθμίσεις Ανάλυσης ({waterbody} - Dashboard)")
         x_start = st.sidebar.date_input("Έναρξη", date(2015, 1, 1))
         x_end = st.sidebar.date_input("Λήξη", date(2026, 12, 31))
         x_start_dt = datetime.combine(x_start, datetime.min.time())
         x_end_dt = datetime.combine(x_end, datetime.min.time())
+
         tif_files = [f for f in os.listdir(images_folder) if f.lower().endswith('.tif')]
         available_dates = {}
         for filename in tif_files:
@@ -580,12 +637,14 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                 except Exception as e:
                     debug("DEBUG: Error parsing date from", filename, ":", e)
                     continue
+
         if available_dates:
             sorted_dates = sorted(available_dates.keys())
             selected_bg_date = st.selectbox("Επιλέξτε ημερομηνία για το background", sorted_dates)
         else:
             selected_bg_date = None
             st.warning("Δεν βρέθηκαν GeoTIFF εικόνες με ημερομηνία στον τίτλο.")
+
         if selected_bg_date is not None:
             bg_filename = available_dates[selected_bg_date]
             bg_path = os.path.join(images_folder, bg_filename)
@@ -603,6 +662,8 @@ def run_water_quality_dashboard(waterbody: str, index: str):
         else:
             st.error("Δεν έχει επιλεγεί έγκυρη ημερομηνία για το background.")
             st.stop()
+
+        # KML parsing and analysis functions (similar to before)
         def parse_sampling_kml(kml_file) -> list:
             try:
                 tree = ET.parse(kml_file)
@@ -619,12 +680,15 @@ def run_water_quality_dashboard(waterbody: str, index: str):
             except Exception as e:
                 st.error("Error parsing sampling KML:", e)
                 return []
+
         def geographic_to_pixel(lon: float, lat: float, transform) -> tuple:
             inverse_transform = ~transform
             col, row = inverse_transform * (lon, lat)
             return int(col), int(row)
+
         def map_rgb_to_mg(r: float, g: float, b: float, mg_factor: float = 2.0) -> float:
             return (g / 255.0) * mg_factor
+
         def mg_to_color(mg: float) -> str:
             scale = [
                 (0.00, "#0000ff"), (0.02, "#0007f2"), (0.04, "#0011de"),
@@ -646,10 +710,12 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                         return f"rgb({rgb[0]},{rgb[1]},{rgb[2]})"
             rgb = tuple(int(color[j:j+2], 16) for j in (1, 3, 5))
             return f"rgb({rgb[0]},{rgb[1]},{rgb[2]})"
+
         def analyze_sampling(sampling_points: list, first_image_data, first_transform,
                              images_folder: str, lake_height_path: str, selected_points: list = None):
             results_colors = {name: [] for name, _, _ in sampling_points}
             results_mg = {name: [] for name, _, _ in sampling_points}
+
             for filename in sorted(os.listdir(images_folder)):
                 if filename.lower().endswith(('.tif', '.tiff')):
                     match = re.search(r'(\d{4}_\d{2}_\d{2})', filename)
@@ -660,6 +726,7 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                         date_obj = datetime.strptime(date_str, '%Y_%m_%d')
                     except ValueError:
                         continue
+
                     image_path = os.path.join(images_folder, filename)
                     with rasterio.open(image_path) as src:
                         transform = src.transform
@@ -677,6 +744,8 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                                 results_mg[name].append((date_obj, mg_value))
                                 pixel_color = (r / 255, g / 255, b / 255)
                                 results_colors[name].append((date_obj, pixel_color))
+
+            # Build the base image figure with sampling points
             rgb_image = first_image_data.transpose((1, 2, 0)) / 255.0
             fig_geo = px.imshow(rgb_image, title='GeoTIFF Image with Sampling Points')
             for name, lon, lat in sampling_points:
@@ -686,6 +755,7 @@ def run_water_quality_dashboard(waterbody: str, index: str):
             fig_geo.update_xaxes(visible=False)
             fig_geo.update_yaxes(visible=False)
             fig_geo.update_layout(width=900, height=600, showlegend=True)
+
             try:
                 lake_data = pd.read_excel(lake_height_path)
                 lake_data['Date'] = pd.to_datetime(lake_data.iloc[:, 0])
@@ -693,10 +763,12 @@ def run_water_quality_dashboard(waterbody: str, index: str):
             except Exception as e:
                 st.error(f"Error reading lake height file: {e}")
                 lake_data = pd.DataFrame()
+
             scatter_traces = []
             point_names = list(results_colors.keys())
             if selected_points is not None:
                 point_names = [p for p in point_names if p in selected_points]
+
             for idx, name in enumerate(point_names):
                 data_list = results_colors[name]
                 if not data_list:
@@ -705,10 +777,14 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                 dates = [d for d, _ in data_list]
                 colors = [f"rgb({int(c[0]*255)},{int(c[1]*255)},{int(c[2]*255)})" for _, c in data_list]
                 scatter_traces.append(go.Scatter(x=dates, y=[idx] * len(dates),
-                                                 mode='markers', marker=dict(color=colors, size=10), name=name))
+                                                 mode='markers',
+                                                 marker=dict(color=colors, size=10),
+                                                 name=name))
+
             fig_colors = make_subplots(specs=[[{"secondary_y": True}]])
             for trace in scatter_traces:
                 fig_colors.add_trace(trace, secondary_y=False)
+
             if not lake_data.empty:
                 trace_height = go.Scatter(
                     x=lake_data['Date'],
@@ -716,17 +792,21 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                     name='Lake Height', mode='lines', line=dict(color='blue', width=2)
                 )
                 fig_colors.add_trace(trace_height, secondary_y=True)
+
             fig_colors.update_layout(title='Pixel Colors and Lake Height Over Time',
                                      xaxis_title='Date',
                                      yaxis_title='Sampling Points',
                                      showlegend=True)
             fig_colors.update_yaxes(title_text="Lake Height", secondary_y=True)
+
+            # Compute an average mg for each date (all sampling points)
             all_dates_dict = {}
             for data_list in results_mg.values():
                 for date_obj, mg_val in data_list:
                     all_dates_dict.setdefault(date_obj, []).append(mg_val)
             sorted_dates = sorted(all_dates_dict.keys())
             avg_mg = [np.mean(all_dates_dict[d]) for d in sorted_dates]
+
             fig_mg = go.Figure()
             fig_mg.add_trace(go.Scatter(
                 x=sorted_dates,
@@ -739,6 +819,7 @@ def run_water_quality_dashboard(waterbody: str, index: str):
             fig_mg.update_layout(title='Average mg/m³ Over Time',
                                  xaxis_title='Date', yaxis_title='mg/m³',
                                  showlegend=False)
+
             fig_dual = make_subplots(specs=[[{"secondary_y": True}]])
             if not lake_data.empty:
                 fig_dual.add_trace(go.Scatter(
@@ -746,6 +827,7 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                     y=lake_data[lake_data.columns[1]],
                     name='Lake Height', mode='lines'
                 ), secondary_y=False)
+
             fig_dual.add_trace(go.Scatter(
                 x=sorted_dates,
                 y=avg_mg,
@@ -758,8 +840,10 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                                    xaxis_title='Date', showlegend=True)
             fig_dual.update_yaxes(title_text="Lake Height", secondary_y=False)
             fig_dual.update_yaxes(title_text="mg/m³", secondary_y=True)
+
             return fig_geo, fig_dual, fig_colors, fig_mg, results_colors, results_mg, lake_data
 
+        # Two main sampling tabs
         if "default_results" not in st.session_state:
             st.session_state.default_results = None
         if "upload_results" not in st.session_state:
@@ -768,6 +852,7 @@ def run_water_quality_dashboard(waterbody: str, index: str):
         tab_names = ["Δειγματοληψία 1 (Default)", "Δειγματοληψία 2 (Upload)"]
         tabs = st.tabs(tab_names)
 
+        # -- Tab 1 (Default)
         with tabs[0]:
             st.header("Ανάλυση για Δειγματοληψία 1 (Default)")
             default_sampling_points = []
@@ -775,14 +860,20 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                 default_sampling_points = parse_sampling_kml(sampling_kml_path)
             else:
                 st.warning("Default sampling.kml not found at:", sampling_kml_path)
+
             point_names = [name for name, _, _ in default_sampling_points]
             selected_points = st.multiselect("Select points for mg/m³ concentrations",
-                                             options=point_names, default=point_names)
+                                             options=point_names,
+                                             default=point_names)
             if st.button("Run Analysis (Default)"):
                 with st.spinner("Running analysis..."):
                     st.session_state.default_results = analyze_sampling(
-                        default_sampling_points, first_image_data, first_transform,
-                        images_folder, lake_height_path, selected_points
+                        default_sampling_points,
+                        first_image_data,
+                        first_transform,
+                        images_folder,
+                        lake_height_path,
+                        selected_points
                     )
             if st.session_state.default_results is not None:
                 results = st.session_state.default_results
@@ -791,6 +882,7 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                 else:
                     st.error("Analysis result format error. Please run the analysis again.")
                     st.stop()
+
                 nested_tabs = st.tabs(["GeoTIFF", "Video/GIF", "Pixel Colors", "Average mg", "Dual Plots", "Detail mg"])
                 with nested_tabs[0]:
                     st.plotly_chart(fig_geo, use_container_width=True)
@@ -831,6 +923,7 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                         else:
                             st.info("No mg data for this point.")
 
+        # -- Tab 2 (Upload)
         with tabs[1]:
             st.header("Analysis for Uploaded Sampling")
             uploaded_file = st.file_uploader("Upload a KML file for new sampling points", type="kml", key="upload_tab")
@@ -840,14 +933,21 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                 except Exception as e:
                     st.error(f"Error processing the uploaded file: {e}")
                     new_sampling_points = []
+
                 point_names = [name for name, _, _ in new_sampling_points]
                 selected_points = st.multiselect("Select points for mg/m³ concentrations",
-                                                 options=point_names, default=point_names)
+                                                 options=point_names,
+                                                 default=point_names)
+
                 if st.button("Run Analysis (Upload)"):
                     with st.spinner("Running analysis..."):
                         st.session_state.upload_results = analyze_sampling(
-                            new_sampling_points, first_image_data, first_transform,
-                            images_folder, lake_height_path, selected_points
+                            new_sampling_points,
+                            first_image_data,
+                            first_transform,
+                            images_folder,
+                            lake_height_path,
+                            selected_points
                         )
                 if st.session_state.upload_results is not None:
                     results = st.session_state.upload_results
@@ -856,6 +956,7 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                     else:
                         st.error("Analysis result format error (Upload). Please run the analysis again.")
                         st.stop()
+
                     nested_tabs = st.tabs(["GeoTIFF", "Video/GIF", "Pixel Colors", "Average mg", "Dual Plots", "Detail mg"])
                     with nested_tabs[0]:
                         st.plotly_chart(fig_geo, use_container_width=True)
@@ -928,38 +1029,53 @@ def run_pattern_analysis(waterbody: str, index: str):
     with st.container():
         st.markdown('<div class="card">', unsafe_allow_html=True)
         st.title(f"Pattern Analysis ({waterbody} - {index})")
+
         data_folder = get_data_folder(waterbody, index)
         if data_folder is None:
             st.error("Δεν υπάρχει φάκελος δεδομένων για το επιλεγμένο υδάτινο σώμα / δείκτη.")
             st.stop()
+
         input_folder = os.path.join(data_folder, "GeoTIFFs")
         try:
             STACK, DAYS, DATES = load_data(input_folder)
         except Exception as e:
             st.error(f"Error loading data: {e}")
             st.stop()
+
         st.sidebar.header("Pattern Analysis Controls")
         unique_years = sorted({d.year for d in DATES if d is not None})
-        selected_years_pattern = st.sidebar.multiselect("Select Years", options=unique_years,
-                                                        default=unique_years, key="pattern_years")
-        selected_months_pattern = st.sidebar.multiselect("Select Months",
-                                                         options=list(range(1, 13)),
-                                                         default=list(range(1, 13)),
-                                                         key="pattern_months",
-                                                         format_func=lambda m: datetime(2000, m, 1).strftime('%B'))
+        selected_years_pattern = st.sidebar.multiselect(
+            "Select Years",
+            options=unique_years,
+            default=unique_years,
+            key="pattern_years"
+        )
+        selected_months_pattern = st.sidebar.multiselect(
+            "Select Months",
+            options=list(range(1, 13)),
+            default=list(range(1, 13)),
+            key="pattern_months",
+            format_func=lambda m: datetime(2000, m, 1).strftime('%B')
+        )
         threshold_range = st.sidebar.slider("Pixel value threshold range", 0, 255, (0, 255), key="pattern_threshold")
         lower_thresh, upper_thresh = threshold_range
+
         if not selected_years_pattern or not selected_months_pattern:
             st.error("Please select at least one year and one month.")
             st.stop()
+
+        # Filter by chosen months and years
         indices = [i for i, d in enumerate(DATES)
                    if d.year in selected_years_pattern and d.month in selected_months_pattern]
         if not indices:
             st.error("No data for the selected years/months in pattern analysis.")
             st.stop()
+
         STACK_filtered = STACK[indices, :, :]
         stack_full_in_range = (STACK_filtered >= lower_thresh) & (STACK_filtered <= upper_thresh)
         filtered_dates = [DATES[i] for i in indices]
+
+        # Monthly average in-range fraction
         monthly_avg = {}
         for m in selected_months_pattern:
             month_indices = [i for i, dd in enumerate(filtered_dates) if dd.month == m]
@@ -968,6 +1084,8 @@ def run_pattern_analysis(waterbody: str, index: str):
                 monthly_avg[m] = avg_days
             else:
                 monthly_avg[m] = None
+
+        # Aggregate across chosen months
         agg_avg = None
         count = 0
         for m in monthly_avg:
@@ -977,52 +1095,72 @@ def run_pattern_analysis(waterbody: str, index: str):
                 else:
                     agg_avg += monthly_avg[m]
                 count += 1
-        overall_avg = (agg_avg / count) if agg_avg is not None and count > 0 else None
+        overall_avg = (agg_avg / count) if (agg_avg is not None and count > 0) else None
+
+        # Prepare temporal data for a bar chart
         temporal_data = []
         for mm in sorted(monthly_avg.keys()):
             if monthly_avg[mm] is not None:
                 spatial_avg = np.nanmean(monthly_avg[mm])
                 temporal_data.append((mm, spatial_avg))
+
         if temporal_data:
             months, means = zip(*temporal_data)
             month_names = [datetime(2000, mm, 1).strftime('%B') for mm in months]
-            fig_temporal = px.bar(x=month_names, y=means,
-                                  labels={'x': 'Month', 'y': 'Average Fraction In Range'},
-                                  title="Temporal Pattern per Month")
+            fig_temporal = px.bar(
+                x=month_names,
+                y=means,
+                labels={'x': 'Month', 'y': 'Average Fraction In Range'},
+                title="Temporal Pattern per Month"
+            )
         else:
             fig_temporal = go.Figure()
+
+        # Spatial classification map
         if overall_avg is not None:
             classification = np.full(overall_avg.shape, "Unclassified", dtype=object)
             valid_mask = ~np.isnan(overall_avg)
             classification[valid_mask & (overall_avg < 0.3)] = "Low"
             classification[valid_mask & (overall_avg >= 0.3) & (overall_avg < 0.7)] = "Medium"
             classification[valid_mask & (overall_avg >= 0.7)] = "High"
+
             mapping_dict = {"Low": 0, "Medium": 1, "High": 2, "Unclassified": 3}
             numeric_class = np.vectorize(lambda x: mapping_dict[x])(classification)
+
             discrete_colorscale = [
                 [0.00, "blue"],
                 [0.33, "yellow"],
                 [0.66, "red"],
                 [1.00, "gray"]
             ]
-            fig_class = px.imshow(numeric_class,
-                                  color_continuous_scale=discrete_colorscale,
-                                  title="Spatial Pattern Classification")
-            fig_class.update_traces(colorbar=dict(tickvals=[0, 1, 2, 3],
-                                                  ticktext=["Low", "Medium", "High", "Unclassified"]))
+            fig_class = px.imshow(
+                numeric_class,
+                color_continuous_scale=discrete_colorscale,
+                title="Spatial Pattern Classification"
+            )
+            fig_class.update_traces(
+                colorbar=dict(tickvals=[0, 1, 2, 3],
+                              ticktext=["Low", "Medium", "High", "Unclassified"])
+            )
         else:
             fig_class = go.Figure()
+
         st.header("Pattern Analysis")
-        st.markdown("Analysis of monthly days-in-range data and spatial classification of persistent in-range fractions.")
+        st.markdown(
+            "Analysis of monthly days-in-range data and spatial classification of persistent in-range fractions."
+        )
         st.subheader("Temporal Pattern")
         st.plotly_chart(fig_temporal, use_container_width=True)
+
         st.subheader("Spatial Classification")
         st.plotly_chart(fig_class, use_container_width=True)
+
         if temporal_data:
             df_temporal = pd.DataFrame(temporal_data, columns=["Month", "Average Fraction In Range"])
             csv = df_temporal.to_csv(index=False).encode('utf-8')
             st.download_button("Download Analysis CSV", data=csv,
                                file_name="temporal_analysis.csv", mime="text/csv")
+
         st.info("End of Pattern Analysis section.")
         st.markdown('</div>', unsafe_allow_html=True)
 
@@ -1033,24 +1171,28 @@ def main():
     debug("DEBUG: Entered main()")
     run_intro_page()
     run_custom_ui()
+
     wb = st.session_state.get("waterbody_choice", None)
     idx = st.session_state.get("index_choice", None)
     analysis = st.session_state.get("analysis_choice", None)
+
     debug("DEBUG: User selected waterbody =", wb, "index =", idx, "analysis =", analysis)
-    
-    # Dispatch based on user selection:
+
+    # Routing to the appropriate function
     if idx == "Burned Areas" and analysis == "Burned Areas":
         if wb in ["Γαδουρά", "Κορώνεια"]:
             run_lake_processing_app(wb, idx)
         else:
             st.warning("Τα Burned Areas είναι διαθέσιμα μόνο για Γαδουρά (ή Κορώνεια, αν υπάρχουν δεδομένα).")
         return
+
     if idx == "Burned Areas" and analysis == "Water Quality Dashboard":
         if wb == "Γαδουρά":
             run_water_quality_dashboard(wb, idx)
         else:
             st.warning("Το Dashboard για Burned Areas είναι διαθέσιμο μόνο στη Γαδουρά.")
         return
+
     if idx == "Χλωροφύλλη" and wb in ["Κορώνεια", "Πολυφύτου", "Γαδουρά", "Αξιός"]:
         if analysis == "Lake Processing":
             run_lake_processing_app(wb, idx)
