@@ -59,7 +59,6 @@ def get_data_folder(waterbody: str, index: str) -> str:
     debug("DEBUG: Called get_data_folder with waterbody =", waterbody, "index =", index)
 
     # Map waterbody to a base folder.
-    # For Axios, ensure the folder name is exactly as on disk.
     if waterbody == "Κορώνεια":
         waterbody_folder = "Koroneia"
     elif waterbody == "Πολυφύτου":
@@ -317,9 +316,9 @@ def run_lake_processing_app(waterbody: str, index: str):
         st.session_state.selected_months = []
         selected_months = []
 
-    st.sidebar.markdown("### Select Years")
-    if "selected_years" not in st.session_state:
-        st.session_state.selected_years = unique_years
+    # --- Updated "Select Years" multiselect ---
+    if "selected_years" not in st.session_state or not set(st.session_state.selected_years).issubset(set(unique_years)):
+         st.session_state.selected_years = unique_years
     selected_years = st.sidebar.multiselect("Select Years", options=unique_years,
                                             default=st.session_state.selected_years,
                                             key="selected_years")
@@ -877,10 +876,8 @@ def run_water_quality_dashboard(waterbody: str, index: str):
 
         debug("DEBUG: Using default sampling points:", default_sampling_points)
         point_names = [name for name, _, _ in default_sampling_points]
-        selected_points = st.multiselect(
-            "Select points to display mg/m³ concentrations",
-            options=point_names, default=point_names
-        )
+        selected_points = st.multiselect("Select points to display mg/m³ concentrations",
+                                         options=point_names, default=point_names)
 
         if st.button("Run Analysis (Default)"):
             with st.spinner("Running analysis, please wait..."):
@@ -915,10 +912,8 @@ def run_water_quality_dashboard(waterbody: str, index: str):
             with nested_tabs[4]:
                 st.plotly_chart(fig_dual, use_container_width=True, config={'scrollZoom': True})
             with nested_tabs[5]:
-                selected_detail_point = st.selectbox(
-                    "Select a point for detailed mg analysis",
-                    options=list(results_mg.keys())
-                )
+                selected_detail_point = st.selectbox("Select a point for detailed mg analysis",
+                                                     options=list(results_mg.keys()))
                 if selected_detail_point:
                     mg_data = results_mg[selected_detail_point]
                     if mg_data:
@@ -934,20 +929,15 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                             line=dict(color="gray"),
                             name=selected_detail_point
                         ))
-                        fig_detail.update_layout(
-                            title=f"Detailed mg analysis for {selected_detail_point}",
-                            xaxis_title="Date", yaxis_title="mg/m³"
-                        )
+                        fig_detail.update_layout(title=f"Detailed mg analysis for {selected_detail_point}",
+                                                 xaxis_title="Date", yaxis_title="mg/m³")
                         st.plotly_chart(fig_detail, use_container_width=True)
                     else:
                         st.info("No mg data for this point.")
 
     with tabs[1]:
         st.header("Analysis for Uploaded Sampling")
-        uploaded_file = st.file_uploader(
-            "Upload a KML file for new sampling points",
-            type="kml", key="upload_tab"
-        )
+        uploaded_file = st.file_uploader("Upload a KML file for new sampling points", type="kml", key="upload_tab")
         if uploaded_file is not None:
             try:
                 new_sampling_points = parse_sampling_kml(uploaded_file)
@@ -957,10 +947,8 @@ def run_water_quality_dashboard(waterbody: str, index: str):
 
             debug("DEBUG: Using the following new sampling points:", new_sampling_points)
             point_names = [name for name, _, _ in new_sampling_points]
-            selected_points = st.multiselect(
-                "Select points to display mg/m³ concentrations",
-                options=point_names, default=point_names
-            )
+            selected_points = st.multiselect("Select points to display mg/m³ concentrations",
+                                             options=point_names, default=point_names)
 
             if st.button("Run Analysis (Upload)"):
                 with st.spinner("Running analysis, please wait..."):
@@ -995,10 +983,8 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                 with nested_tabs[4]:
                     st.plotly_chart(fig_dual, use_container_width=True, config={'scrollZoom': True})
                 with nested_tabs[5]:
-                    selected_detail_point = st.selectbox(
-                        "Select a point for detailed mg analysis",
-                        options=list(results_mg.keys()), key="detail_upload"
-                    )
+                    selected_detail_point = st.selectbox("Select a point for detailed mg analysis",
+                                                         options=list(results_mg.keys()), key="detail_upload")
                     if selected_detail_point:
                         mg_data = results_mg[selected_detail_point]
                         if mg_data:
@@ -1014,10 +1000,8 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                                 line=dict(color="gray"),
                                 name=selected_detail_point
                             ))
-                            fig_detail.update_layout(
-                                title=f"Detailed mg analysis for {selected_detail_point}",
-                                xaxis_title="Date", yaxis_title="mg/m³"
-                            )
+                            fig_detail.update_layout(title=f"Detailed mg analysis for {selected_detail_point}",
+                                                     xaxis_title="Date", yaxis_title="mg/m³")
                             st.plotly_chart(fig_detail, use_container_width=True)
                         else:
                             st.info("No mg data for this point.")
@@ -1051,7 +1035,6 @@ def run_water_level_profiles(waterbody: str, index: str):
 # -----------------------------------------------------------------------------
 def run_pattern_analysis(waterbody: str, index: str):
     debug("DEBUG: Entered run_pattern_analysis for waterbody =", waterbody, "index =", index)
-
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.title(f"Pattern Analysis ({waterbody} - {index})")
 
@@ -1069,20 +1052,14 @@ def run_pattern_analysis(waterbody: str, index: str):
 
     st.sidebar.header("Pattern Analysis Controls")
     unique_years = sorted({d.year for d in DATES})
-    selected_years_pattern = st.sidebar.multiselect(
-        "Select Years for Pattern Analysis",
-        options=unique_years, default=unique_years, key="pattern_years"
-    )
-    selected_months_pattern = st.sidebar.multiselect(
-        "Select Months for Pattern Analysis",
-        options=list(range(1, 13)),
-        default=list(range(1, 13)),
-        key="pattern_months",
-        format_func=lambda m: datetime(2000, m, 1).strftime('%B')
-    )
-    threshold_range = st.sidebar.slider(
-        "Select pixel value threshold range", 0, 255, (0, 255), key="pattern_threshold"
-    )
+    selected_years_pattern = st.sidebar.multiselect("Select Years for Pattern Analysis",
+                                                    options=unique_years, default=unique_years, key="pattern_years")
+    selected_months_pattern = st.sidebar.multiselect("Select Months for Pattern Analysis",
+                                                     options=list(range(1, 13)),
+                                                     default=list(range(1, 13)),
+                                                     key="pattern_months",
+                                                     format_func=lambda m: datetime(2000, m, 1).strftime('%B'))
+    threshold_range = st.sidebar.slider("Select pixel value threshold range", 0, 255, (0, 255), key="pattern_threshold")
     lower_thresh, upper_thresh = threshold_range
 
     if not selected_years_pattern or not selected_months_pattern:
@@ -1146,10 +1123,10 @@ def run_pattern_analysis(waterbody: str, index: str):
         numeric_class = np.vectorize(lambda x: mapping_dict[x])(classification)
 
         discrete_colorscale = [
-            [0.00, "blue"],    # Low
-            [0.33, "yellow"],  # Medium
-            [0.66, "red"],     # High
-            [1.00, "gray"]     # Unclassified
+            [0.00, "blue"],
+            [0.33, "yellow"],
+            [0.66, "red"],
+            [1.00, "gray"]
         ]
         fig_class = px.imshow(numeric_class,
                               color_continuous_scale=discrete_colorscale,
