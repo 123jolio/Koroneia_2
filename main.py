@@ -545,7 +545,7 @@ def run_lake_processing_app(waterbody: str, index: str):
                 yearly_days_in_range[year] = None
 
         n_years = len(unique_years_full)
-        vertical_spacing = 0.05  # Μικρή τιμή για επαρκή χώρος ανά σειρά
+        vertical_spacing = 0.25  # Μικρή τιμή για επαρκή χώρος ανά σειρά
         fig_yearly = make_subplots(
             rows=n_years, cols=1,
             subplot_titles=[f"Έτος: {year}" for year in unique_years_full],
