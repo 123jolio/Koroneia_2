@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 
 """
-Water Quality App (Professional UI Version)
----------------------------------------------
-This version hides debugging messages by default and has a more professional,
-user-friendly interface.
+Water Quality App (Enterprise-Grade UI)
+-----------------------------------------
+This version hides debugging messages by default and features a highly polished,
+enterprise-level, user-friendly interface.
 """
 
 import os
@@ -46,53 +46,90 @@ st.set_page_config(
 
 
 # -----------------------------------------------------------------------------
-# Custom CSS for Professional Look and Feel
+# Custom CSS for an Enterprise Look and Feel
 # -----------------------------------------------------------------------------
 def inject_custom_css():
     custom_css = """
     <link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700&display=swap" rel="stylesheet">
     <style>
+        /* Global styling */
         html, body, [class*="css"] {
             font-family: 'Roboto', sans-serif;
         }
         .block-container {
-            background-color: #121212;
+            background: #0d0d0d;
             color: #e0e0e0;
+            padding: 1rem;
         }
-        .stButton button {
-            background-color: #3700b3;
+        /* Top header styling */
+        .top-header {
+            width: 100%;
+            background: linear-gradient(90deg, #1a237e, #283593);
+            padding: 1rem 2rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.4);
+        }
+        .top-header h1 {
+            margin: 0;
             color: #ffffff;
-            border-radius: 5px;
-            padding: 8px 16px;
-            border: none;
-            box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+            font-weight: 500;
+            font-size: 1.75rem;
         }
-        .stButton button:hover {
-            background-color: #6200ee;
+        .top-header img {
+            height: 50px;
+            margin-right: 1rem;
         }
+        /* Sidebar styling */
         .sidebar .sidebar-content {
-            background-color: #1f1f1f;
+            background: #1b1b1b;
+            border: none;
         }
+        /* Card styling */
         .card {
-            background-color: #1e1e1e;
-            padding: 1.5rem;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
-            margin-bottom: 1.5rem;
+            background: #1e1e1e;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.6);
+            margin-bottom: 2rem;
         }
         .header-title {
-            color: #bb86fc;
+            color: #ffca28;
             margin-bottom: 1rem;
+            font-size: 1.75rem;
+            text-align: center;
         }
+        /* Navigation section inside sidebar */
         .nav-section {
-            padding: 0.5rem;
+            padding: 1rem;
+            background: #262626;
+            border-radius: 8px;
             margin-bottom: 1rem;
-            background-color: #1f1f1f;
-            border-radius: 5px;
         }
         .nav-section h4 {
             margin: 0;
-            color: #bb86fc;
+            color: #ffca28;
+            font-weight: 500;
+        }
+        /* Button styling */
+        .stButton button {
+            background-color: #3949ab;
+            color: #fff;
+            border-radius: 8px;
+            padding: 10px 20px;
+            border: none;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+            transition: background-color 0.3s ease;
+        }
+        .stButton button:hover {
+            background-color: #5c6bc0;
+        }
+        /* Plotly figure container */
+        .plotly-graph-div {
+            border: 1px solid #333;
+            border-radius: 8px;
         }
     </style>
     """
@@ -103,13 +140,34 @@ inject_custom_css()
 
 
 # -----------------------------------------------------------------------------
+# Top Navigation Header
+# -----------------------------------------------------------------------------
+def render_top_header():
+    # Use st.markdown with unsafe_allow_html to insert a full-width header.
+    header_html = """
+    <div class="top-header">
+        <div style="display: flex; align-items: center;">
+            <img src="https://via.placeholder.com/50" alt="Logo">
+            <h1>Ποιοτικά χαρακτηριστικά Επιφανειακού Ύδατος</h1>
+        </div>
+        <div style="font-size: 0.9rem; color: #c5cae9;">
+            Enterprise Dashboard
+        </div>
+    </div>
+    """
+    st.markdown(header_html, unsafe_allow_html=True)
+
+
+render_top_header()
+
+
+# -----------------------------------------------------------------------------
 # Data Folder Helper
 # -----------------------------------------------------------------------------
 def get_data_folder(waterbody: str, index: str) -> str:
     base_dir = os.path.dirname(os.path.abspath(__file__))
     debug("DEBUG: Current base directory:", base_dir)
 
-    # Map waterbody names to folder names
     waterbody_map = {
         "Κορώνεια": "Koroneia",
         "Πολυφύτου": "polyphytou",
@@ -120,7 +178,6 @@ def get_data_folder(waterbody: str, index: str) -> str:
     if waterbody_folder is None:
         return None
 
-    # Map index names to subfolders
     if index == "Χλωροφύλλη":
         data_folder = os.path.join(base_dir, waterbody_folder, "Chlorophyll")
     elif index == "Burned Areas":
@@ -261,12 +318,11 @@ def run_intro_page():
                 debug("DEBUG: Logo not found.")
         with col_text:
             st.markdown(
-                "<h2 class='header-title' style='text-align: center;'>Ποιοτικά χαρακτηριστικά Επιφανειακού Ύδατος</h2>",
+                "<h2 class='header-title'>Ποιοτικά χαρακτηριστικά Επιφανειακού Ύδατος</h2>",
                 unsafe_allow_html=True
             )
             st.markdown(
-                "<p style='text-align: center;'>Εφαρμογή ανάλυσης με χρήση εργαλείων δορυφορικής τηλεπισκόπησης. Επιλέξτε τις ρυθμίσεις "
-                "στην πλαϊνή μπάρα και εξερευνήστε τα δεδομένα.</p>",
+                "<p style='text-align: center; font-size: 1.1rem;'>Εφαρμογή ανάλυσης με χρήση εργαλείων δορυφορικής τηλεπισκόπησης. Επιλέξτε τις ρυθμίσεις στην πλαϊνή μπάρα και εξερευνήστε τα δεδομένα.</p>",
                 unsafe_allow_html=True
             )
         st.markdown('</div>', unsafe_allow_html=True)
@@ -288,9 +344,9 @@ def run_custom_ui():
                                      "Burned Areas", "Water level", "Pattern Analysis"],
                                     key="analysis_choice")
     st.sidebar.markdown(f"""
-    <div style="padding: 0.5rem; background-color:#1f1e1e; border-radius:5px; margin-top:1rem;">
-        <strong>Υδάτινο σώμα:</strong> {waterbody} <br>
-        <strong>Δείκτης:</strong> {index} <br>
+    <div style="padding: 0.5rem; background:#262626; border-radius:5px; margin-top:1rem;">
+        <strong>Υδάτινο σώμα:</strong> {waterbody}<br>
+        <strong>Δείκτης:</strong> {index}<br>
         <strong>Ανάλυση:</strong> {analysis}
     </div>
     """, unsafe_allow_html=True)
@@ -493,8 +549,7 @@ def run_water_quality_dashboard(waterbody: str, index: str):
 
         if available_dates:
             sorted_dates = sorted(available_dates.keys())
-            selected_bg_date = st.selectbox("Επιλέξτε ημερομηνία για το background",
-                                            sorted_dates)
+            selected_bg_date = st.selectbox("Επιλέξτε ημερομηνία για το background", sorted_dates)
         else:
             selected_bg_date = None
             st.warning("Δεν βρέθηκαν GeoTIFF εικόνες με ημερομηνία στον τίτλο.")
