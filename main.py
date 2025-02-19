@@ -282,19 +282,19 @@ def run_intro_page():
             base_dir = os.path.dirname(os.path.abspath(__file__))
             logo_path = os.path.join(base_dir, "logo.jpg")
             if os.path.exists(logo_path):
-                st.image(logo_path, width=250, key="logo")
+                st.image(logo_path, width=250)
             else:
                 debug("DEBUG: Δεν βρέθηκε το λογότυπο.")
         with col_text:
             st.markdown(
                 "<h2 class='header-title'>Ποιοτικά χαρακτηριστικά Επιφανειακού Ύδατος</h2>",
-                unsafe_allow_html=True, key="intro_title"
+                unsafe_allow_html=True
             )
             st.markdown(
                 "<p style='text-align: center; font-size: 1.1rem;'>"
                 "Αυτή η εφαρμογή ανάλυσης χρησιμοποιεί εργαλεία δορυφορικής τηλεπισκόπησης. "
                 "Επιλέξτε τις ρυθμίσεις στην πλαϊνή μπάρα και εξερευνήστε τα δεδομένα.</p>",
-                unsafe_allow_html=True, key="intro_text"
+                unsafe_allow_html=True
             )
         st.markdown('</div>', unsafe_allow_html=True)
 
@@ -329,7 +329,7 @@ def run_lake_processing_app(waterbody: str, index: str):
     """Κύρια συνάρτηση για την ανάλυση μιας λίμνης με μηνιαία και ετήσια διαγράμματα."""
     with st.container():
         st.markdown('<div class="card">', unsafe_allow_html=True)
-        st.title(f"Επεξεργασία Λίμνης ({waterbody} - {index})", key="lake_title")
+        st.title(f"Επεξεργασία Λίμνης ({waterbody} - {index})")
 
         data_folder = get_data_folder(waterbody, index)
         if data_folder is None:
@@ -586,7 +586,7 @@ def run_lake_processing_app(waterbody: str, index: str):
 def run_water_processing(waterbody: str, index: str):
     with st.container():
         st.markdown('<div class="card">', unsafe_allow_html=True)
-        st.title(f"Επεξεργασία Υδάτινου Σώματος ({waterbody} - {index}) [Placeholder]", key="water_proc")
+        st.title(f"Επεξεργασία Υδάτινου Σώματος ({waterbody} - {index}) [Placeholder]")
         st.info("Δεν υπάρχουν δεδομένα ή λειτουργίες για την επεξεργασία υδάτινου σώματος.")
         st.markdown('</div>', unsafe_allow_html=True)
 
@@ -596,7 +596,7 @@ def run_water_processing(waterbody: str, index: str):
 def run_water_quality_dashboard(waterbody: str, index: str):
     with st.container():
         st.markdown('<div class="card">', unsafe_allow_html=True)
-        st.title(f"Πίνακας Ποιότητας Ύδατος ({waterbody} - {index})", key="wq_title")
+        st.title(f"Πίνακας Ποιότητας Ύδατος ({waterbody} - {index})")
 
         data_folder = get_data_folder(waterbody, index)
         if data_folder is None:
@@ -847,7 +847,7 @@ def run_water_quality_dashboard(waterbody: str, index: str):
 
         # Καρτέλα 1 (Default)
         with tabs[0]:
-            st.header("Ανάλυση για Δειγματοληψία 1 (Default)", key="default_tab_header")
+            st.header("Ανάλυση για Δειγματοληψία 1 (Default)")
             default_sampling_points = []
             if os.path.exists(sampling_kml_path):
                 default_sampling_points = parse_sampling_kml(sampling_kml_path)
@@ -915,6 +915,7 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                             st.plotly_chart(fig_detail, use_container_width=True, key="default_fig_detail")
                         else:
                             st.info("Δεν υπάρχουν δεδομένα mg για αυτό το σημείο.", key="default_no_mg")
+
         # Καρτέλα 2 (Upload)
         with tabs[1]:
             st.header("Ανάλυση για ανεβασμένη δειγματοληψία", key="upload_tab_header")
@@ -998,8 +999,8 @@ def run_water_quality_dashboard(waterbody: str, index: str):
 def run_burned_areas():
     with st.container():
         st.markdown('<div class="card">', unsafe_allow_html=True)
-        st.title("Burned Areas γύρω από το ταμιευτήριο (μόνο Γαδουρά)", key="burned_title")
-        st.info("Δεν υπάρχουν δεδομένα ή λειτουργίες για ανάλυση καμένων περιοχών.", key="burned_info")
+        st.title("Burned Areas γύρω από το ταμιευτήριο (μόνο Γαδουρά)")
+        st.info("Δεν υπάρχουν δεδομένα ή λειτουργίες για ανάλυση καμένων περιοχών.")
         st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
@@ -1008,8 +1009,8 @@ def run_burned_areas():
 def run_water_level_profiles(waterbody: str, index: str):
     with st.container():
         st.markdown('<div class="card">', unsafe_allow_html=True)
-        st.title(f"Προφίλ Ύψους ({waterbody}) [Placeholder]", key="level_title")
-        st.info("Δεν υπάρχουν δεδομένα ή λειτουργίες για προφίλ ύψους νερού.", key="level_info")
+        st.title(f"Προφίλ Ύψους ({waterbody}) [Placeholder]")
+        st.info("Δεν υπάρχουν δεδομένα ή λειτουργίες για προφίλ ύψους νερού.")
         st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
@@ -1018,7 +1019,7 @@ def run_water_level_profiles(waterbody: str, index: str):
 def run_pattern_analysis(waterbody: str, index: str):
     with st.container():
         st.markdown('<div class="card">', unsafe_allow_html=True)
-        st.title(f"Ανάλυση Προτύπων ({waterbody} - {index})", key="pattern_title")
+        st.title(f"Ανάλυση Προτύπων ({waterbody} - {index})")
 
         data_folder = get_data_folder(waterbody, index)
         if data_folder is None:
@@ -1155,8 +1156,8 @@ def run_pattern_analysis(waterbody: str, index: str):
 def run_burned_areas():
     with st.container():
         st.markdown('<div class="card">', unsafe_allow_html=True)
-        st.title("Burned Areas γύρω από το ταμιευτήριο (μόνο Γαδουρά)", key="burned_title")
-        st.info("Δεν υπάρχουν δεδομένα ή λειτουργίες για ανάλυση καμένων περιοχών.", key="burned_info")
+        st.title("Burned Areas γύρω από το ταμιευτήριο (μόνο Γαδουρά)")
+        st.info("Δεν υπάρχουν δεδομένα ή λειτουργίες για ανάλυση καμένων περιοχών.")
         st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
@@ -1165,8 +1166,8 @@ def run_burned_areas():
 def run_water_level_profiles(waterbody: str, index: str):
     with st.container():
         st.markdown('<div class="card">', unsafe_allow_html=True)
-        st.title(f"Προφίλ Ύψους ({waterbody}) [Placeholder]", key="level_title")
-        st.info("Δεν υπάρχουν δεδομένα ή λειτουργίες για προφίλ ύψους νερού.", key="level_info")
+        st.title(f"Προφίλ Ύψους ({waterbody}) [Placeholder]")
+        st.info("Δεν υπάρχουν δεδομένα ή λειτουργίες για προφίλ ύψους νερού.")
         st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
