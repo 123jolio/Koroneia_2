@@ -5,7 +5,7 @@
 Water Quality App (Super Cool Professional UI Version)
 --------------------------------------------------------
 This version maintains all original functionalities while applying a sleek,
-modern, and super cool user interface.
+modern, and professional user interface.
 """
 
 import os
@@ -33,7 +33,7 @@ def debug(*args, **kwargs):
         st.write(*args, **kwargs)
 
 # -------------------------------------------------------------------------
-# Streamlit page config
+# Streamlit page configuration
 # -------------------------------------------------------------------------
 st.set_page_config(
     page_title="Ποιοτικά χαρακτηριστικά Επιφανειακού Ύδατος",
@@ -47,13 +47,13 @@ st.set_page_config(
 )
 
 # -----------------------------------------------------------------------------
-# 1) Custom CSS injection for a Super Cool Professional Dark Theme
+# 1) Custom CSS injection for a modern professional dark theme
 # -----------------------------------------------------------------------------
 def inject_custom_css():
     custom_css = """
     <link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700&display=swap" rel="stylesheet">
     <style>
-        /* Global Styling */
+        /* Global styling */
         html, body, [class*="css"] {
             font-family: 'Roboto', sans-serif;
             background: linear-gradient(135deg, #141E30, #243B55);
@@ -61,8 +61,8 @@ def inject_custom_css():
         }
         /* Container styling */
         .block-container {
-            background-color: rgba(30, 30, 30, 0.85);
-            padding: 1rem 2rem 2rem 2rem;
+            background-color: rgba(30, 30, 30, 0.90);
+            padding: 1.5rem 2rem;
             border-radius: 10px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.5);
         }
@@ -74,7 +74,7 @@ def inject_custom_css():
         /* Buttons */
         .stButton button {
             background-color: #3700b3;
-            color: #ffffff;
+            color: #fff;
             border: none;
             border-radius: 8px;
             padding: 10px 20px;
@@ -317,7 +317,7 @@ def run_configuration():
     return waterbody, index, analysis
 
 # -----------------------------------------------------------------------------
-# 6) All the Analysis Functions
+# 6) Analysis Functions
 # -----------------------------------------------------------------------------
 def run_lake_processing_app(waterbody: str, index: str):
     debug("DEBUG: Entered run_lake_processing_app for waterbody =", waterbody, "index =", index)
@@ -370,7 +370,7 @@ def run_lake_processing_app(waterbody: str, index: str):
         selected_years = st.sidebar.multiselect("Select Years", options=unique_years,
                                                 default=unique_years,
                                                 key="selected_years")
-        # Filtering data based on date/month/year
+        # Filtering based on date/month/year
         start_dt, end_dt = refined_date_range
         selected_indices = [i for i, d in enumerate(DATES)
                             if start_dt <= d <= end_dt and d.month in selected_months and d.year in selected_years]
@@ -1208,21 +1208,21 @@ def main():
     idx = st.session_state.get("index_choice", None)
     analysis = st.session_state.get("analysis_choice", None)
     debug("DEBUG: In main(), user selected waterbody =", wb, "index =", idx, "analysis =", analysis)
-    # 1) If user picks index=Burned Areas & analysis=Burned Areas => re-use Lake Processing
+    # 1) Burned Areas analysis
     if idx == "Burned Areas" and analysis == "Burned Areas":
         if wb == "Γαδουρά" or wb == "Κορώνεια":
             run_lake_processing_app(wb, idx)
         else:
             st.warning("Τα Burned Areas είναι διαθέσιμα μόνο για Γαδουρά (ή Κορώνεια, αν data exist).")
         return
-    # 2) If user picks index=Burned Areas & analysis=Water Quality Dashboard => run dashboard
+    # 2) Burned Areas Dashboard
     if idx == "Burned Areas" and analysis == "Water Quality Dashboard":
         if wb == "Γαδουρά":
             run_water_quality_dashboard(wb, idx)
         else:
             st.warning("Το Water Quality Dashboard για Burned Areas είναι διαθέσιμο μόνο στη Γαδουρά.")
         return
-    # 3) Otherwise, handle Χλωροφύλλη for the known lakes (including Αξιός)
+    # 3) Otherwise, handle Χλωροφύλλη for the known lakes
     if idx == "Χλωροφύλλη" and wb in ["Κορώνεια", "Πολυφύτου", "Γαδουρά", "Αξιός"]:
         if analysis == "Lake Processing":
             run_lake_processing_app(wb, idx)
