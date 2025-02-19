@@ -334,7 +334,7 @@ def run_lake_processing_app(waterbody: str, index: str):
         # Basic Filters
         min_date = min(DATES)
         max_date = max(DATES)
-        unique_years = sorted({d.year for d in DATES})
+        unique_years = sorted({d.year for d in DATES if d is not None})
 
         st.sidebar.header(f"Filters (Lake Processing: {waterbody})")
         threshold_range = st.sidebar.slider("Pixel value threshold range", 0, 255, (0, 255))
@@ -448,38 +448,19 @@ def run_lake_processing_app(waterbody: str, index: str):
         # ------------------------------
         # Additional Annual Analysis: Monthly Analysis Only
         # ------------------------------
-        st.header("Additional Annual Analysis")
+        st.header("Additional Annual Analysis: Monthly Days In Range Analysis")
 
-        # Determine overall available years
-        unique_years_full = sorted({d.year for d in DATES})
+        # Determine overall available years (filtering out any None)
+        unique_years_full = sorted({d.year for d in DATES if d is not None})
         if not unique_years_full:
             st.error("No valid years found in the data.")
             st.stop()
-        min_year = unique_years_full[0]
-        max_year = unique_years_full[-1]
-
-        st.sidebar.header("Additional Analysis Controls")
-        selected_years_analysis = st.sidebar.multiselect(
-            "Select Years for Days In Range Analysis",
-            options=unique_years_full,
-            default=unique_years_full,
-            key="additional_years"
-        )
-        if selected_years_analysis:
-            monthly_year_range = (min(selected_years_analysis), max(selected_years_analysis))
-        else:
-            monthly_year_range = (min_year, max_year)
-        st.sidebar.write("Monthly Analysis Year Range is set to:", monthly_year_range)
-
-        # Monthly Days in Range Analysis
-        st.subheader("Monthly Days in Range Analysis")
-        st.write("Number of days each pixel is in range for each month over the selected years.")
-        # Use full STACK (not filtered) for monthly analysis
+        # Use the full STACK (without filtering by current user selection) for monthly analysis
         stack_full_in_range = (STACK >= lower_thresh) & (STACK <= upper_thresh)
         monthly_days_in_range = {}
         for m in range(1, 13):
             indices_m = [i for i, d in enumerate(DATES)
-                         if monthly_year_range[0] <= d.year <= monthly_year_range[1] and d.month == m]
+                         if unique_years_full[0] <= d.year <= unique_years_full[-1] and d.month == m]
             if indices_m:
                 monthly_days_in_range[m] = np.sum(stack_full_in_range[indices_m, :, :], axis=0)
             else:
@@ -517,58 +498,6 @@ def run_lake_processing_app(waterbody: str, index: str):
 
         st.info("End of Lake Processing section.")
         st.markdown('</div>', unsafe_allow_html=True)
-
-# ------------------------------
-# Additional Annual Analysis: Yearly Analysis
-# ------------------------------
-st.header("Additional Annual Analysis: Yearly Days in Range Analysis")
-
-# Get all unique years from the dataset
-unique_years_full = sorted({d.year for d in DATES})
-if not unique_years_full:
-    st.error("No valid years found in the data.")
-    st.stop()
-
-# Use the full stack for yearly analysis (without filtering by month)
-stack_full_in_range = (STACK >= lower_thresh) & (STACK <= upper_thresh)
-
-# Create a dictionary that, for each year, sums the valid (in-range) pixels
-yearly_days_in_range = {}
-for year in unique_years_full:
-    indices_y = [i for i, d in enumerate(DATES) if d.year == year]
-    if indices_y:
-        yearly_days_in_range[year] = np.sum(stack_full_in_range[indices_y, :, :], axis=0)
-    else:
-        yearly_days_in_range[year] = None
-
-# Create subplots (one per year). Here, we place each year's plot in a separate row.
-fig_yearly = make_subplots(
-    rows=len(unique_years_full), cols=1,
-    subplot_titles=[f"Year: {year}" for year in unique_years_full],
-    vertical_spacing=0.08
-)
-
-for idx, year in enumerate(unique_years_full, start=1):
-    img = yearly_days_in_range[year]
-    if img is not None:
-        fig_yearly.add_trace(
-            go.Heatmap(
-                z=np.flipud(img),
-                colorscale="plasma",
-                colorbar=dict(title="Days In Range", len=0.5) if idx == 1 else dict(showticklabels=False)
-            ),
-            row=idx, col=1
-        )
-    else:
-        fig_yearly.add_annotation(
-            text="No data",
-            row=idx, col=1,
-            showarrow=False
-        )
-
-fig_yearly.update_layout(height=300 * len(unique_years_full), title_text="Yearly Days In Range Analysis")
-st.plotly_chart(fig_yearly, use_container_width=True)
-
 
 
 # -----------------------------------------------------------------------------
@@ -1010,7 +939,7 @@ def run_pattern_analysis(waterbody: str, index: str):
             st.stop()
 
         st.sidebar.header("Pattern Analysis Controls")
-        unique_years = sorted({d.year for d in DATES})
+        unique_years = sorted({d.year for d in DATES if d is not None})
         selected_years_pattern = st.sidebar.multiselect("Select Years", options=unique_years,
                                                         default=unique_years, key="pattern_years")
         selected_months_pattern = st.sidebar.multiselect("Select Months",
