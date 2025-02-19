@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
@@ -414,29 +415,20 @@ def run_water_quality_dashboard(waterbody: str):
     st.write("DEBUG: Dashboard checking lake_height_path:", lake_height_path)
     st.write("DEBUG: Dashboard checking sampling_kml_path:", sampling_kml_path)
 
-   # Look for MP4 files in the data folder
-mp4_files = glob.glob(os.path.join(data_folder, "*.mp4"))
-
-# Look for GIF files that start with "Sentinel-2_L1C" in the data folder
-gif_files = glob.glob(os.path.join(data_folder, "Sentinel-2_L1C*.gif"))
-
-# Also search in the images_folder (if desired)
-gif_files += glob.glob(os.path.join(images_folder, "Sentinel-2_L1C*.gif"))
-
-# Combine both lists
-possible_video = mp4_files + gif_files
-
-st.write("DEBUG: Found possible video files:", possible_video)
-
-video_path = None
-for v in possible_video:
-    st.write("DEBUG: Checking for video file at:", v)
-    if os.path.exists(v):
-        video_path = v
-        st.write("DEBUG: Found a timelapse file at:", v)
-        break
-if video_path is None:
-    st.write("DEBUG: No timelapse file found in the checked paths.")
+    possible_video = [
+        os.path.join(data_folder, "timelapse.mp4"),
+        os.path.join(data_folder, "Sentinel-2_L1C-202307221755611-timelapse.gif"),
+        os.path.join(images_folder, "Sentinel-2_L1C-202307221755611-timelapse.gif")
+    ]
+    video_path = None
+    for v in possible_video:
+        st.write("DEBUG: Checking for video file at:", v)
+        if os.path.exists(v):
+            video_path = v
+            st.write("DEBUG: Found a timelapse file at:", v)
+            break
+    if video_path is None:
+        st.write("DEBUG: No timelapse file found in the checked paths.")
 
     st.sidebar.header(f"Ρυθμίσεις Ανάλυσης ({waterbody} - Dashboard)")
     x_start = st.date_input("Έναρξη", date(2015, 1, 1))
