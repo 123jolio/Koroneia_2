@@ -397,8 +397,7 @@ def run_lake_processing_app(waterbody: str, index: str):
         fig_days.update_layout(width=800, height=600)
         st.plotly_chart(fig_days, use_container_width=True, key="fig_days")
         with st.expander("Επεξήγηση: Ημέρες σε Εύρος"):
-            st.write("Το διάγραμμα αυτό δείχνει πόσες ημέρες κάθε pixel βρίσκεται εντός του επιλεγμένου εύρους τιμών. "
-                     "Ρυθμίστε το 'Εύρος τιμών pixel' για να δείτε πώς αλλάζει το αποτέλεσμα.")
+            st.write("Το διάγραμμα αυτό δείχνει πόσες ημέρες κάθε pixel βρίσκεται εντός του επιλεγμένου εύρους τιμών. Ρυθμίστε το 'Εύρος τιμών pixel' για να δείτε πώς αλλάζει το αποτέλεσμα.")
 
         # Ορισμός κοινών μεταβλητών για τα διαγράμματα (ticks)
         tick_vals = [1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 365]
@@ -419,8 +418,7 @@ def run_lake_processing_app(waterbody: str, index: str):
         fig_mean.update_layout(coloraxis_colorbar=dict(tickmode='array', tickvals=tick_vals, ticktext=tick_text))
         st.plotly_chart(fig_mean, use_container_width=True, key="fig_mean")
         with st.expander("Επεξήγηση: Μέση Ημέρα Εμφάνισης"):
-            st.write("Το διάγραμμα αυτό παρουσιάζει τη μέση ημέρα εμφάνισης για τα pixels που πληρούν το επιλεγμένο εύρος τιμών. "
-                     "Πειραματιστείτε με το 'Εύρος τιμών pixel' για να δείτε πώς μεταβάλλεται η μέση ημέρα.")
+            st.write("Το διάγραμμα αυτό παρουσιάζει τη μέση ημέρα εμφάνισης για τα pixels που πληρούν το επιλεγμένο εύρος τιμών. Πειραματιστείτε με το 'Εύρος τιμών pixel' για να δείτε πώς μεταβάλλεται η μέση ημέρα.")
 
         # Διάγραμμα "Μέσο Δείγμα Εικόνας"
         if display_option.lower() == "thresholded":
@@ -441,8 +439,7 @@ def run_lake_processing_app(waterbody: str, index: str):
         fig_sample.update_layout(width=800, height=600)
         st.plotly_chart(fig_sample, use_container_width=True, key="fig_sample")
         with st.expander("Επεξήγηση: Μέσο Δείγμα Εικόνας"):
-            st.write("Το διάγραμμα αυτό δείχνει τη μέση τιμή των pixels μετά την εφαρμογή του φίλτρου. "
-                     "Επιλέξτε 'Thresholded' ή 'Original' για να δείτε τη φιλτραρισμένη ή την αρχική εικόνα.")
+            st.write("Το διάγραμμα αυτό δείχνει τη μέση τιμή των pixels μετά την εφαρμογή του φίλτρου. Επιλέξτε 'Thresholded' ή 'Original' για να δείτε τη φιλτραρισμένη ή την αρχική εικόνα.")
 
         # Διάγραμμα "Χρόνος Μέγιστης Εμφάνισης"
         filtered_day_of_year = np.array([d.timetuple().tm_yday for d in filtered_dates])
@@ -462,8 +459,7 @@ def run_lake_processing_app(waterbody: str, index: str):
         fig_time.update_layout(coloraxis_colorbar=dict(tickmode='array', tickvals=tick_vals, ticktext=tick_text))
         st.plotly_chart(fig_time, use_container_width=True, key="fig_time")
         with st.expander("Επεξήγηση: Χρόνος Μέγιστης Εμφάνισης"):
-            st.write("Αυτό το διάγραμμα δείχνει την ημέρα του έτους κατά την οποία κάθε pixel πέτυχε τη μέγιστη τιμή εντός του επιλεγμένου εύρους. "
-                     "Πειραματιστείτε με το 'Εύρος τιμών pixel' για να δείτε πώς αλλάζει το αποτέλεσμα.")
+            st.write("Αυτό το διάγραμμα δείχνει την ημέρα του έτους κατά την οποία κάθε pixel πέτυχε τη μέγιστη τιμή εντός του επιλεγμένου εύρους. Πειραματιστείτε με το 'Εύρος τιμών pixel' για να δείτε πώς αλλάζει το αποτέλεσμα.")
 
         st.header("Χάρτες Ανάλυσης")
         col1, col2 = st.columns(2)
@@ -523,8 +519,7 @@ def run_lake_processing_app(waterbody: str, index: str):
         fig_monthly.update_layout(height=1400)
         st.plotly_chart(fig_monthly, use_container_width=True, key="fig_monthly")
         with st.expander("Επεξήγηση: Μηνιαία Κατανομή Ημερών σε Εύρος"):
-            st.write("Για κάθε μήνα, αυτό το διάγραμμα δείχνει πόσες ημέρες κάθε pixel βρέθηκε εντός του επιλεγμένου εύρους τιμών. "
-                     "Το εύρος τιμών ορίζεται από το slider 'Εύρος τιμών pixel'.")
+            st.write("Για κάθε μήνα, αυτό το διάγραμμα δείχνει πόσες ημέρες κάθε pixel βρέθηκε εντός του επιλεγμένου εύρους τιμών. Το εύρος τιμών ορίζεται από το slider 'Εύρος τιμών pixel'.")
 
         # ------------------------------
         # Επιπρόσθετη Ετήσια Ανάλυση: Ετήσια Κατανομή Ημερών σε Εύρος
@@ -574,8 +569,7 @@ def run_lake_processing_app(waterbody: str, index: str):
         )
         st.plotly_chart(fig_yearly, use_container_width=True, key="fig_yearly")
         with st.expander("Επεξήγηση: Ετήσια Κατανομή Ημερών σε Εύρος"):
-            st.write("Για κάθε έτος, αυτό το διάγραμμα δείχνει πόσες ημέρες κάθε pixel βρέθηκε εντός του επιλεγμένου εύρους τιμών, "
-                     "επιτρέποντάς σας να συγκρίνετε τις ετήσιες αλλαγές στη γεωχωρική κατανομή του δείκτη.")
+            st.write("Για κάθε έτος, αυτό το διάγραμμα δείχνει πόσες ημέρες κάθε pixel βρέθηκε εντός του επιλεγμένου εύρους τιμών, επιτρέποντάς σας να συγκρίνετε τις ετήσιες αλλαγές στη γεωχωρική κατανομή του δείκτη.")
 
         st.info("Τέλος Επεξεργασίας Λίμνης.")
         st.markdown('</div>', unsafe_allow_html=True)
@@ -882,7 +876,7 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                         if video_path.endswith(".mp4"):
                             st.video(video_path, key="default_video")
                         else:
-                            st.image(video_path)  # Removed key to avoid duplicate
+                            st.image(video_path)  # key removed to avoid duplicate key error
                     else:
                         st.info("Δεν βρέθηκε αρχείο timelapse.")
                 with nested_tabs[2]:
@@ -916,13 +910,13 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                             st.info("Δεν υπάρχουν δεδομένα mg για αυτό το σημείο.")
         # Καρτέλα 2 (Upload)
         with tabs[1]:
-            st.header("Ανάλυση για ανεβασμένη δειγματοληψία", key="upload_tab_header")
+            st.header("Ανάλυση για ανεβασμένη δειγματοληψία")
             uploaded_file = st.file_uploader("Ανεβάστε αρχείο KML για νέα σημεία δειγματοληψίας", type="kml", key="upload_kml")
             if uploaded_file is not None:
                 try:
                     new_sampling_points = parse_sampling_kml(uploaded_file)
                 except Exception as e:
-                    st.error(f"Σφάλμα επεξεργασίας ανεβασμένου αρχείου: {e}", key="upload_error")
+                    st.error(f"Σφάλμα επεξεργασίας ανεβασμένου αρχείου: {e}")
                     new_sampling_points = []
                 point_names = [name for name, _, _ in new_sampling_points]
                 selected_points = st.multiselect("Επιλέξτε σημεία για ανάλυση mg/m³",
@@ -954,9 +948,9 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                             if video_path.endswith(".mp4"):
                                 st.video(video_path, key="upload_video")
                             else:
-                                st.image(video_path)  # Removed key to avoid duplicate
+                                st.image(video_path)  # key removed to avoid duplicate key error
                         else:
-                            st.info("Δεν βρέθηκε αρχείο Video/GIF.", key="upload_timeline_info")
+                            st.info("Δεν βρέθηκε αρχείο Video/GIF.")
                     with nested_tabs[2]:
                         st.plotly_chart(fig_colors, use_container_width=True, key="upload_fig_colors")
                     with nested_tabs[3]:
@@ -965,7 +959,8 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                         st.plotly_chart(fig_dual, use_container_width=True, key="upload_fig_dual")
                     with nested_tabs[5]:
                         selected_detail_point = st.selectbox("Επιλέξτε σημείο για λεπτομερή ανάλυση mg",
-                                                             options=list(results_mg.keys()), key="upload_detail")
+                                                             options=list(results_mg.keys()),
+                                                             key="upload_detail")
                         if selected_detail_point:
                             mg_data = results_mg[selected_detail_point]
                             if mg_data:
@@ -1132,13 +1127,11 @@ def run_pattern_analysis(waterbody: str, index: str):
         st.subheader("Χρονολογικό Πρότυπο")
         st.plotly_chart(fig_temporal, use_container_width=True, key="pattern_fig_temporal")
         with st.expander("Επεξήγηση: Χρονολογικό Πρότυπο ανά Μήνα"):
-            st.write("Το διάγραμμα αυτό δείχνει το μέσο ποσοστό των pixels που βρίσκονται εντός του επιλεγμένου εύρους τιμών για κάθε μήνα. "
-                     "Μπορείτε να τροποποιήσετε το 'Εύρος τιμών pixel' για να δείτε πώς αλλάζει το πρότυπο.")
+            st.write("Το διάγραμμα αυτό δείχνει το μέσο ποσοστό των pixels που βρίσκονται εντός του επιλεγμένου εύρους τιμών για κάθε μήνα. Μπορείτε να τροποποιήσετε το 'Εύρος τιμών pixel' για να δείτε πώς αλλάζει το πρότυπο.")
         st.subheader("Χωρική Ταξινόμηση")
         st.plotly_chart(fig_class, use_container_width=True, key="pattern_fig_class")
         with st.expander("Επεξήγηση: Χωρική Ταξινόμηση"):
-            st.write("Το διάγραμμα αυτό ταξινομεί χωρικά τα pixels με βάση το μέσο ποσοστό τους εντός του εύρους τιμών. "
-                     "Αυτό σας επιτρέπει να εντοπίσετε περιοχές με χαμηλές, μέτριες ή υψηλές τιμές.")
+            st.write("Το διάγραμμα αυτό ταξινομεί χωρικά τα pixels με βάση το μέσο ποσοστό τους εντός του εύρους τιμών. Αυτό σας επιτρέπει να εντοπίσετε περιοχές με χαμηλές, μέτριες ή υψηλές τιμές.")
         if temporal_data:
             df_temporal = pd.DataFrame(temporal_data, columns=["Μήνας", "Μέσο Ποσοστό σε Εύρος"])
             csv = df_temporal.to_csv(index=False).encode('utf-8')
