@@ -58,14 +58,16 @@ def get_data_folder(waterbody: str, index: str) -> str:
     base_dir = os.path.dirname(os.path.abspath(__file__))
     debug("DEBUG: Called get_data_folder with waterbody =", waterbody, "index =", index)
 
-    # Map waterbody to a base folder
+    # Map waterbody to a base folder.
+    # If your actual folder for Axios is named "Axios" (in English), use that.
+    # If it is named in Greek (e.g. "Αξιός"), update accordingly.
     if waterbody == "Κορώνεια":
         waterbody_folder = "Koroneia"
     elif waterbody == "Πολυφύτου":
         waterbody_folder = "polyphytou"
     elif waterbody == "Γαδουρά":
         waterbody_folder = "Gadoura"
-    elif waterbody == "Αξιός":  # NEW: handle Axios
+    elif waterbody == "Αξιός":  # For Axios – change if needed
         waterbody_folder = "Axios"
     else:
         waterbody_folder = None
@@ -254,9 +256,9 @@ def run_intro_page():
     st.markdown("""
     <div class="card">
       <h4>Εισαγωγή</h4>
-      <p>Αυτή η εφαρμογή αναλύει τα ποιοτικά χαρακτηριστικά του επιφανειακού ύδατος χρησιμοποιώντας
-      εργαλεία δορυφορικής τηλεπισκόπησης. Επιλέξτε τις επιθυμητές ρυθμίσεις μέσω του μενού
-      (υδάτινο σώμα, δείκτη και είδος ανάλυσης) και εξερευνήστε τα δεδομένα.</p>
+      <p>Αυτή η εφαρμογή αναλύει τα ποιοτικά χαρακτηριστικά του επιφανειακού ύδατος χρησιμοποιώντας "
+      "εργαλεία δορυφορικής τηλεπισκόπησης. Επιλέξτε τις επιθυμητές ρυθμίσεις μέσω του μενού "
+      "(υδάτινο σώμα, δείκτη και είδος ανάλυσης) και εξερευνήστε τα δεδομένα.</p>
     </div>
     """, unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
@@ -445,14 +447,22 @@ def run_water_quality_dashboard(waterbody: str, index: str):
     st.title(f"Water Quality Dashboard ({waterbody} - {index})")
 
     data_folder = get_data_folder(waterbody, index)
+    debug("DEBUG: data_folder resolved to:", data_folder)
     if data_folder is None:
         st.error("Δεν υπάρχει φάκελος δεδομένων για το επιλεγμένο υδάτινο σώμα / δείκτη.")
         st.stop()
 
     images_folder = os.path.join(data_folder, "GeoTIFFs")
+    debug("DEBUG: images_folder resolved to:", images_folder)
     lake_height_path = os.path.join(data_folder, "lake height.xlsx")
     sampling_kml_path = os.path.join(data_folder, "sampling.kml")
-    debug("DEBUG: Dashboard checking images_folder:", images_folder)
+
+    # Debug: list files in images_folder
+    if os.path.exists(images_folder):
+        debug("DEBUG: Files in images_folder:", os.listdir(images_folder))
+    else:
+        debug("DEBUG: images_folder does not exist.")
+
     debug("DEBUG: Dashboard checking lake_height_path:", lake_height_path)
     debug("DEBUG: Dashboard checking sampling_kml_path:", sampling_kml_path)
 
@@ -1064,7 +1074,7 @@ def run_custom_ui():
     )
 
     st.markdown(f"""
-    <div style="padding: 0.5rem; background-color:#1f1f1f; border-radius:5px; margin-top:1rem;">
+    <div style="padding: 0.5rem; background-color:#1f1e1e; border-radius:5px; margin-top:1rem;">
         <strong>Επιλεγμένο υδάτινο σώμα:</strong> {waterbody} &nbsp;&nbsp; | &nbsp;&nbsp;
         <strong>Επιλεγμένος Δείκτης:</strong> {index} &nbsp;&nbsp; | &nbsp;&nbsp;
         <strong>Επιλεγμένη Ανάλυση:</strong> {analysis}
@@ -1121,7 +1131,6 @@ def main():
         else:
             st.warning("Το 'Burned Areas' είναι διαθέσιμο μόνο για το υδάτινο σώμα 'Γαδουρά'.")
     else:
-        # Catch-all for unsupported combos
         st.warning(
             "Δεν υπάρχουν διαθέσιμα δεδομένα για αυτόν τον συνδυασμό δείκτη / υδάτινου σώματος. "
             "Π.χ. Χλωροφύλλη υπάρχει μόνο για (Κορώνεια, Πολυφύτου, Γαδουρά, Αξιός). "
