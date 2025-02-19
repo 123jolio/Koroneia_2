@@ -30,7 +30,7 @@ warnings.filterwarnings("ignore", category=NotGeoreferencedWarning)
 DEBUG = False
 
 def debug(*args, **kwargs):
-    """Βοηθητική συνάρτηση για την εμφάνιση μηνυμάτων αποσφαλμάτωσης, εάν είναι ενεργοποιημένη."""
+    """Βοηθητική συνάρτηση για εμφάνιση μηνυμάτων αποσφαλμάτωσης, αν είναι ενεργοποιημένη."""
     if DEBUG:
         st.write(*args, **kwargs)
 
@@ -225,7 +225,7 @@ def read_image(file_path: str, lake_shape: dict = None):
 
 def load_data(input_folder: str, shapefile_name="shapefile.xml"):
     """
-    Διαβάζει όλα τα TIF αρχεία από το input_folder, εφαρμόζει μάσκα εάν υπάρχει, και εξάγει πληροφορίες ημερομηνίας.
+    Διαβάζει όλα τα TIF αρχεία από το input_folder, εφαρμόζει μάσκα (εάν υπάρχει) και εξάγει πληροφορίες ημερομηνίας.
     Επιστρέφει (stack, array ημερών, λίστα ημερομηνιών).
     """
     debug("DEBUG: load_data καλεσμένη με:", input_folder)
@@ -395,9 +395,10 @@ def run_lake_processing_app(waterbody: str, index: str):
         fig_days = px.imshow(days_in_range, color_continuous_scale="plasma",
                              title="Διάγραμμα: Ημέρες σε Εύρος", labels={"color": "Ημέρες σε Εύρος"})
         fig_days.update_layout(width=800, height=600)
-        with st.expander("Επεξήγηση διαγράμματος: Ημέρες σε Εύρος"):
-            st.write("Αυτό το διάγραμμα δείχνει πόσες ημέρες κάθε pixel βρίσκεται εντός του επιλεγμένου εύρους τιμών. "
-                     "Μπορείτε να τροποποιήσετε το εύρος τιμών με το slider 'Εύρος τιμών pixel' στην πλαϊνή μπάρα.")
+        st.plotly_chart(fig_days, use_container_width=True)
+        with st.expander("Επεξήγηση: Ημέρες σε Εύρος"):
+            st.write("Το διάγραμμα αυτό δείχνει πόσες ημέρες κάθε pixel βρίσκεται εντός του επιλεγμένου εύρους τιμών. "
+                     "Ρυθμίστε το 'Εύρος τιμών pixel' για να δείτε πώς αλλάζει το αποτέλεσμα.")
 
         # Διάγραμμα "Μέση Ημέρα Εμφάνισης"
         days_array = days_filtered.reshape((-1, 1, 1))
@@ -409,14 +410,14 @@ def run_lake_processing_app(waterbody: str, index: str):
         fig_mean = px.imshow(mean_day, color_continuous_scale="RdBu",
                              title="Διάγραμμα: Μέση Ημέρα Εμφάνισης", labels={"color": "Μέση Ημέρα"})
         fig_mean.update_layout(width=800, height=600)
-        tick_vals = [1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 365]
-        tick_text = ["1 (Ιαν)", "32 (Φεβ)", "60 (Μαρ)", "91 (Απρ)",
-                     "121 (Μαΐ)", "152 (Ιουν)", "182 (Ιουλ)", "213 (Αυγ)",
-                     "244 (Σεπ)", "274 (Οκτ)", "305 (Νοε)", "335 (Δεκ)", "365 (Δεκ)"]
-        fig_mean.update_layout(coloraxis_colorbar=dict(tickmode='array', tickvals=tick_vals, ticktext=tick_text))
-        with st.expander("Επεξήγηση διαγράμματος: Μέση Ημέρα Εμφάνισης"):
-            st.write("Αυτό το διάγραμμα παρουσιάζει τη μέση ημέρα εμφάνισης για τα pixels που πληρούν το επιλεγμένο εύρος τιμών. "
-                     "Ρυθμίστε το 'Εύρος τιμών pixel' για να δείτε πώς αλλάζει η μέση ημέρα σε διαφορετικές τιμές.")
+        fig_mean.update_layout(coloraxis_colorbar=dict(tickmode='array', tickvals=[1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 365],
+                                                       ticktext=["1 (Ιαν)", "32 (Φεβ)", "60 (Μαρ)", "91 (Απρ)",
+                                                                 "121 (Μαΐ)", "152 (Ιουν)", "182 (Ιουλ)", "213 (Αυγ)",
+                                                                 "244 (Σεπ)", "274 (Οκτ)", "305 (Νοε)", "335 (Δεκ)", "365 (Δεκ)"]))
+        st.plotly_chart(fig_mean, use_container_width=True)
+        with st.expander("Επεξήγηση: Μέση Ημέρα Εμφάνισης"):
+            st.write("Το διάγραμμα αυτό παρουσιάζει τη μέση ημέρα εμφάνισης για τα pixels που πληρούν το επιλεγμένο εύρος τιμών. "
+                     "Πειραματιστείτε με το 'Εύρος τιμών pixel' για να δείτε πώς μεταβάλλεται η μέση ημέρα.")
 
         # Διάγραμμα "Μέσο Δείγμα Εικόνας"
         if display_option.lower() == "thresholded":
@@ -435,9 +436,10 @@ def run_lake_processing_app(waterbody: str, index: str):
                                range_color=[avg_min, avg_max],
                                title="Διάγραμμα: Μέσο Δείγμα Εικόνας", labels={"color": "Τιμή Pixel"})
         fig_sample.update_layout(width=800, height=600)
-        with st.expander("Επεξήγηση διαγράμματος: Μέσο Δείγμα Εικόνας"):
-            st.write("Αυτό το διάγραμμα δείχνει το μέσο δείγμα της εικόνας μετά την εφαρμογή του φίλτρου. "
-                     "Μπορείτε να αλλάξετε τον 'Τρόπο εμφάνισης' για να δείτε την αρχική ή την φιλτραρισμένη εικόνα.")
+        st.plotly_chart(fig_sample, use_container_width=True)
+        with st.expander("Επεξήγηση: Μέσο Δείγμα Εικόνας"):
+            st.write("Το διάγραμμα αυτό δείχνει τη μέση τιμή των pixels μετά την εφαρμογή του φίλτρου. "
+                     "Επιλέξτε 'Thresholded' ή 'Original' για να δείτε τη φιλτραρισμένη ή την αρχική εικόνα.")
 
         # Διάγραμμα "Χρόνος Μέγιστης Εμφάνισης"
         filtered_day_of_year = np.array([d.timetuple().tm_yday for d in filtered_dates])
@@ -454,10 +456,12 @@ def run_lake_processing_app(waterbody: str, index: str):
                              range_color=[1, 365],
                              title="Διάγραμμα: Χρόνος Μέγιστης Εμφάνισης", labels={"color": "Ημέρα"})
         fig_time.update_layout(width=800, height=600)
-        fig_time.update_layout(coloraxis_colorbar=dict(tickmode='array', tickvals=tick_vals, ticktext=tick_text))
-        with st.expander("Επεξήγηση διαγράμματος: Χρόνος Μέγιστης Εμφάνισης"):
-            st.write("Αυτό το διάγραμμα δείχνει την ημέρα του έτους (ως αριθμό) κατά την οποία κάθε pixel έφτασε στη μέγιστη τιμή "
-                     "εντός του επιλεγμένου εύρους. Μπορείτε να δείτε πως αλλάζει αυτό με την τροποποίηση του 'Εύρους τιμών pixel'.")
+        fig_time.update_layout(coloraxis_colorbar=dict(tickmode='array', tickvals=[1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 365],
+                                                       ticktext=tick_text))
+        st.plotly_chart(fig_time, use_container_width=True)
+        with st.expander("Επεξήγηση: Χρόνος Μέγιστης Εμφάνισης"):
+            st.write("Αυτό το διάγραμμα δείχνει την ημέρα του έτους κατά την οποία κάθε pixel πέτυχε τη μέγιστη τιμή εντός του επιλεγμένου εύρους. "
+                     "Ρυθμίστε το 'Εύρος τιμών pixel' για να δείτε πώς μεταβάλλεται το αποτέλεσμα.")
 
         st.header("Χάρτες Ανάλυσης")
         col1, col2 = st.columns(2)
@@ -516,9 +520,9 @@ def run_lake_processing_app(waterbody: str, index: str):
                 )
         fig_monthly.update_layout(height=1400)
         st.plotly_chart(fig_monthly, use_container_width=True)
-        with st.expander("Επεξήγηση διαγράμματος: Μηνιαία Κατανομή Ημερών σε Εύρος"):
+        with st.expander("Επεξήγηση: Μηνιαία Κατανομή Ημερών σε Εύρος"):
             st.write("Για κάθε μήνα, αυτό το διάγραμμα δείχνει πόσες ημέρες κάθε pixel βρέθηκε εντός του επιλεγμένου εύρους τιμών. "
-                     "Το εύρος τιμών ορίζεται από το slider 'Εύρος τιμών pixel'.")
+                     "Ρυθμίστε το 'Εύρος τιμών pixel' για να αλλάξετε τα αποτελέσματα.")
 
         # ------------------------------
         # Επιπρόσθετη Ετήσια Ανάλυση: Ετήσια Κατανομή Ημερών σε Εύρος
@@ -539,7 +543,7 @@ def run_lake_processing_app(waterbody: str, index: str):
                 yearly_days_in_range[year] = None
 
         n_years = len(unique_years_full)
-        vertical_spacing = 0.05  # Χρησιμοποιούμε μικρό vertical_spacing
+        vertical_spacing = 0.05  # Μικρή τιμή για επαρκή χώρος ανά σειρά
         fig_yearly = make_subplots(
             rows=n_years, cols=1,
             subplot_titles=[f"Έτος: {year}" for year in unique_years_full],
@@ -567,7 +571,7 @@ def run_lake_processing_app(waterbody: str, index: str):
             title_text="Ετήσια Κατανομή Ημερών σε Εύρος"
         )
         st.plotly_chart(fig_yearly, use_container_width=True)
-        with st.expander("Επεξήγηση διαγράμματος: Ετήσια Κατανομή Ημερών σε Εύρος"):
+        with st.expander("Επεξήγηση: Ετήσια Κατανομή Ημερών σε Εύρος"):
             st.write("Για κάθε έτος, αυτό το διάγραμμα δείχνει πόσες ημέρες κάθε pixel βρέθηκε εντός του επιλεγμένου εύρους τιμών, "
                      "επιτρέποντάς σας να συγκρίνετε τις ετήσιες αλλαγές στη γεωχωρική κατανομή του δείκτη.")
 
@@ -1120,8 +1124,14 @@ def run_pattern_analysis(waterbody: str, index: str):
         st.markdown("Η ανάλυση αυτή παρουσιάζει το χρονολογικό πρότυπο (μηνιαία) και την χωρική ταξινόμηση των δεδομένων.")
         st.subheader("Χρονολογικό Πρότυπο")
         st.plotly_chart(fig_temporal, use_container_width=True)
+        with st.expander("Επεξήγηση: Χρονολογικό Πρότυπο ανά Μήνα"):
+            st.write("Αυτό το διάγραμμα δείχνει το μέσο ποσοστό των pixel που βρίσκονται εντός του επιλεγμένου εύρους τιμών για κάθε μήνα. "
+                     "Μπορείτε να τροποποιήσετε το 'Εύρος τιμών pixel' για να δείτε πώς αλλάζει το πρότυπο.")
         st.subheader("Χωρική Ταξινόμηση")
         st.plotly_chart(fig_class, use_container_width=True)
+        with st.expander("Επεξήγηση: Χωρική Ταξινόμηση"):
+            st.write("Το διάγραμμα αυτό ταξινομεί χωρικά τα pixels με βάση το μέσο ποσοστό τους σε εύρος. "
+                     "Αυτό σας επιτρέπει να εντοπίσετε περιοχές με χαμηλές, μέτριες ή υψηλές τιμές.")
 
         if temporal_data:
             df_temporal = pd.DataFrame(temporal_data, columns=["Μήνας", "Μέσο Ποσοστό σε Εύρος"])
