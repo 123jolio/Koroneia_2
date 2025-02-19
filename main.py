@@ -312,19 +312,14 @@ def run_lake_processing_app(waterbody: str, index: str):
                                              format_func=lambda x: month_options[x],
                                              default=st.session_state.selected_months,
                                              key="selected_months")
-    if st.sidebar.button("Deselect All Months"):
-        st.session_state.selected_months = []
-        selected_months = []
+    # (Removed the "Deselect All Months" button to avoid session_state modifications after widget instantiation.)
 
-    # --- Updated "Select Years" multiselect ---
-    if "selected_years" not in st.session_state or not set(st.session_state.selected_years).issubset(set(unique_years)):
-         st.session_state.selected_years = unique_years
+    # Reinitialize the "Select Years" default to avoid stale values.
+    st.session_state.selected_years = unique_years
     selected_years = st.sidebar.multiselect("Select Years", options=unique_years,
-                                            default=st.session_state.selected_years,
+                                            default=unique_years,
                                             key="selected_years")
-    if st.sidebar.button("Deselect All Years"):
-        st.session_state.selected_years = []
-        selected_years = []
+    # (Removed the "Deselect All Years" button to avoid session_state modifications after widget instantiation.)
 
     start_dt, end_dt = refined_date_range
     selected_indices = [i for i, d in enumerate(DATES)
@@ -502,10 +497,11 @@ def run_lake_processing_app(waterbody: str, index: str):
             f"{year} - {datetime(2000, m, 1).strftime('%B')}"
             for year in selected_years_analysis for m in selected_months_yearly
         ]
+        # Set vertical_spacing to 0.07 to satisfy the spacing constraint
         fig_yearly = make_subplots(
             rows=n_rows, cols=n_cols,
             subplot_titles=subplot_titles,
-            horizontal_spacing=0.03, vertical_spacing=0.08
+            horizontal_spacing=0.03, vertical_spacing=0.07
         )
         yearly_days_in_range = {}
         for i, year in enumerate(selected_years_analysis):
