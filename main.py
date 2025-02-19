@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
@@ -57,8 +56,6 @@ def get_data_folder(waterbody: str) -> str:
     data_folder = None
 
     if waterbody == "Κορώνεια":
-        # If your actual data for Κορώνεια is directly under base_dir/Chlorophyll,
-        # update this line accordingly.
         data_folder = os.path.join(base_dir, "Koroneia", "Chlorophyll")
     elif waterbody == "Πολυφύτου":
         data_folder = os.path.join(base_dir, "polyphytou", "Chlorophyll")
@@ -415,19 +412,25 @@ def run_water_quality_dashboard(waterbody: str):
     st.write("DEBUG: Dashboard checking lake_height_path:", lake_height_path)
     st.write("DEBUG: Dashboard checking sampling_kml_path:", sampling_kml_path)
 
-    possible_video = [
-        os.path.join(data_folder, "timelapse.mp4"),
-        os.path.join(data_folder, "Sentinel-2_L1C-202307221755611-timelapse.gif"),
-        os.path.join(images_folder, "Sentinel-2_L1C-202307221755611-timelapse.gif")
-    ]
+    # Updated timelapse search: look for a local timelapse.mp4 and any file starting with Sentinel-2_L1C that has "timelapse" in its name.
+    possible_video = []
+    video_mp4 = os.path.join(data_folder, "timelapse.mp4")
+    if os.path.exists(video_mp4):
+        possible_video.append(video_mp4)
+        st.write("DEBUG: Found timelapse mp4 at:", video_mp4)
+    # Search for Sentinel-2_L1C timelapse files in data_folder and images_folder
+    pattern1 = os.path.join(data_folder, "Sentinel-2_L1C*timelapse*")
+    pattern2 = os.path.join(images_folder, "Sentinel-2_L1C*timelapse*")
+    found_files1 = glob.glob(pattern1)
+    found_files2 = glob.glob(pattern2)
+    for f in found_files1 + found_files2:
+        st.write("DEBUG: Found timelapse file:", f)
+        possible_video.append(f)
     video_path = None
-    for v in possible_video:
-        st.write("DEBUG: Checking for video file at:", v)
-        if os.path.exists(v):
-            video_path = v
-            st.write("DEBUG: Found a timelapse file at:", v)
-            break
-    if video_path is None:
+    if possible_video:
+        video_path = possible_video[0]
+        st.write("DEBUG: Using timelapse file:", video_path)
+    else:
         st.write("DEBUG: No timelapse file found in the checked paths.")
 
     st.sidebar.header(f"Ρυθμίσεις Ανάλυσης ({waterbody} - Dashboard)")
