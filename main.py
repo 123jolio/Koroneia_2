@@ -38,7 +38,12 @@ def debug(*args, **kwargs):
 st.set_page_config(
     page_title="Ποιοτικά χαρακτηριστικά Επιφανειακού Ύδατος",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
+    menu_items={
+        'Get Help': 'https://example.com/help',
+        'Report a bug': 'https://example.com/bug',
+        'About': '### Water Quality App\nDeveloped with Streamlit'
+    }
 )
 
 # -----------------------------------------------------------------------------
@@ -48,7 +53,7 @@ def inject_custom_css():
     custom_css = """
     <link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700&display=swap" rel="stylesheet">
     <style>
-        /* Global styling */
+        /* Global Styling */
         html, body, [class*="css"] {
             font-family: 'Roboto', sans-serif;
             background: linear-gradient(135deg, #141E30, #243B55);
@@ -56,23 +61,25 @@ def inject_custom_css():
         }
         /* Container styling */
         .block-container {
-            background-color: transparent;
-            padding: 1rem;
+            background-color: rgba(30, 30, 30, 0.85);
+            padding: 1rem 2rem 2rem 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
         }
         /* Headings */
         h1, h2, h3, h4, h5, h6 {
             color: #bb86fc;
             text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
         }
-        /* Button styling */
+        /* Buttons */
         .stButton button {
             background-color: #3700b3;
             color: #ffffff;
+            border: none;
             border-radius: 8px;
             padding: 10px 20px;
-            border: none;
             transition: all 0.3s ease;
-            box-shadow: 0px 4px 8px rgba(0,0,0,0.4);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
         }
         .stButton button:hover {
             background-color: #6200ee;
@@ -84,10 +91,6 @@ def inject_custom_css():
             padding: 1rem;
             border-right: 2px solid #6200ee;
         }
-        .stSelectbox, .stSlider, .stTextInput {
-            background-color: #1f1f1f;
-            color: #e0e0e0;
-        }
         /* Card styling */
         .card {
             background-color: #1e1e1e;
@@ -95,10 +98,21 @@ def inject_custom_css():
             border-radius: 10px;
             margin-bottom: 1.5rem;
             box-shadow: 0 4px 10px rgba(0,0,0,0.6);
-            transition: transform 0.2s ease-in-out;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease;
         }
         .card:hover {
-            transform: scale(1.01);
+            transform: scale(1.02);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.7);
+        }
+        /* Inputs and selectors */
+        .stSelectbox, .stSlider, .stTextInput {
+            background-color: #1f1f1f;
+            color: #e0e0e0;
+        }
+        /* Custom tabs styling */
+        .css-1outpf7 {
+            background-color: #1e1e1e !important;
+            border-bottom: 2px solid #6200ee;
         }
     </style>
     """
