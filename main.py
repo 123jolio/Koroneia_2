@@ -451,7 +451,7 @@ def run_lake_processing_app(waterbody: str, index: str):
         fig_monthly = make_subplots(
             rows=3, cols=4,
             subplot_titles=[datetime(2000, m, 1).strftime('%B') for m in range(1, 13)],
-            horizontal_spacing=0.05, vertical_spacing=0.35
+            horizontal_spacing=0.05, vertical_spacing=0.05
         )
         trace_count = 0
         for m in range(1, 13):
@@ -504,7 +504,7 @@ def run_lake_processing_app(waterbody: str, index: str):
         fig_yearly = make_subplots(
             rows=len(unique_years_full), cols=1,
             subplot_titles=[f"Year: {year}" for year in unique_years_full],
-            vertical_spacing=0.08
+            vertical_spacing=0.24
         )
         for idx, year in enumerate(unique_years_full, start=1):
             img = yearly_days_in_range[year]
