@@ -545,9 +545,7 @@ def run_lake_processing_app(waterbody: str, index: str):
                 yearly_days_in_range[year] = None
 
         n_years = len(unique_years_full)
-        # Ρυθμισμένη τιμή για το vertical_spacing (π.χ., 0.02)
-        vertical_spacing = 0.02
-
+        vertical_spacing = 0.02  # Ρυθμισμένη τιμή για το vertical_spacing
         fig_yearly = make_subplots(
             rows=n_years, cols=1,
             subplot_titles=[f"Έτος: {year}" for year in unique_years_full],
@@ -884,9 +882,9 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                         if video_path.endswith(".mp4"):
                             st.video(video_path, key="default_video")
                         else:
-                            st.image(video_path)  # Removed key here to avoid duplicate key error
+                            st.image(video_path)  # Removed key to avoid duplicate
                     else:
-                        st.info("Δεν βρέθηκε αρχείο timelapse.", key="default_timeline_info")
+                        st.info("Δεν βρέθηκε αρχείο timelapse.")
                 with nested_tabs[2]:
                     st.plotly_chart(fig_colors, use_container_width=True, key="default_fig_colors")
                 with nested_tabs[3]:
@@ -915,7 +913,7 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                                                      xaxis_title="Ημερομηνία", yaxis_title="mg/m³")
                             st.plotly_chart(fig_detail, use_container_width=True, key="default_fig_detail")
                         else:
-                            st.info("Δεν υπάρχουν δεδομένα mg για αυτό το σημείο.", key="default_no_mg")
+                            st.info("Δεν υπάρχουν δεδομένα mg για αυτό το σημείο.")
         # Καρτέλα 2 (Upload)
         with tabs[1]:
             st.header("Ανάλυση για ανεβασμένη δειγματοληψία", key="upload_tab_header")
@@ -946,7 +944,7 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                     if isinstance(results, tuple) and len(results) == 7:
                         fig_geo, fig_dual, fig_colors, fig_mg, results_colors, results_mg, lake_data = results
                     else:
-                        st.error("Σφάλμα μορφοποίησης αποτελεσμάτων ανάλυσης (Upload). Παρακαλώ επαναλάβετε.", key="upload_format_error")
+                        st.error("Σφάλμα μορφοποίησης αποτελεσμάτων ανάλυσης (Upload). Παρακαλώ επαναλάβετε.")
                         st.stop()
                     nested_tabs = st.tabs(["GeoTIFF", "Video/GIF", "Χρώματα Pixel", "Μέσο mg", "Διπλά Διαγράμματα", "Λεπτομερής ανάλυση mg"])
                     with nested_tabs[0]:
@@ -956,7 +954,7 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                             if video_path.endswith(".mp4"):
                                 st.video(video_path, key="upload_video")
                             else:
-                                st.image(video_path)  # Removed key here as well
+                                st.image(video_path)  # Removed key to avoid duplicate
                         else:
                             st.info("Δεν βρέθηκε αρχείο Video/GIF.", key="upload_timeline_info")
                     with nested_tabs[2]:
