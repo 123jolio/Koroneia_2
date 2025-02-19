@@ -56,9 +56,8 @@ def get_data_folder(waterbody: str) -> str:
     data_folder = None
 
     if waterbody == "Κορώνεια":
-        # If your actual data for Κορώνεια is directly under base_dir/Chlorophyll,
-        # update this line accordingly.
-        data_folder = os.path.join(base_dir, "Koroneia", "Chlorophyll")
+        # Updated: For Κορώνεια, data are assumed to be directly in base_dir/Chlorophyll
+        data_folder = os.path.join(base_dir, "Chlorophyll")
     elif waterbody == "Πολυφύτου":
         data_folder = os.path.join(base_dir, "polyphytou", "Chlorophyll")
     elif waterbody == "Γαδουρά":
@@ -414,29 +413,25 @@ def run_water_quality_dashboard(waterbody: str):
     st.write("DEBUG: Dashboard checking lake_height_path:", lake_height_path)
     st.write("DEBUG: Dashboard checking sampling_kml_path:", sampling_kml_path)
 
-   # Look for MP4 files in the data folder
-mp4_files = glob.glob(os.path.join(data_folder, "*.mp4"))
-
-# Look for GIF files that start with "Sentinel-2_L1C" in the data folder
-gif_files = glob.glob(os.path.join(data_folder, "Sentinel-2_L1C*.gif"))
-
-# Also search in the images_folder (if desired)
-gif_files += glob.glob(os.path.join(images_folder, "Sentinel-2_L1C*.gif"))
-
-# Combine both lists
-possible_video = mp4_files + gif_files
-
-st.write("DEBUG: Found possible video files:", possible_video)
-
-video_path = None
-for v in possible_video:
-    st.write("DEBUG: Checking for video file at:", v)
-    if os.path.exists(v):
-        video_path = v
-        st.write("DEBUG: Found a timelapse file at:", v)
-        break
-if video_path is None:
-    st.write("DEBUG: No timelapse file found in the checked paths.")
+    # --- TIMELAPSE FILE SEARCH USING GLOB ---
+    # Look for MP4 files in the data folder
+    mp4_files = glob.glob(os.path.join(data_folder, "*.mp4"))
+    # Look for GIF files that start with "Sentinel-2_L1C" in the data folder
+    gif_files = glob.glob(os.path.join(data_folder, "Sentinel-2_L1C*.gif"))
+    # Also search in the images_folder if desired
+    gif_files += glob.glob(os.path.join(images_folder, "Sentinel-2_L1C*.gif"))
+    # Combine both lists
+    possible_video = mp4_files + gif_files
+    st.write("DEBUG: Found possible video files:", possible_video)
+    video_path = None
+    for v in possible_video:
+        st.write("DEBUG: Checking for video file at:", v)
+        if os.path.exists(v):
+            video_path = v
+            st.write("DEBUG: Found a timelapse file at:", v)
+            break
+    if video_path is None:
+        st.write("DEBUG: No timelapse file found in the checked paths.")
 
     st.sidebar.header(f"Ρυθμίσεις Ανάλυσης ({waterbody} - Dashboard)")
     x_start = st.date_input("Έναρξη", date(2015, 1, 1))
@@ -519,7 +514,7 @@ if video_path is None:
 
     def mg_to_color(mg: float) -> str:
         scale = [
-            (0.00, "#0000ff"), (0.02, "#0007f2"), (0.04, "#0011de"), 
+            (0.00, "#0000ff"), (0.02, "#0007f2"), (0.04, "#0011de"),
             (0.06, "#0017d0"), (1.98, "#80007d"), (2.00, "#800080")
         ]
         if mg <= scale[0][0]:
