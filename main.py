@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 
 """
-Water Quality App
------------------
-Αυτή η έκδοση διατηρεί όλες τις αρχικές λειτουργίες, αλλά προσφέρει μια πιο επαγγελματική και φιλική
-διεπαφή χρήστη μέσω της χρήσης custom CSS, container wrappers και σαφών sidebar επιλογών.
+Water Quality App (Super Cool Professional UI Version)
+--------------------------------------------------------
+This version maintains all original functionalities while applying a sleek,
+modern, and super cool user interface.
 """
 
 import os
@@ -26,9 +26,8 @@ from rasterio.errors import NotGeoreferencedWarning
 import warnings
 warnings.filterwarnings("ignore", category=NotGeoreferencedWarning)
 
-# Global debug flag (αλλαγή σε True για debugging)
+# Global debug flag (set to False for production)
 DEBUG = False
-
 def debug(*args, **kwargs):
     if DEBUG:
         st.write(*args, **kwargs)
@@ -43,23 +42,77 @@ st.set_page_config(
 )
 
 # -----------------------------------------------------------------------------
-# 1) Get current file directory (debug hidden)
+# 1) Custom CSS injection for a Super Cool Professional Dark Theme
 # -----------------------------------------------------------------------------
-current_file_dir = os.path.dirname(os.path.abspath(__file__))
-debug("DEBUG: Current file directory:", current_file_dir)
+def inject_custom_css():
+    custom_css = """
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700&display=swap" rel="stylesheet">
+    <style>
+        /* Global styling */
+        html, body, [class*="css"] {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #141E30, #243B55);
+            color: #e0e0e0;
+        }
+        /* Container styling */
+        .block-container {
+            background-color: transparent;
+            padding: 1rem;
+        }
+        /* Headings */
+        h1, h2, h3, h4, h5, h6 {
+            color: #bb86fc;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+        }
+        /* Button styling */
+        .stButton button {
+            background-color: #3700b3;
+            color: #ffffff;
+            border-radius: 8px;
+            padding: 10px 20px;
+            border: none;
+            transition: all 0.3s ease;
+            box-shadow: 0px 4px 8px rgba(0,0,0,0.4);
+        }
+        .stButton button:hover {
+            background-color: #6200ee;
+            transform: translateY(-2px);
+        }
+        /* Sidebar styling */
+        .sidebar .sidebar-content {
+            background: #1f1f1f;
+            padding: 1rem;
+            border-right: 2px solid #6200ee;
+        }
+        .stSelectbox, .stSlider, .stTextInput {
+            background-color: #1f1f1f;
+            color: #e0e0e0;
+        }
+        /* Card styling */
+        .card {
+            background-color: #1e1e1e;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.6);
+            transition: transform 0.2s ease-in-out;
+        }
+        .card:hover {
+            transform: scale(1.01);
+        }
+    </style>
+    """
+    st.markdown(custom_css, unsafe_allow_html=True)
+
+inject_custom_css()
 
 # -----------------------------------------------------------------------------
-# 2) Helper to get correct data folder for each lake & index
+# 2) Data Folder Helper
 # -----------------------------------------------------------------------------
 def get_data_folder(waterbody: str, index: str) -> str:
-    """
-    Επιστρέφει το path του φακέλου δεδομένων για το επιλεγμένο υδάτινο σώμα και δείκτη.
-    Προσαρμόστε τα ονόματα φακέλων σύμφωνα με τη δομή σας.
-    """
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    debug("DEBUG: Called get_data_folder with waterbody =", waterbody, "index =", index)
+    debug("DEBUG: Called get_data_folder with", waterbody, index)
 
-    # Χαρτογράφηση υδάτινου σώματος στον αντίστοιχο φάκελο
     if waterbody == "Κορώνεια":
         waterbody_folder = "Koroneia"
     elif waterbody == "Πολυφύτου":
@@ -74,7 +127,6 @@ def get_data_folder(waterbody: str, index: str) -> str:
     if waterbody_folder is None:
         return None
 
-    # Επιλογή φακέλου δεδομένων ανά δείκτη
     if index == "Χλωροφύλλη":
         data_folder = os.path.join(base_dir, waterbody_folder, "Chlorophyll")
     elif index == "Burned Areas":
@@ -90,34 +142,7 @@ def get_data_folder(waterbody: str, index: str) -> str:
     return data_folder
 
 # -----------------------------------------------------------------------------
-# 3) CSS injection (Dark Theme)
-# -----------------------------------------------------------------------------
-def inject_custom_css():
-    custom_css = """
-    <link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700&display=swap" rel="stylesheet">
-    <style>
-        html, body, [class*="css"] { font-family: 'Roboto', sans-serif; }
-        .block-container { background-color: #121212; color: #e0e0e0; padding: 1rem; }
-        h1, h2, h3, h4, h5, h6 { color: #bb86fc; }
-        .stButton button {
-            background-color: #3700b3; color: #ffffff; border-radius: 5px;
-            padding: 8px 16px; border: none; box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
-        }
-        .stButton button:hover { background-color: #6200ee; }
-        .sidebar .sidebar-content { background-color: #1f1f1f; padding: 1rem; }
-        .stSelectbox, .stSlider, .stTextInput { background-color: #1f1f1f; color: #e0e0e0; }
-        .card {
-            background-color: #1e1e1e; padding: 1.5rem; border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.5); margin-bottom: 1.5rem;
-        }
-    </style>
-    """
-    st.markdown(custom_css, unsafe_allow_html=True)
-
-inject_custom_css()
-
-# -----------------------------------------------------------------------------
-# 4) Helper Functions for data extraction and reading
+# 3) Helper functions for data extraction and reading
 # -----------------------------------------------------------------------------
 def extract_date_from_filename(filename: str):
     basename = os.path.basename(filename)
@@ -146,7 +171,7 @@ def load_lake_shape_from_xml(xml_file: str, bounds: tuple = None,
                 continue
             points.append([float(x_str), float(y_str)])
         if not points:
-            st.warning("No points found in the shapefile XML/TXT:", xml_file)
+            st.warning("No points found in", xml_file)
             return None
         if bounds is not None:
             minx, miny, maxx, maxy = bounds
@@ -187,8 +212,7 @@ def load_data(input_folder: str, shapefile_name="shapefile.xml"):
 
     shapefile_path_xml = os.path.join(input_folder, shapefile_name)
     shapefile_path_txt = os.path.join(input_folder, "shapefile.txt")
-    debug("DEBUG: Checking for shapefile at:", shapefile_path_xml)
-    debug("DEBUG: Checking for shapefile at:", shapefile_path_txt)
+    debug("DEBUG: Checking for shapefile at:", shapefile_path_xml, shapefile_path_txt)
 
     lake_shape = None
     if os.path.exists(shapefile_path_xml):
@@ -199,7 +223,7 @@ def load_data(input_folder: str, shapefile_name="shapefile.xml"):
         shape_file = shapefile_path_txt
     else:
         shape_file = None
-        debug("DEBUG: No shapefile found in", input_folder, ". Skipping lake shape masking.")
+        debug("DEBUG: No shapefile found in", input_folder)
 
     all_tif_files = sorted(glob.glob(os.path.join(input_folder, "*.tif")))
     debug("DEBUG: Found", len(all_tif_files), "TIF files in", input_folder)
@@ -233,44 +257,59 @@ def load_data(input_folder: str, shapefile_name="shapefile.xml"):
     return stack, np.array(days), date_list
 
 # -----------------------------------------------------------------------------
-# 5) Introductory Page
+# 4) Introductory Page
 # -----------------------------------------------------------------------------
 def run_intro_page():
-    with st.container():
-        st.markdown('<div class="card">', unsafe_allow_html=True)
-        col_logo, col_text = st.columns([1, 3])
-        with col_logo:
-            base_dir = os.path.dirname(os.path.abspath(__file__))
-            logo_path = os.path.join(base_dir, "logo.jpg")
-            debug("DEBUG: Looking for logo at:", logo_path)
-            if os.path.exists(logo_path):
-                st.image(logo_path, width=150)
-            else:
-                debug("DEBUG: Logo not found.")
-        with col_text:
-            st.markdown(
-                "<h2 style='text-align: center;'>Ποιοτικά χαρακτηριστικά Επιφανειακού Ύδατος σε Λίμνες, "
-                "Ταμιευτήρες και Ποτάμια με χρήση Εργαλείων Δορυφορικής Τηλεπισκόπησης</h2>", 
-                unsafe_allow_html=True
-            )
-        st.markdown("""
-        <div class="card">
-          <h4>Εισαγωγή</h4>
-          <p>Αυτή η εφαρμογή αναλύει τα ποιοτικά χαρακτηριστικά του επιφανειακού ύδατος χρησιμοποιώντας "
-          "εργαλεία δορυφορικής τηλεπισκόπησης. Επιλέξτε τις επιθυμητές ρυθμίσεις μέσω του μενού "
-          "(υδάτινο σώμα, δείκτης και είδος ανάλυσης) και εξερευνήστε τα δεδομένα.</p>
-        </div>
-        """, unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    col_logo, col_text = st.columns([1, 3])
+    with col_logo:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        logo_path = os.path.join(base_dir, "logo.jpg")
+        debug("DEBUG: Looking for logo at:", logo_path)
+        if os.path.exists(logo_path):
+            st.image(logo_path, width=150)
+    with col_text:
+        st.markdown(
+            "<h2 style='text-align: center;'>Ποιοτικά χαρακτηριστικά Επιφανειακού Ύδατος σε Λίμνες, "
+            "Ταμιευτήρες και Ποτάμια με χρήση Εργαλείων Δορυφορικής Τηλεπισκόπησης</h2>", 
+            unsafe_allow_html=True
+        )
+    st.markdown("""
+    <div class="card">
+      <h4>Εισαγωγή</h4>
+      <p>Αυτή η εφαρμογή αναλύει τα ποιοτικά χαρακτηριστικά του επιφανειακού ύδατος χρησιμοποιώντας εργαλεία δορυφορικής τηλεπισκόπησης. 
+      Επιλέξτε τις επιθυμητές ρυθμίσεις από το αριστερό μενού και εξερευνήστε τα δεδομένα.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# 6) Lake Processing (Full Analysis)
+# 5) Sidebar Configuration (Navigation and Parameter Selection)
+# -----------------------------------------------------------------------------
+def run_configuration():
+    st.sidebar.header("Παραμετροποίηση Ανάλυσης")
+    waterbody = st.sidebar.selectbox("Επιλογή υδάτινου σώματος", 
+                                     ["Κορώνεια", "Πολυφύτου", "Γαδουρά", "Αξιός"],
+                                     key="waterbody_choice")
+    index = st.sidebar.selectbox("Επιλογή Δείκτη", 
+                                 ["Πραγματικό", "Χλωροφύλλη", "CDOM", "Colour", "Burned Areas"],
+                                 key="index_choice")
+    analysis = st.sidebar.radio("Επιλογή Ανάλυσης", 
+                                ["Lake Processing", "Water Processing", "Water Quality Dashboard",
+                                 "Burned Areas", "Water level", "Pattern Analysis"],
+                                key="analysis_choice")
+    st.sidebar.markdown("---")
+    st.sidebar.info(f"Επιλεγμένο: {waterbody} | {index} | {analysis}")
+    return waterbody, index, analysis
+
+# -----------------------------------------------------------------------------
+# 6) All the Analysis Functions
 # -----------------------------------------------------------------------------
 def run_lake_processing_app(waterbody: str, index: str):
     debug("DEBUG: Entered run_lake_processing_app for waterbody =", waterbody, "index =", index)
     with st.container():
         st.markdown('<div class="card">', unsafe_allow_html=True)
-        # Τίτλος ανάλογα με τον δείκτη
+        # Title changes based on index
         if index == "Burned Areas":
             st.title(f"Lake Processing ({waterbody} - Burned Areas)")
         else:
@@ -317,7 +356,7 @@ def run_lake_processing_app(waterbody: str, index: str):
         selected_years = st.sidebar.multiselect("Select Years", options=unique_years,
                                                 default=unique_years,
                                                 key="selected_years")
-
+        # Filtering data based on date/month/year
         start_dt, end_dt = refined_date_range
         selected_indices = [i for i, d in enumerate(DATES)
                             if start_dt <= d <= end_dt and d.month in selected_months and d.year in selected_years]
@@ -338,7 +377,7 @@ def run_lake_processing_app(waterbody: str, index: str):
         count_in_range = np.nansum(in_range, axis=0)
         mean_day = np.divide(sum_days, count_in_range, out=np.full(sum_days.shape, np.nan), where=(count_in_range != 0))
 
-        # Δημιουργία διαγραμμάτων με Plotly
+        # Create Plotly figures
         fig_days = px.imshow(days_in_range, color_continuous_scale="plasma",
                              title="Days In Range Map", labels={"color": "Days In Range"})
         fig_days.update_layout(width=800, height=600)
@@ -560,9 +599,6 @@ def run_lake_processing_app(waterbody: str, index: str):
         st.info("End of Lake Processing section.")
         st.markdown('</div>', unsafe_allow_html=True)
 
-# -----------------------------------------------------------------------------
-# 7) Water Processing (Placeholder)
-# -----------------------------------------------------------------------------
 def run_water_processing(waterbody: str, index: str):
     with st.container():
         st.markdown('<div class="card">', unsafe_allow_html=True)
@@ -570,15 +606,10 @@ def run_water_processing(waterbody: str, index: str):
         st.info("No data or functionality yet for Water Processing.")
         st.markdown('</div>', unsafe_allow_html=True)
 
-# -----------------------------------------------------------------------------
-# 8) Water Quality Dashboard
-# -----------------------------------------------------------------------------
 def run_water_quality_dashboard(waterbody: str, index: str):
-    debug("DEBUG: Entered run_water_quality_dashboard for waterbody =", waterbody, "index =", index)
     with st.container():
         st.markdown('<div class="card">', unsafe_allow_html=True)
         st.title(f"Water Quality Dashboard ({waterbody} - {index})")
-
         data_folder = get_data_folder(waterbody, index)
         debug("DEBUG: data_folder resolved to:", data_folder)
         if data_folder is None:
@@ -1003,149 +1034,137 @@ def run_water_quality_dashboard(waterbody: str, index: str):
         st.info("End of Water Quality Dashboard section.")
         st.markdown('</div>', unsafe_allow_html=True)
 
-# -----------------------------------------------------------------------------
-# 9) Burned Areas (Placeholder)
-# -----------------------------------------------------------------------------
 def run_burned_areas():
-    with st.container():
-        st.markdown('<div class="card">', unsafe_allow_html=True)
-        st.title("Burned Areas around reservoir (Γαδουρά Only)")
-        st.info("No data or functionality yet for burned-area analysis.")
-        st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.title("Burned Areas around reservoir (Γαδουρά Only)")
+    st.info("No data or functionality yet for burned-area analysis.")
+    st.markdown('</div>', unsafe_allow_html=True)
 
-# -----------------------------------------------------------------------------
-# 10) Water Level (Placeholder)
-# -----------------------------------------------------------------------------
 def run_water_level_profiles(waterbody: str, index: str):
     debug("DEBUG: Entered run_water_level_profiles for waterbody =", waterbody, "index =", index)
-    with st.container():
-        st.markdown('<div class="card">', unsafe_allow_html=True)
-        st.title(f"Water level Height Profiles ({waterbody}) [Placeholder]")
-        st.info("No data or functionality yet for water-level height profiles.")
-        st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.title(f"Water level Height Profiles ({waterbody}) [Placeholder]")
+    st.info("No data or functionality yet for water-level height profiles.")
+    st.markdown('</div>', unsafe_allow_html=True)
 
-# -----------------------------------------------------------------------------
-# 11) Pattern Analysis (Optional)
-# -----------------------------------------------------------------------------
 def run_pattern_analysis(waterbody: str, index: str):
     debug("DEBUG: Entered run_pattern_analysis for waterbody =", waterbody, "index =", index)
-    with st.container():
-        st.markdown('<div class="card">', unsafe_allow_html=True)
-        st.title(f"Pattern Analysis ({waterbody} - {index})")
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.title(f"Pattern Analysis ({waterbody} - {index})")
 
-        data_folder = get_data_folder(waterbody, index)
-        if data_folder is None:
-            st.error("Δεν υπάρχει φάκελος δεδομένων για το επιλεγμένο υδάτινο σώμα / δείκτη.")
-            st.stop()
+    data_folder = get_data_folder(waterbody, index)
+    if data_folder is None:
+        st.error("Δεν υπάρχει φάκελος δεδομένων για το επιλεγμένο υδάτινο σώμα / δείκτη.")
+        st.stop()
 
-        input_folder = os.path.join(data_folder, "GeoTIFFs")
-        try:
-            STACK, DAYS, DATES = load_data(input_folder)
-        except Exception as e:
-            st.error(f"Error loading data: {e}")
-            st.stop()
+    input_folder = os.path.join(data_folder, "GeoTIFFs")
+    try:
+        STACK, DAYS, DATES = load_data(input_folder)
+    except Exception as e:
+        st.error(f"Error loading data: {e}")
+        st.stop()
 
-        st.sidebar.header("Pattern Analysis Controls")
-        unique_years = sorted({d.year for d in DATES})
-        selected_years_pattern = st.sidebar.multiselect("Select Years for Pattern Analysis",
-                                                        options=unique_years, default=unique_years, key="pattern_years")
-        selected_months_pattern = st.sidebar.multiselect("Select Months for Pattern Analysis",
-                                                         options=list(range(1, 13)),
-                                                         default=list(range(1, 13)),
-                                                         key="pattern_months",
-                                                         format_func=lambda m: datetime(2000, m, 1).strftime('%B'))
-        threshold_range = st.sidebar.slider("Select pixel value threshold range", 0, 255, (0, 255), key="pattern_threshold")
-        lower_thresh, upper_thresh = threshold_range
+    st.sidebar.header("Pattern Analysis Controls")
+    unique_years = sorted({d.year for d in DATES})
+    selected_years_pattern = st.sidebar.multiselect("Select Years for Pattern Analysis",
+                                                    options=unique_years, default=unique_years, key="pattern_years")
+    selected_months_pattern = st.sidebar.multiselect("Select Months for Pattern Analysis",
+                                                     options=list(range(1, 13)),
+                                                     default=list(range(1, 13)),
+                                                     key="pattern_months",
+                                                     format_func=lambda m: datetime(2000, m, 1).strftime('%B'))
+    threshold_range = st.sidebar.slider("Select pixel value threshold range", 0, 255, (0, 255), key="pattern_threshold")
+    lower_thresh, upper_thresh = threshold_range
 
-        if not selected_years_pattern or not selected_months_pattern:
-            st.error("Please select at least one year and one month.")
-            st.stop()
+    if not selected_years_pattern or not selected_months_pattern:
+        st.error("Please select at least one year and one month.")
+        st.stop()
 
-        indices = [i for i, d in enumerate(DATES)
-                   if d.year in selected_years_pattern and d.month in selected_months_pattern]
-        if not indices:
-            st.error("No data for the selected years/months in pattern analysis.")
-            st.stop()
+    indices = [i for i, d in enumerate(DATES)
+               if d.year in selected_years_pattern and d.month in selected_months_pattern]
+    if not indices:
+        st.error("No data for the selected years/months in pattern analysis.")
+        st.stop()
 
-        STACK_filtered = STACK[indices, :, :]
-        stack_full_in_range = (STACK_filtered >= lower_thresh) & (STACK_filtered <= upper_thresh)
-        filtered_dates = [DATES[i] for i in indices]
+    STACK_filtered = STACK[indices, :, :]
+    stack_full_in_range = (STACK_filtered >= lower_thresh) & (STACK_filtered <= upper_thresh)
+    filtered_dates = [DATES[i] for i in indices]
 
-        monthly_avg = {}
-        for m in selected_months_pattern:
-            month_indices = [i for i, dd in enumerate(filtered_dates) if dd.month == m]
-            if month_indices:
-                avg_days = np.nanmean(stack_full_in_range[month_indices, :, :], axis=0)
-                monthly_avg[m] = avg_days
+    monthly_avg = {}
+    for m in selected_months_pattern:
+        month_indices = [i for i, dd in enumerate(filtered_dates) if dd.month == m]
+        if month_indices:
+            avg_days = np.nanmean(stack_full_in_range[month_indices, :, :], axis=0)
+            monthly_avg[m] = avg_days
+        else:
+            monthly_avg[m] = None
+
+    agg_avg = None
+    count = 0
+    for m in monthly_avg:
+        if monthly_avg[m] is not None:
+            if agg_avg is None:
+                agg_avg = monthly_avg[m]
             else:
-                monthly_avg[m] = None
+                agg_avg += monthly_avg[m]
+            count += 1
 
-        agg_avg = None
-        count = 0
-        for m in monthly_avg:
-            if monthly_avg[m] is not None:
-                if agg_avg is None:
-                    agg_avg = monthly_avg[m]
-                else:
-                    agg_avg += monthly_avg[m]
-                count += 1
+    overall_avg = (agg_avg / count) if agg_avg is not None and count > 0 else None
 
-        overall_avg = (agg_avg / count) if agg_avg is not None and count > 0 else None
+    temporal_data = []
+    for mm in sorted(monthly_avg.keys()):
+        if monthly_avg[mm] is not None:
+            spatial_avg = np.nanmean(monthly_avg[mm])
+            temporal_data.append((mm, spatial_avg))
 
-        temporal_data = []
-        for mm in sorted(monthly_avg.keys()):
-            if monthly_avg[mm] is not None:
-                spatial_avg = np.nanmean(monthly_avg[mm])
-                temporal_data.append((mm, spatial_avg))
+    if temporal_data:
+        months, means = zip(*temporal_data)
+        month_names = [datetime(2000, mm, 1).strftime('%B') for mm in months]
+        fig_temporal = px.bar(x=month_names, y=means,
+                              labels={'x': 'Month', 'y': 'Average Fraction In Range'},
+                              title="Temporal Pattern: Average Fraction In Range per Month")
+    else:
+        fig_temporal = go.Figure()
 
-        if temporal_data:
-            months, means = zip(*temporal_data)
-            month_names = [datetime(2000, mm, 1).strftime('%B') for mm in months]
-            fig_temporal = px.bar(x=month_names, y=means,
-                                  labels={'x': 'Month', 'y': 'Average Fraction In Range'},
-                                  title="Temporal Pattern: Average Fraction In Range per Month")
-        else:
-            fig_temporal = go.Figure()
+    if overall_avg is not None:
+        classification = np.full(overall_avg.shape, "Unclassified", dtype=object)
+        valid_mask = ~np.isnan(overall_avg)
+        classification[valid_mask & (overall_avg < 0.3)] = "Low"
+        classification[valid_mask & (overall_avg >= 0.3) & (overall_avg < 0.7)] = "Medium"
+        classification[valid_mask & (overall_avg >= 0.7)] = "High"
 
-        if overall_avg is not None:
-            classification = np.full(overall_avg.shape, "Unclassified", dtype=object)
-            valid_mask = ~np.isnan(overall_avg)
-            classification[valid_mask & (overall_avg < 0.3)] = "Low"
-            classification[valid_mask & (overall_avg >= 0.3) & (overall_avg < 0.7)] = "Medium"
-            classification[valid_mask & (overall_avg >= 0.7)] = "High"
+        mapping_dict = {"Low": 0, "Medium": 1, "High": 2, "Unclassified": 3}
+        numeric_class = np.vectorize(lambda x: mapping_dict[x])(classification)
 
-            mapping_dict = {"Low": 0, "Medium": 1, "High": 2, "Unclassified": 3}
-            numeric_class = np.vectorize(lambda x: mapping_dict[x])(classification)
+        discrete_colorscale = [
+            [0.00, "blue"],
+            [0.33, "yellow"],
+            [0.66, "red"],
+            [1.00, "gray"]
+        ]
+        fig_class = px.imshow(numeric_class,
+                              color_continuous_scale=discrete_colorscale,
+                              title="Spatial Pattern Classification")
+        fig_class.update_traces(colorbar=dict(tickvals=[0,1,2,3],
+                                              ticktext=["Low", "Medium", "High", "Unclassified"]))
+    else:
+        fig_class = go.Figure()
 
-            discrete_colorscale = [
-                [0.00, "blue"],
-                [0.33, "yellow"],
-                [0.66, "red"],
-                [1.00, "gray"]
-            ]
-            fig_class = px.imshow(numeric_class,
-                                  color_continuous_scale=discrete_colorscale,
-                                  title="Spatial Pattern Classification")
-            fig_class.update_traces(colorbar=dict(tickvals=[0,1,2,3],
-                                                  ticktext=["Low", "Medium", "High", "Unclassified"]))
-        else:
-            fig_class = go.Figure()
+    st.header("Pattern Analysis")
+    st.markdown("Analyzes monthly days-in-range data, plus a spatial classification of persistent in-range fractions.")
+    st.subheader("Temporal Pattern")
+    st.plotly_chart(fig_temporal, use_container_width=True)
+    st.subheader("Spatial Pattern Classification")
+    st.plotly_chart(fig_class, use_container_width=True)
 
-        st.header("Pattern Analysis")
-        st.markdown("Analyzes monthly days-in-range data, plus a spatial classification of persistent in-range fractions.")
-        st.subheader("Temporal Pattern")
-        st.plotly_chart(fig_temporal, use_container_width=True)
-        st.subheader("Spatial Pattern Classification")
-        st.plotly_chart(fig_class, use_container_width=True)
+    if temporal_data:
+        df_temporal = pd.DataFrame(temporal_data, columns=["Month", "Average Fraction In Range"])
+        csv = df_temporal.to_csv(index=False).encode('utf-8')
+        st.download_button("Download Temporal Analysis CSV", data=csv,
+                           file_name="temporal_analysis.csv", mime="text/csv")
 
-        if temporal_data:
-            df_temporal = pd.DataFrame(temporal_data, columns=["Month", "Average Fraction In Range"])
-            csv = df_temporal.to_csv(index=False).encode('utf-8')
-            st.download_button("Download Temporal Analysis CSV", data=csv,
-                               file_name="temporal_analysis.csv", mime="text/csv")
-
-        st.info("End of Pattern Analysis section.")
-        st.markdown('</div>', unsafe_allow_html=True)
+    st.info("End of Pattern Analysis section.")
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
 # 12) Custom UI for parameter selection
@@ -1175,21 +1194,21 @@ def main():
     idx = st.session_state.get("index_choice", None)
     analysis = st.session_state.get("analysis_choice", None)
     debug("DEBUG: In main(), user selected waterbody =", wb, "index =", idx, "analysis =", analysis)
-    # 1) Αν ο χρήστης επιλέξει δείκτη=Burned Areas & ανάλυση=Burned Areas => χρησιμοποιείται το Lake Processing
+    # 1) If user picks index=Burned Areas & analysis=Burned Areas => re-use Lake Processing
     if idx == "Burned Areas" and analysis == "Burned Areas":
         if wb == "Γαδουρά" or wb == "Κορώνεια":
             run_lake_processing_app(wb, idx)
         else:
             st.warning("Τα Burned Areas είναι διαθέσιμα μόνο για Γαδουρά (ή Κορώνεια, αν data exist).")
         return
-    # 2) Αν ο χρήστης επιλέξει δείκτη=Burned Areas & ανάλυση=Water Quality Dashboard => εκτέλεση του Dashboard
+    # 2) If user picks index=Burned Areas & analysis=Water Quality Dashboard => run dashboard
     if idx == "Burned Areas" and analysis == "Water Quality Dashboard":
         if wb == "Γαδουρά":
             run_water_quality_dashboard(wb, idx)
         else:
             st.warning("Το Water Quality Dashboard για Burned Areas είναι διαθέσιμο μόνο στη Γαδουρά.")
         return
-    # 3) Διαφορετικά, για δείκτη Χλωροφύλλη στα γνωστά υδάτινα σώματα (συμπεριλαμβανομένου του Αξιός)
+    # 3) Otherwise, handle Χλωροφύλλη for the known lakes (including Αξιός)
     if idx == "Χλωροφύλλη" and wb in ["Κορώνεια", "Πολυφύτου", "Γαδουρά", "Αξιός"]:
         if analysis == "Lake Processing":
             run_lake_processing_app(wb, idx)
