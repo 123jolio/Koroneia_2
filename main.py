@@ -310,7 +310,7 @@ def run_custom_ui():
 
 
 # -----------------------------------------------------------------------------
-# Lake Processing (Full Analysis)
+# Lake Processing (Full Analysis) with Monthly and Yearly Plots
 # -----------------------------------------------------------------------------
 def run_lake_processing_app(waterbody: str, index: str):
     with st.container():
@@ -331,6 +331,7 @@ def run_lake_processing_app(waterbody: str, index: str):
             st.error("No date information available.")
             st.stop()
 
+        # Basic Filters
         min_date = min(DATES)
         max_date = max(DATES)
         unique_years = sorted({d.year for d in DATES})
@@ -378,7 +379,7 @@ def run_lake_processing_app(waterbody: str, index: str):
         mean_day = np.divide(sum_days, count_in_range, out=np.full(sum_days.shape, np.nan),
                                where=(count_in_range != 0))
 
-        # Create Plotly figures for maps
+        # Sample Image Analysis Figures
         fig_days = px.imshow(days_in_range, color_continuous_scale="plasma",
                              title="Days In Range Map", labels={"color": "Days In Range"})
         fig_days.update_layout(width=800, height=600)
@@ -443,6 +444,135 @@ def run_lake_processing_app(waterbody: str, index: str):
             st.plotly_chart(sample_img_fig, use_container_width=True)
         with col4:
             st.plotly_chart(time_max_fig, use_container_width=True)
+
+        # ------------------------------
+        # Additional Annual Analysis: Monthly & Yearly Plots
+        # ------------------------------
+        st.header("Additional Annual Analysis")
+
+        # Determine overall available years
+        unique_years_full = sorted({d.year for d in DATES})
+        if not unique_years_full:
+            st.error("No valid years found in the data.")
+            st.stop()
+        min_year = unique_years_full[0]
+        max_year = unique_years_full[-1]
+
+        st.sidebar.header("Additional Analysis Controls")
+        selected_years_analysis = st.sidebar.multiselect(
+            "Select Years for Days In Range Analysis",
+            options=unique_years_full,
+            default=unique_years_full,
+            key="additional_years"
+        )
+        if selected_years_analysis:
+            monthly_year_range = (min(selected_years_analysis), max(selected_years_analysis))
+        else:
+            monthly_year_range = (min_year, max_year)
+        st.sidebar.write("Monthly Analysis Year Range is set to:", monthly_year_range)
+
+        # Monthly Days in Range Analysis
+        st.subheader("Monthly Days in Range Analysis")
+        st.write("Number of days each pixel is in range for each month over the selected years.")
+        # Use full STACK (not filtered) for monthly analysis
+        stack_full_in_range = (STACK >= lower_thresh) & (STACK <= upper_thresh)
+        monthly_days_in_range = {}
+        for m in range(1, 13):
+            indices_m = [i for i, d in enumerate(DATES)
+                         if monthly_year_range[0] <= d.year <= monthly_year_range[1] and d.month == m]
+            if indices_m:
+                monthly_days_in_range[m] = np.sum(stack_full_in_range[indices_m, :, :], axis=0)
+            else:
+                monthly_days_in_range[m] = None
+
+        fig_monthly = make_subplots(
+            rows=3, cols=4,
+            subplot_titles=[datetime(2000, m, 1).strftime('%B') for m in range(1, 13)],
+            horizontal_spacing=0.05, vertical_spacing=0.05
+        )
+        trace_count = 0
+        for m in range(1, 13):
+            row = (m - 1) // 4 + 1
+            col = (m - 1) % 4 + 1
+            img = monthly_days_in_range[m]
+            if img is not None:
+                showscale = True if trace_count == 0 else False
+                fig_monthly.add_trace(
+                    go.Heatmap(
+                        z=np.flipud(img),
+                        colorscale="plasma",
+                        showscale=showscale,
+                        colorbar=dict(title="Days In Range") if showscale else None
+                    ),
+                    row=row, col=col
+                )
+                trace_count += 1
+            else:
+                fig_monthly.add_annotation(
+                    text="No data",
+                    showarrow=False, row=row, col=col
+                )
+        fig_monthly.update_layout(height=1400)
+        st.plotly_chart(fig_monthly, use_container_width=True)
+
+        # Yearly Days in Range Analysis
+        st.subheader("Yearly Days in Range Analysis")
+        st.write("Number of days each pixel is in range for selected months in the selected years.")
+        selected_months_yearly = st.sidebar.multiselect(
+            "Select Months for Yearly Days In Range Analysis",
+            options=list(range(1, 13)),
+            default=list(range(1, 13)),
+            format_func=lambda m: datetime(2000, m, 1).strftime('%B'),
+            key="yearly_days_months"
+        )
+        if not selected_years_analysis:
+            st.warning("Please select at least one year for yearly analysis.")
+        elif not selected_months_yearly:
+            st.warning("Please select at least one month for yearly analysis.")
+        else:
+            n_rows = len(selected_years_analysis)
+            n_cols = len(selected_months_yearly)
+            subplot_titles = [
+                f"{year} - {datetime(2000, m, 1).strftime('%B')}"
+                for year in selected_years_analysis for m in selected_months_yearly
+            ]
+            fig_yearly = make_subplots(
+                rows=n_rows, cols=n_cols,
+                subplot_titles=subplot_titles,
+                horizontal_spacing=0.03, vertical_spacing=0.07
+            )
+            yearly_days_in_range = {}
+            for i, year in enumerate(selected_years_analysis):
+                for j, m in enumerate(selected_months_yearly):
+                    indices_ym = [k for k, d in enumerate(DATES) if d.year == year and d.month == m]
+                    if indices_ym:
+                        count_img = np.sum(stack_full_in_range[indices_ym, :, :], axis=0)
+                        yearly_days_in_range[(year, m)] = count_img
+                        fig_yearly.add_trace(
+                            go.Heatmap(
+                                z=np.flipud(count_img),
+                                colorscale="plasma",
+                                coloraxis="coloraxis",
+                                showscale=False
+                            ),
+                            row=i+1, col=j+1
+                        )
+                    else:
+                        yearly_days_in_range[(year, m)] = None
+                        fig_yearly.add_annotation(
+                            text="No data",
+                            showarrow=False, row=i+1, col=j+1
+                        )
+            fig_yearly.update_layout(
+                coloraxis=dict(
+                    colorscale="plasma",
+                    colorbar=dict(title="Days In Range", len=0.75)
+                ),
+                height=3000 * n_rows,
+                width=1200,
+                margin=dict(l=50, r=50, t=50, b=50)
+            )
+            st.plotly_chart(fig_yearly, use_container_width=True)
 
         st.info("End of Lake Processing section.")
         st.markdown('</div>', unsafe_allow_html=True)
@@ -1029,7 +1159,7 @@ def main():
             st.info("Παρακαλώ επιλέξτε ένα είδος ανάλυσης.")
     elif analysis == "Burned Areas":
         if wb == "Γαδουρά":
-            run_burned_areas()
+            st.warning("Burned Areas section is under development.")
         else:
             st.warning("Το 'Burned Areas' είναι διαθέσιμο μόνο για το υδάτινο σώμα 'Γαδουρά'.")
     else:
