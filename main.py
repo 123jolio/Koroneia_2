@@ -78,7 +78,7 @@ def inject_custom_css():
             font-size: 1.75rem;
             text-align: center;
         }
-        /* Ενότητα πλοήγησης στην πλαϊνή μπάρας */
+        /* Ενότητα πλοήγησης στην πλαϊνή μπάρα */
         .nav-section {
             padding: 1rem;
             background: #262626;
@@ -509,8 +509,9 @@ def run_lake_processing_app(waterbody: str, index: str):
             img = monthly_days_in_range[m]
             month_name = datetime(2000, m, 1).strftime('%B')
             if img is not None:
+                # Removed np.flipud(img) to fix upside-down issue
                 fig_month = px.imshow(
-                    np.flipud(img),
+                    img,
                     color_continuous_scale="plasma",
                     title=month_name,
                     labels={"color": "Ημέρες σε Εύρος"}
@@ -559,8 +560,9 @@ def run_lake_processing_app(waterbody: str, index: str):
             col_index = idx % num_cols
             img = yearly_days_in_range[year]
             if img is not None:
+                # Removed np.flipud(img) to fix upside-down issue
                 fig_year = px.imshow(
-                    np.flipud(img),
+                    img,
                     color_continuous_scale="plasma",
                     title=f"Έτος: {year}",
                     labels={"color": "Ημέρες σε Εύρος"}
@@ -1068,4 +1070,4 @@ def main():
         )
 
 if __name__ == "__main__":
-    main() 
+    main()
