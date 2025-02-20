@@ -4,15 +4,295 @@
     <name>All Images Overlay</name>
 
     <GroundOverlay>
+      <name>2023_01_03</name>
+      <Icon>
+        <href>2023_01_03.jpg</href>
+      </Icon>
+      <LatLonBox>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
+        <rotation>0</rotation>
+      </LatLonBox>
+    </GroundOverlay>
+
+    <GroundOverlay>
+      <name>2023_01_04</name>
+      <Icon>
+        <href>2023_01_04.jpg</href>
+      </Icon>
+      <LatLonBox>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
+        <rotation>0</rotation>
+      </LatLonBox>
+    </GroundOverlay>
+
+    <GroundOverlay>
+      <name>2023_01_23</name>
+      <Icon>
+        <href>2023_01_23.jpg</href>
+      </Icon>
+      <LatLonBox>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
+        <rotation>0</rotation>
+      </LatLonBox>
+    </GroundOverlay>
+
+    <GroundOverlay>
+      <name>2023_01_24</name>
+      <Icon>
+        <href>2023_01_24.jpg</href>
+      </Icon>
+      <LatLonBox>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
+        <rotation>0</rotation>
+      </LatLonBox>
+    </GroundOverlay>
+
+    <GroundOverlay>
+      <name>2023_02_08</name>
+      <Icon>
+        <href>2023_02_08.jpg</href>
+      </Icon>
+      <LatLonBox>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
+        <rotation>0</rotation>
+      </LatLonBox>
+    </GroundOverlay>
+
+    <GroundOverlay>
+      <name>2023_02_13</name>
+      <Icon>
+        <href>2023_02_13.jpg</href>
+      </Icon>
+      <LatLonBox>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
+        <rotation>0</rotation>
+      </LatLonBox>
+    </GroundOverlay>
+
+    <GroundOverlay>
+      <name>2023_02_23</name>
+      <Icon>
+        <href>2023_02_23.jpg</href>
+      </Icon>
+      <LatLonBox>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
+        <rotation>0</rotation>
+      </LatLonBox>
+    </GroundOverlay>
+
+    <GroundOverlay>
+      <name>2023_03_15</name>
+      <Icon>
+        <href>2023_03_15.jpg</href>
+      </Icon>
+      <LatLonBox>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
+        <rotation>0</rotation>
+      </LatLonBox>
+    </GroundOverlay>
+
+    <GroundOverlay>
+      <name>2023_03_20</name>
+      <Icon>
+        <href>2023_03_20.jpg</href>
+      </Icon>
+      <LatLonBox>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
+        <rotation>0</rotation>
+      </LatLonBox>
+    </GroundOverlay>
+
+    <GroundOverlay>
+      <name>2023_03_25</name>
+      <Icon>
+        <href>2023_03_25.jpg</href>
+      </Icon>
+      <LatLonBox>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
+        <rotation>0</rotation>
+      </LatLonBox>
+    </GroundOverlay>
+
+    <GroundOverlay>
+      <name>2023_04_09</name>
+      <Icon>
+        <href>2023_04_09.jpg</href>
+      </Icon>
+      <LatLonBox>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
+        <rotation>0</rotation>
+      </LatLonBox>
+    </GroundOverlay>
+
+    <GroundOverlay>
+      <name>2023_04_19</name>
+      <Icon>
+        <href>2023_04_19.jpg</href>
+      </Icon>
+      <LatLonBox>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
+        <rotation>0</rotation>
+      </LatLonBox>
+    </GroundOverlay>
+
+    <GroundOverlay>
+      <name>2023_04_24</name>
+      <Icon>
+        <href>2023_04_24.jpg</href>
+      </Icon>
+      <LatLonBox>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
+        <rotation>0</rotation>
+      </LatLonBox>
+    </GroundOverlay>
+
+    <GroundOverlay>
+      <name>2023_04_29</name>
+      <Icon>
+        <href>2023_04_29.jpg</href>
+      </Icon>
+      <LatLonBox>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
+        <rotation>0</rotation>
+      </LatLonBox>
+    </GroundOverlay>
+
+    <GroundOverlay>
+      <name>2023_05_14</name>
+      <Icon>
+        <href>2023_05_14.jpg</href>
+      </Icon>
+      <LatLonBox>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
+        <rotation>0</rotation>
+      </LatLonBox>
+    </GroundOverlay>
+
+    <GroundOverlay>
+      <name>2023_06_13</name>
+      <Icon>
+        <href>2023_06_13.jpg</href>
+      </Icon>
+      <LatLonBox>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
+        <rotation>0</rotation>
+      </LatLonBox>
+    </GroundOverlay>
+
+    <GroundOverlay>
+      <name>2023_06_23</name>
+      <Icon>
+        <href>2023_06_23.jpg</href>
+      </Icon>
+      <LatLonBox>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
+        <rotation>0</rotation>
+      </LatLonBox>
+    </GroundOverlay>
+
+    <GroundOverlay>
+      <name>2023_06_28</name>
+      <Icon>
+        <href>2023_06_28.jpg</href>
+      </Icon>
+      <LatLonBox>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
+        <rotation>0</rotation>
+      </LatLonBox>
+    </GroundOverlay>
+
+    <GroundOverlay>
+      <name>2023_07_03</name>
+      <Icon>
+        <href>2023_07_03.jpg</href>
+      </Icon>
+      <LatLonBox>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
+        <rotation>0</rotation>
+      </LatLonBox>
+    </GroundOverlay>
+
+    <GroundOverlay>
+      <name>2023_07_08</name>
+      <Icon>
+        <href>2023_07_08.jpg</href>
+      </Icon>
+      <LatLonBox>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
+        <rotation>0</rotation>
+      </LatLonBox>
+    </GroundOverlay>
+
+    <GroundOverlay>
       <name>2023_07_13</name>
       <Icon>
         <href>2023_07_13.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -23,10 +303,10 @@
         <href>2023_07_18.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -37,10 +317,10 @@
         <href>2023_07_23.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -51,10 +331,10 @@
         <href>2023_07_28.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -65,10 +345,10 @@
         <href>2023_08_02.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -79,10 +359,10 @@
         <href>2023_08_07.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -93,10 +373,10 @@
         <href>2023_08_12.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -107,10 +387,10 @@
         <href>2023_08_17.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -121,10 +401,10 @@
         <href>2023_08_22.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -135,10 +415,10 @@
         <href>2023_08_27.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -149,24 +429,10 @@
         <href>2023_09_01.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
-        <rotation>0</rotation>
-      </LatLonBox>
-    </GroundOverlay>
-
-    <GroundOverlay>
-      <name>2023_09_16</name>
-      <Icon>
-        <href>2023_09_16.jpg</href>
-      </Icon>
-      <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -177,10 +443,10 @@
         <href>2023_09_21.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -191,10 +457,10 @@
         <href>2023_10_01.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -205,10 +471,10 @@
         <href>2023_10_06.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -219,10 +485,10 @@
         <href>2023_10_11.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -233,10 +499,10 @@
         <href>2023_10_16.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -247,10 +513,10 @@
         <href>2023_10_21.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -261,10 +527,10 @@
         <href>2023_10_31.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -275,10 +541,10 @@
         <href>2023_11_05.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -289,10 +555,10 @@
         <href>2023_11_15.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -303,24 +569,10 @@
         <href>2023_11_20.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
-        <rotation>0</rotation>
-      </LatLonBox>
-    </GroundOverlay>
-
-    <GroundOverlay>
-      <name>2023_11_30</name>
-      <Icon>
-        <href>2023_11_30.jpg</href>
-      </Icon>
-      <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -331,10 +583,10 @@
         <href>2023_12_25.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -345,10 +597,10 @@
         <href>2024_01_14.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -359,10 +611,24 @@
         <href>2024_01_24.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
+        <rotation>0</rotation>
+      </LatLonBox>
+    </GroundOverlay>
+
+    <GroundOverlay>
+      <name>2024_01_29</name>
+      <Icon>
+        <href>2024_01_29.jpg</href>
+      </Icon>
+      <LatLonBox>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -373,10 +639,10 @@
         <href>2024_02_03.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -387,10 +653,10 @@
         <href>2024_02_18.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -401,10 +667,24 @@
         <href>2024_02_23.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
+        <rotation>0</rotation>
+      </LatLonBox>
+    </GroundOverlay>
+
+    <GroundOverlay>
+      <name>2024_03_04</name>
+      <Icon>
+        <href>2024_03_04.jpg</href>
+      </Icon>
+      <LatLonBox>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -415,24 +695,10 @@
         <href>2024_03_09.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
-        <rotation>0</rotation>
-      </LatLonBox>
-    </GroundOverlay>
-
-    <GroundOverlay>
-      <name>2024_03_19</name>
-      <Icon>
-        <href>2024_03_19.jpg</href>
-      </Icon>
-      <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -443,10 +709,10 @@
         <href>2024_03_24.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -457,24 +723,10 @@
         <href>2024_03_29.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
-        <rotation>0</rotation>
-      </LatLonBox>
-    </GroundOverlay>
-
-    <GroundOverlay>
-      <name>2024_04_08</name>
-      <Icon>
-        <href>2024_04_08.jpg</href>
-      </Icon>
-      <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -485,10 +737,10 @@
         <href>2024_04_13.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -499,10 +751,10 @@
         <href>2024_04_18.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -513,10 +765,10 @@
         <href>2024_04_28.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -527,10 +779,10 @@
         <href>2024_05_03.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -541,10 +793,10 @@
         <href>2024_05_08.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -555,10 +807,10 @@
         <href>2024_05_13.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -569,10 +821,10 @@
         <href>2024_05_18.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -583,10 +835,10 @@
         <href>2024_05_23.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -597,24 +849,10 @@
         <href>2024_05_28.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
-        <rotation>0</rotation>
-      </LatLonBox>
-    </GroundOverlay>
-
-    <GroundOverlay>
-      <name>2024_06_07</name>
-      <Icon>
-        <href>2024_06_07.jpg</href>
-      </Icon>
-      <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -625,10 +863,10 @@
         <href>2024_06_12.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -639,10 +877,10 @@
         <href>2024_06_17.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -653,10 +891,10 @@
         <href>2024_06_22.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -667,10 +905,10 @@
         <href>2024_06_27.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -681,10 +919,10 @@
         <href>2024_07_02.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -695,10 +933,10 @@
         <href>2024_07_07.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -709,10 +947,10 @@
         <href>2024_07_12.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -723,10 +961,10 @@
         <href>2024_07_17.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -737,10 +975,10 @@
         <href>2024_07_22.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -751,10 +989,10 @@
         <href>2024_07_27.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -765,10 +1003,10 @@
         <href>2024_08_01.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -779,10 +1017,10 @@
         <href>2024_08_06.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -793,10 +1031,10 @@
         <href>2024_08_11.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -807,10 +1045,10 @@
         <href>2024_08_16.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -821,10 +1059,10 @@
         <href>2024_08_21.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -835,10 +1073,10 @@
         <href>2024_08_26.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -849,10 +1087,10 @@
         <href>2024_08_31.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -863,10 +1101,10 @@
         <href>2024_09_05.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -877,10 +1115,24 @@
         <href>2024_09_15.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
+        <rotation>0</rotation>
+      </LatLonBox>
+    </GroundOverlay>
+
+    <GroundOverlay>
+      <name>2024_09_20</name>
+      <Icon>
+        <href>2024_09_20.jpg</href>
+      </Icon>
+      <LatLonBox>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -891,10 +1143,10 @@
         <href>2024_09_25.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -905,10 +1157,10 @@
         <href>2024_09_30.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -919,10 +1171,10 @@
         <href>2024_10_05.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -933,10 +1185,10 @@
         <href>2024_10_10.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -947,24 +1199,10 @@
         <href>2024_10_25.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
-        <rotation>0</rotation>
-      </LatLonBox>
-    </GroundOverlay>
-
-    <GroundOverlay>
-      <name>2024_10_30</name>
-      <Icon>
-        <href>2024_10_30.jpg</href>
-      </Icon>
-      <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -975,10 +1213,24 @@
         <href>2024_11_19.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
+        <rotation>0</rotation>
+      </LatLonBox>
+    </GroundOverlay>
+
+    <GroundOverlay>
+      <name>2024_11_23</name>
+      <Icon>
+        <href>2024_11_23.jpg</href>
+      </Icon>
+      <LatLonBox>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -989,24 +1241,24 @@
         <href>2024_11_24.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
 
     <GroundOverlay>
-      <name>2024_11_29</name>
+      <name>2024_12_04</name>
       <Icon>
-        <href>2024_11_29.jpg</href>
+        <href>2024_12_04.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -1017,10 +1269,10 @@
         <href>2024_12_14.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -1031,10 +1283,24 @@
         <href>2025_01_18.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
+        <rotation>0</rotation>
+      </LatLonBox>
+    </GroundOverlay>
+
+    <GroundOverlay>
+      <name>2025_01_23</name>
+      <Icon>
+        <href>2025_01_23.jpg</href>
+      </Icon>
+      <LatLonBox>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -1045,10 +1311,10 @@
         <href>2025_02_02.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
@@ -1059,24 +1325,24 @@
         <href>2025_02_07.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>
 
     <GroundOverlay>
-      <name>2025_04_23</name>
+      <name>frame_85</name>
       <Icon>
-        <href>2025_04_23.jpg</href>
+        <href>frame_85.jpg</href>
       </Icon>
       <LatLonBox>
-        <north>36.377068</north>
-        <south>36.026334</south>
-        <east>28.173752</east>
-        <west>27.726059</west>
+        <north>36.200097</north>
+        <south>36.149727</south>
+        <east>28.016682</east>
+        <west>27.948275</west>
         <rotation>0</rotation>
       </LatLonBox>
     </GroundOverlay>

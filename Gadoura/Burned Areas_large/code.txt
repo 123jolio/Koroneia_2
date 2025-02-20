@@ -1,0 +1,5 @@
+// RGB visualization for methane detection
+let R = B11 / B08;
+let G = B12 / B08;
+let B = (B03 + B04) / B02;
+return [R / 3, G / 3, B / 3];
