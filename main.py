@@ -479,6 +479,7 @@ def run_lake_processing_app(waterbody: str, index: str):
         # Επιπρόσθετη Ετήσια Ανάλυση: Μηνιαία Κατανομή Ημερών σε Εύρος
         # ------------------------------
         st.header("Επιπρόσθετη Ετήσια Ανάλυση: Μηνιαία Κατανομή Ημερών σε Εύρος")
+        # Note: We already have STACK, lower_thresh, and DATES defined earlier.
         stack_full_in_range = (STACK >= lower_thresh) & (STACK <= upper_thresh)
         monthly_days_in_range = {}
         for m in range(1, 13):
@@ -488,38 +489,31 @@ def run_lake_processing_app(waterbody: str, index: str):
             else:
                 monthly_days_in_range[m] = None
 
-        fig_monthly = make_subplots(
-            rows=3, cols=4,
-            subplot_titles=[datetime(2000, m, 1).strftime('%B') for m in range(1, 13)],
-            horizontal_spacing=0.05,
-            vertical_spacing=0.04
-        )
-        trace_count = 0
+        # Display monthly heatmaps in a grid using Streamlit columns (4 per row)
+        num_cols = 4
+        cols = st.columns(num_cols)
         for m in range(1, 13):
-            row = (m - 1) // 4 + 1
-            col = (m - 1) % 4 + 1
+            col_index = (m - 1) % num_cols
             img = monthly_days_in_range[m]
+            month_name = datetime(2000, m, 1).strftime('%B')
             if img is not None:
-                showscale = True if trace_count == 0 else False
-                fig_monthly.add_trace(
-                    go.Heatmap(
-                        z=np.flipud(img),
-                        colorscale="plasma",
-                        showscale=showscale,
-                        colorbar=dict(title="Ημέρες σε Εύρος") if showscale else None
-                    ),
-                    row=row, col=col
-                )
-                trace_count += 1
+                fig_month = px.imshow(np.flipud(img),
+                                      color_continuous_scale="plasma",
+                                      title=month_name,
+                                      labels={"color": "Ημέρες σε Εύρος"})
+                fig_month.update_layout(height=300)
+                cols[col_index].plotly_chart(fig_month, use_container_width=True)
             else:
-                fig_monthly.add_annotation(
-                    text="Δεν υπάρχουν δεδομένα",
-                    showarrow=False, row=row, col=col
-                )
-        fig_monthly.update_layout(height=1400)
-        st.plotly_chart(fig_monthly, use_container_width=True, key="fig_monthly")
+                cols[col_index].info(f"Δεν υπάρχουν δεδομένα για τον μήνα {month_name}")
+            # After every row (4 plots), create a new row of columns
+            if m % num_cols == 0 and m != 12:
+                cols = st.columns(num_cols)
+
         with st.expander("Επεξήγηση: Μηνιαία Κατανομή Ημερών σε Εύρος"):
-            st.write("Για κάθε μήνα, αυτό το διάγραμμα δείχνει πόσες ημέρες κάθε pixel βρέθηκε εντός του επιλεγμένου εύρους τιμών. Το εύρος τιμών ορίζεται από το slider 'Εύρος τιμών pixel'.")
+            st.write(
+                "Για κάθε μήνα, αυτό το διάγραμμα δείχνει πόσες ημέρες κάθε pixel βρέθηκε εντός του "
+                "επιλεγμένου εύρους τιμών. Το εύρος τιμών ορίζεται από το slider 'Εύρος τιμών pixel'."
+            )
 
         # ------------------------------
         # Επιπρόσθετη Ετήσια Ανάλυση: Ετήσια Κατανομή Ημερών σε Εύρος
@@ -876,7 +870,7 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                         if video_path.endswith(".mp4"):
                             st.video(video_path, key="default_video")
                         else:
-                            st.image(video_path)  # key removed to avoid duplicate key error
+                            st.image(video_path)
                     else:
                         st.info("Δεν βρέθηκε αρχείο timelapse.")
                 with nested_tabs[2]:
@@ -948,7 +942,7 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                             if video_path.endswith(".mp4"):
                                 st.video(video_path, key="upload_video")
                             else:
-                                st.image(video_path)  # key removed to avoid duplicate key error
+                                st.image(video_path)
                         else:
                             st.info("Δεν βρέθηκε αρχείο Video/GIF.")
                     with nested_tabs[2]:
