@@ -78,7 +78,7 @@ def inject_custom_css():
             font-size: 1.75rem;
             text-align: center;
         }
-        /* Ενότητα πλοήγησης στην πλαϊνή μπάρας */
+        /* Ενότητα πλοήγησης στην πλαϊνή μπάρα */
         .nav-section {
             padding: 1rem;
             background: #262626;
@@ -479,7 +479,6 @@ def run_lake_processing_app(waterbody: str, index: str):
         # Επιπρόσθετη Ετήσια Ανάλυση: Μηνιαία Κατανομή Ημερών σε Εύρος
         # ------------------------------
         st.header("Επιπρόσθετη Ετήσια Ανάλυση: Μηνιαία Κατανομή Ημερών σε Εύρος")
-        # Χρησιμοποιούμε ήδη τα STACK, lower_thresh και DATES
         stack_full_in_range = (STACK >= lower_thresh) & (STACK <= upper_thresh)
         monthly_days_in_range = {}
         for m in range(1, 13):
@@ -489,7 +488,6 @@ def run_lake_processing_app(waterbody: str, index: str):
             else:
                 monthly_days_in_range[m] = None
 
-        # Εμφάνιση μηνιαίων heatmaps σε πλέγμα με 4 ανά σειρά χρησιμοποιώντας Streamlit columns
         num_cols = 4
         cols = st.columns(num_cols)
         for m in range(1, 13):
@@ -497,14 +495,21 @@ def run_lake_processing_app(waterbody: str, index: str):
             img = monthly_days_in_range[m]
             month_name = datetime(2000, m, 1).strftime('%B')
             if img is not None:
-                fig_month = px.imshow(np.flipud(img),
-                                      color_continuous_scale="plasma",
-                                      title=month_name,
-                                      labels={"color": "Ημέρες σε Εύρος"})
-                fig_month.update_layout(height=300)
-                # Remove the color legend
+                fig_month = px.imshow(
+                    np.flipud(img),
+                    color_continuous_scale="plasma",
+                    title=month_name,
+                    labels={"color": "Ημέρες σε Εύρος"}
+                )
+                # Set larger size & remove margins
+                fig_month.update_layout(
+                    width=500,
+                    height=400,
+                    margin=dict(l=0, r=0, t=30, b=0)
+                )
+                # Hide color legend
                 fig_month.update_coloraxes(showscale=False)
-                cols[col_index].plotly_chart(fig_month, use_container_width=True)
+                cols[col_index].plotly_chart(fig_month, use_container_width=False)
             else:
                 cols[col_index].info(f"Δεν υπάρχουν δεδομένα για τον μήνα {month_name}")
             if m % num_cols == 0 and m != 12:
@@ -534,21 +539,27 @@ def run_lake_processing_app(waterbody: str, index: str):
             else:
                 yearly_days_in_range[year] = None
 
-        # Εμφάνιση ετήσιων heatmaps σε πλέγμα με 3 ανά σειρά
         num_cols = 3
         cols = st.columns(num_cols)
         for idx, year in enumerate(unique_years_full):
             col_index = idx % num_cols
             img = yearly_days_in_range[year]
             if img is not None:
-                fig_year = px.imshow(np.flipud(img),
-                                     color_continuous_scale="plasma",
-                                     title=f"Έτος: {year}",
-                                     labels={"color": "Ημέρες σε Εύρος"})
-                fig_year.update_layout(height=300)
-                # Remove the color legend
+                fig_year = px.imshow(
+                    np.flipud(img),
+                    color_continuous_scale="plasma",
+                    title=f"Έτος: {year}",
+                    labels={"color": "Ημέρες σε Εύρος"}
+                )
+                # Set larger size & remove margins
+                fig_year.update_layout(
+                    width=500,
+                    height=400,
+                    margin=dict(l=0, r=0, t=30, b=0)
+                )
+                # Hide color legend
                 fig_year.update_coloraxes(showscale=False)
-                cols[col_index].plotly_chart(fig_year, use_container_width=True)
+                cols[col_index].plotly_chart(fig_year, use_container_width=False)
             else:
                 cols[col_index].info(f"Δεν υπάρχουν δεδομένα για το έτος {year}")
             if (idx + 1) % num_cols == 0 and (idx + 1) < len(unique_years_full):
