@@ -78,7 +78,7 @@ def inject_custom_css():
             font-size: 1.75rem;
             text-align: center;
         }
-        /* Ενότητα πλοήγησης στην πλαϊνή μπάρα */
+        /* Ενότητα πλοήγησης στην πλαϊνή μπάρας */
         .nav-section {
             padding: 1rem;
             background: #262626;
@@ -502,6 +502,8 @@ def run_lake_processing_app(waterbody: str, index: str):
                                       title=month_name,
                                       labels={"color": "Ημέρες σε Εύρος"})
                 fig_month.update_layout(height=300)
+                # Remove the color legend
+                fig_month.update_coloraxes(showscale=False)
                 cols[col_index].plotly_chart(fig_month, use_container_width=True)
             else:
                 cols[col_index].info(f"Δεν υπάρχουν δεδομένα για τον μήνα {month_name}")
@@ -544,6 +546,8 @@ def run_lake_processing_app(waterbody: str, index: str):
                                      title=f"Έτος: {year}",
                                      labels={"color": "Ημέρες σε Εύρος"})
                 fig_year.update_layout(height=300)
+                # Remove the color legend
+                fig_year.update_coloraxes(showscale=False)
                 cols[col_index].plotly_chart(fig_year, use_container_width=True)
             else:
                 cols[col_index].info(f"Δεν υπάρχουν δεδομένα για το έτος {year}")
