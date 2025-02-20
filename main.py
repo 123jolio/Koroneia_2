@@ -78,7 +78,7 @@ def inject_custom_css():
             font-size: 1.75rem;
             text-align: center;
         }
-        /* Ενότητα πλοήγησης στην πλαϊνή μπάρα */
+        /* Ενότητα πλοήγησης στην πλαϊνή μπάρας */
         .nav-section {
             padding: 1rem;
             background: #262626;
@@ -347,7 +347,7 @@ def run_lake_processing_app(waterbody: str, index: str):
             st.error("Δεν υπάρχουν διαθέσιμες πληροφορίες ημερομηνίας.")
             st.stop()
 
-        # Βασικά φίλτρα από την πλαϊνή μπάρα
+        # Βασικά φίλτρα από την πλαϊνή μπάρας
         min_date = min(DATES)
         max_date = max(DATES)
         unique_years = sorted({d.year for d in DATES if d is not None})
@@ -475,56 +475,52 @@ def run_lake_processing_app(waterbody: str, index: str):
         with col4:
             st.plotly_chart(fig_time, use_container_width=True, key="fig_time_2")
 
-# Επιπρόσθετη Ετήσια Ανάλυση: Μηνιαία Κατανομή Ημερών σε Εύρος
-# ------------------------------
-st.header("Επιπρόσθετη Ετήσια Ανάλυση: Μηνιαία Κατανομή Ημερών σε Εύρος")
-stack_full_in_range = (STACK >= lower_thresh) & (STACK <= upper_thresh)
-monthly_days_in_range = {}
-for m in range(1, 13):
-    indices_m = [i for i, d in enumerate(DATES) if d is not None and d.month == m]
-    if indices_m:
-        monthly_days_in_range[m] = np.sum(stack_full_in_range[indices_m, :, :], axis=0)
-    else:
-        monthly_days_in_range[m] = None
+        # ------------------------------
+        # Επιπρόσθετη Ετήσια Ανάλυση: Μηνιαία Κατανομή Ημερών σε Εύρος
+        # ------------------------------
+        st.header("Επιπρόσθετη Ετήσια Ανάλυση: Μηνιαία Κατανομή Ημερών σε Εύρος")
+        stack_full_in_range = (STACK >= lower_thresh) & (STACK <= upper_thresh)
+        monthly_days_in_range = {}
+        for m in range(1, 13):
+            indices_m = [i for i, d in enumerate(DATES) if d is not None and d.month == m]
+            if indices_m:
+                monthly_days_in_range[m] = np.sum(stack_full_in_range[indices_m, :, :], axis=0)
+            else:
+                monthly_days_in_range[m] = None
 
-# Define custom month order starting from March: March, April, ..., December, January, February.
-months_in_order = list(range(3, 13)) + [1, 2]
+        # Custom order: start from March then April ... December, then January, February.
+        months_in_order = list(range(3, 13)) + [1, 2]
 
-num_cols = 3
-cols = st.columns(num_cols)
-for idx, m in enumerate(months_in_order):
-    col_index = idx % num_cols
-    img = monthly_days_in_range[m]
-    month_name = datetime(2000, m, 1).strftime('%B')
-    if img is not None:
-        fig_month = px.imshow(
-            np.flipud(img),
-            color_continuous_scale="plasma",
-            title=month_name,
-            labels={"color": "Ημέρες σε Εύρος"}
-        )
-        # Set larger size & remove margins
-        fig_month.update_layout(
-            width=500,
-            height=400,
-            margin=dict(l=0, r=0, t=30, b=0)
-        )
-        # Hide the color legend
-        fig_month.update_coloraxes(showscale=False)
-        cols[col_index].plotly_chart(fig_month, use_container_width=False)
-    else:
-        cols[col_index].info(f"Δεν υπάρχουν δεδομένα για τον μήνα {month_name}")
-    # Create a new row after every 3 plots if there are more months to display
-    if (idx + 1) % num_cols == 0 and (idx + 1) < len(months_in_order):
+        num_cols = 3
         cols = st.columns(num_cols)
-
-with st.expander("Επεξήγηση: Μηνιαία Κατανομή Ημερών σε Εύρος"):
-    st.write(
-        "Για κάθε μήνα, αυτό το διάγραμμα δείχνει πόσες ημέρες κάθε pixel βρέθηκε "
-        "εντός του επιλεγμένου εύρους τιμών, ξεκινώντας από τον Μάρτιο. "
-        "Το εύρος τιμών ορίζεται από το slider 'Εύρος τιμών pixel'."
-    )
-
+        for idx, m in enumerate(months_in_order):
+            col_index = idx % num_cols
+            img = monthly_days_in_range[m]
+            month_name = datetime(2000, m, 1).strftime('%B')
+            if img is not None:
+                fig_month = px.imshow(
+                    np.flipud(img),
+                    color_continuous_scale="plasma",
+                    title=month_name,
+                    labels={"color": "Ημέρες σε Εύρος"}
+                )
+                fig_month.update_layout(
+                    width=500,
+                    height=400,
+                    margin=dict(l=0, r=0, t=30, b=0)
+                )
+                fig_month.update_coloraxes(showscale=False)
+                cols[col_index].plotly_chart(fig_month, use_container_width=False)
+            else:
+                cols[col_index].info(f"Δεν υπάρχουν δεδομένα για τον μήνα {month_name}")
+            if (idx + 1) % num_cols == 0 and (idx + 1) < len(months_in_order):
+                cols = st.columns(num_cols)
+        with st.expander("Επεξήγηση: Μηνιαία Κατανομή Ημερών σε Εύρος"):
+            st.write(
+                "Για κάθε μήνα, αυτό το διάγραμμα δείχνει πόσες ημέρες κάθε pixel βρέθηκε "
+                "εντός του επιλεγμένου εύρους τιμών, ξεκινώντας από τον Μάρτιο. "
+                "Το εύρος τιμών ορίζεται από το slider 'Εύρος τιμών pixel'."
+            )
 
         # ------------------------------
         # Επιπρόσθετη Ετήσια Ανάλυση: Ετήσια Κατανομή Ημερών σε Εύρος
@@ -556,20 +552,17 @@ with st.expander("Επεξήγηση: Μηνιαία Κατανομή Ημερώ
                     title=f"Έτος: {year}",
                     labels={"color": "Ημέρες σε Εύρος"}
                 )
-                # Set larger size & remove margins
                 fig_year.update_layout(
                     width=500,
                     height=400,
                     margin=dict(l=0, r=0, t=30, b=0)
                 )
-                # Hide color legend
                 fig_year.update_coloraxes(showscale=False)
                 cols[col_index].plotly_chart(fig_year, use_container_width=False)
             else:
                 cols[col_index].info(f"Δεν υπάρχουν δεδομένα για το έτος {year}")
             if (idx + 1) % num_cols == 0 and (idx + 1) < len(unique_years_full):
                 cols = st.columns(num_cols)
-
         with st.expander("Επεξήγηση: Ετήσια Κατανομή Ημερών σε Εύρος"):
             st.write("Για κάθε έτος, αυτό το διάγραμμα δείχνει πόσες ημέρες κάθε pixel βρέθηκε εντός του επιλεγμένου εύρους τιμών, επιτρέποντάς σας να συγκρίνετε τις ετήσιες αλλαγές στη γεωχωρική κατανομή του δείκτη.")
 
