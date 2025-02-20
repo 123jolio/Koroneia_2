@@ -515,58 +515,45 @@ def run_lake_processing_app(waterbody: str, index: str):
                 "επιλεγμένου εύρους τιμών. Το εύρος τιμών ορίζεται από το slider 'Εύρος τιμών pixel'."
             )
 
-        # ------------------------------
-        # Επιπρόσθετη Ετήσια Ανάλυση: Ετήσια Κατανομή Ημερών σε Εύρος
-        # ------------------------------
-        st.header("Επιπρόσθετη Ετήσια Ανάλυση: Ετήσια Κατανομή Ημερών σε Εύρος")
-        unique_years_full = sorted({d.year for d in DATES if d is not None})
-        if not unique_years_full:
-            st.error("Δεν βρέθηκαν έγκυρα έτη στα δεδομένα.")
-            st.stop()
+       # ------------------------------
+# Επιπρόσθετη Ετήσια Ανάλυση: Ετήσια Κατανομή Ημερών σε Εύρος
+# ------------------------------
+st.header("Επιπρόσθετη Ετήσια Ανάλυση: Ετήσια Κατανομή Ημερών σε Εύρος")
+unique_years_full = sorted({d.year for d in DATES if d is not None})
+if not unique_years_full:
+    st.error("Δεν βρέθηκαν έγκυρα έτη στα δεδομένα.")
+    st.stop()
 
-        stack_full_in_range = (STACK >= lower_thresh) & (STACK <= upper_thresh)
-        yearly_days_in_range = {}
-        for year in unique_years_full:
-            indices_y = [i for i, d in enumerate(DATES) if d.year == year]
-            if indices_y:
-                yearly_days_in_range[year] = np.sum(stack_full_in_range[indices_y, :, :], axis=0)
-            else:
-                yearly_days_in_range[year] = None
+stack_full_in_range = (STACK >= lower_thresh) & (STACK <= upper_thresh)
+yearly_days_in_range = {}
+for year in unique_years_full:
+    indices_y = [i for i, d in enumerate(DATES) if d.year == year]
+    if indices_y:
+        yearly_days_in_range[year] = np.sum(stack_full_in_range[indices_y, :, :], axis=0)
+    else:
+        yearly_days_in_range[year] = None
 
-        n_years = len(unique_years_full)
-        vertical_spacing = 0.02  # Ρυθμισμένη τιμή για το vertical_spacing
-        fig_yearly = make_subplots(
-            rows=n_years, cols=1,
-            subplot_titles=[f"Έτος: {year}" for year in unique_years_full],
-            vertical_spacing=vertical_spacing
-        )
-        for idx, year in enumerate(unique_years_full, start=1):
-            img = yearly_days_in_range[year]
-            if img is not None:
-                fig_yearly.add_trace(
-                    go.Heatmap(
-                        z=np.flipud(img),
-                        colorscale="plasma",
-                        colorbar=dict(title="Ημέρες σε Εύρος", len=0.5) if idx == 1 else dict(showticklabels=False)
-                    ),
-                    row=idx, col=1
-                )
-            else:
-                fig_yearly.add_annotation(
-                    text="Δεν υπάρχουν δεδομένα",
-                    row=idx, col=1,
-                    showarrow=False
-                )
-        fig_yearly.update_layout(
-            height=300 * n_years,
-            title_text="Ετήσια Κατανομή Ημερών σε Εύρος"
-        )
-        st.plotly_chart(fig_yearly, use_container_width=True, key="fig_yearly")
-        with st.expander("Επεξήγηση: Ετήσια Κατανομή Ημερών σε Εύρος"):
-            st.write("Για κάθε έτος, αυτό το διάγραμμα δείχνει πόσες ημέρες κάθε pixel βρέθηκε εντός του επιλεγμένου εύρους τιμών, επιτρέποντάς σας να συγκρίνετε τις ετήσιες αλλαγές στη γεωχωρική κατανομή του δείκτη.")
+# Display yearly heatmaps in a grid with 3 columns per row using Streamlit columns
+num_cols = 3
+cols = st.columns(num_cols)
+for idx, year in enumerate(unique_years_full):
+    col_index = idx % num_cols
+    img = yearly_days_in_range[year]
+    if img is not None:
+        fig_year = px.imshow(np.flipud(img),
+                             color_continuous_scale="plasma",
+                             title=f"Έτος: {year}",
+                             labels={"color": "Ημέρες σε Εύρος"})
+        fig_year.update_layout(height=300)
+        cols[col_index].plotly_chart(fig_year, use_container_width=True)
+    else:
+        cols[col_index].info(f"Δεν υπάρχουν δεδομένα για το έτος {year}")
+    # Create a new row after every 3 plots, if there are more years remaining
+    if (idx + 1) % num_cols == 0 and (idx + 1) < len(unique_years_full):
+        cols = st.columns(num_cols)
 
-        st.info("Τέλος Επεξεργασίας Λίμνης.")
-        st.markdown('</div>', unsafe_allow_html=True)
+with st.expander("Επεξήγηση: Ετήσια Κατανομή Ημερών σε Εύρος"):
+    st.write("Για κάθε έτος, αυτό το διάγραμμα δείχνει πόσες ημέρες κάθε pixel βρέθηκε εντός του επιλεγμένου εύρους τιμών, επιτρέποντάς σας να συγκρίνετε τις ετήσιες αλλαγές στη γεωχωρική κατανομή του δείκτη.")
 
 # -----------------------------------------------------------------------------
 # Επεξεργασία Υδάτινου Σώματος (Placeholder)
