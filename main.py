@@ -479,7 +479,7 @@ def run_lake_processing_app(waterbody: str, index: str):
         # Επιπρόσθετη Ετήσια Ανάλυση: Μηνιαία Κατανομή Ημερών σε Εύρος
         # ------------------------------
         st.header("Επιπρόσθετη Ετήσια Ανάλυση: Μηνιαία Κατανομή Ημερών σε Εύρος")
-        # Note: We already have STACK, lower_thresh, and DATES defined earlier.
+        # Χρησιμοποιούμε ήδη τα STACK, lower_thresh και DATES
         stack_full_in_range = (STACK >= lower_thresh) & (STACK <= upper_thresh)
         monthly_days_in_range = {}
         for m in range(1, 13):
@@ -489,7 +489,7 @@ def run_lake_processing_app(waterbody: str, index: str):
             else:
                 monthly_days_in_range[m] = None
 
-        # Display monthly heatmaps in a grid using Streamlit columns (4 per row)
+        # Εμφάνιση μηνιαίων heatmaps σε πλέγμα με 4 ανά σειρά χρησιμοποιώντας Streamlit columns
         num_cols = 4
         cols = st.columns(num_cols)
         for m in range(1, 13):
@@ -505,7 +505,6 @@ def run_lake_processing_app(waterbody: str, index: str):
                 cols[col_index].plotly_chart(fig_month, use_container_width=True)
             else:
                 cols[col_index].info(f"Δεν υπάρχουν δεδομένα για τον μήνα {month_name}")
-            # After every row (4 plots), create a new row of columns
             if m % num_cols == 0 and m != 12:
                 cols = st.columns(num_cols)
 
@@ -515,45 +514,47 @@ def run_lake_processing_app(waterbody: str, index: str):
                 "επιλεγμένου εύρους τιμών. Το εύρος τιμών ορίζεται από το slider 'Εύρος τιμών pixel'."
             )
 
-       # ------------------------------
-# Επιπρόσθετη Ετήσια Ανάλυση: Ετήσια Κατανομή Ημερών σε Εύρος
-# ------------------------------
-st.header("Επιπρόσθετη Ετήσια Ανάλυση: Ετήσια Κατανομή Ημερών σε Εύρος")
-unique_years_full = sorted({d.year for d in DATES if d is not None})
-if not unique_years_full:
-    st.error("Δεν βρέθηκαν έγκυρα έτη στα δεδομένα.")
-    st.stop()
+        # ------------------------------
+        # Επιπρόσθετη Ετήσια Ανάλυση: Ετήσια Κατανομή Ημερών σε Εύρος
+        # ------------------------------
+        st.header("Επιπρόσθετη Ετήσια Ανάλυση: Ετήσια Κατανομή Ημερών σε Εύρος")
+        unique_years_full = sorted({d.year for d in DATES if d is not None})
+        if not unique_years_full:
+            st.error("Δεν βρέθηκαν έγκυρα έτη στα δεδομένα.")
+            st.stop()
 
-stack_full_in_range = (STACK >= lower_thresh) & (STACK <= upper_thresh)
-yearly_days_in_range = {}
-for year in unique_years_full:
-    indices_y = [i for i, d in enumerate(DATES) if d.year == year]
-    if indices_y:
-        yearly_days_in_range[year] = np.sum(stack_full_in_range[indices_y, :, :], axis=0)
-    else:
-        yearly_days_in_range[year] = None
+        stack_full_in_range = (STACK >= lower_thresh) & (STACK <= upper_thresh)
+        yearly_days_in_range = {}
+        for year in unique_years_full:
+            indices_y = [i for i, d in enumerate(DATES) if d.year == year]
+            if indices_y:
+                yearly_days_in_range[year] = np.sum(stack_full_in_range[indices_y, :, :], axis=0)
+            else:
+                yearly_days_in_range[year] = None
 
-# Display yearly heatmaps in a grid with 3 columns per row using Streamlit columns
-num_cols = 3
-cols = st.columns(num_cols)
-for idx, year in enumerate(unique_years_full):
-    col_index = idx % num_cols
-    img = yearly_days_in_range[year]
-    if img is not None:
-        fig_year = px.imshow(np.flipud(img),
-                             color_continuous_scale="plasma",
-                             title=f"Έτος: {year}",
-                             labels={"color": "Ημέρες σε Εύρος"})
-        fig_year.update_layout(height=300)
-        cols[col_index].plotly_chart(fig_year, use_container_width=True)
-    else:
-        cols[col_index].info(f"Δεν υπάρχουν δεδομένα για το έτος {year}")
-    # Create a new row after every 3 plots, if there are more years remaining
-    if (idx + 1) % num_cols == 0 and (idx + 1) < len(unique_years_full):
+        # Εμφάνιση ετήσιων heatmaps σε πλέγμα με 3 ανά σειρά
+        num_cols = 3
         cols = st.columns(num_cols)
+        for idx, year in enumerate(unique_years_full):
+            col_index = idx % num_cols
+            img = yearly_days_in_range[year]
+            if img is not None:
+                fig_year = px.imshow(np.flipud(img),
+                                     color_continuous_scale="plasma",
+                                     title=f"Έτος: {year}",
+                                     labels={"color": "Ημέρες σε Εύρος"})
+                fig_year.update_layout(height=300)
+                cols[col_index].plotly_chart(fig_year, use_container_width=True)
+            else:
+                cols[col_index].info(f"Δεν υπάρχουν δεδομένα για το έτος {year}")
+            if (idx + 1) % num_cols == 0 and (idx + 1) < len(unique_years_full):
+                cols = st.columns(num_cols)
 
-with st.expander("Επεξήγηση: Ετήσια Κατανομή Ημερών σε Εύρος"):
-    st.write("Για κάθε έτος, αυτό το διάγραμμα δείχνει πόσες ημέρες κάθε pixel βρέθηκε εντός του επιλεγμένου εύρους τιμών, επιτρέποντάς σας να συγκρίνετε τις ετήσιες αλλαγές στη γεωχωρική κατανομή του δείκτη.")
+        with st.expander("Επεξήγηση: Ετήσια Κατανομή Ημερών σε Εύρος"):
+            st.write("Για κάθε έτος, αυτό το διάγραμμα δείχνει πόσες ημέρες κάθε pixel βρέθηκε εντός του επιλεγμένου εύρους τιμών, επιτρέποντάς σας να συγκρίνετε τις ετήσιες αλλαγές στη γεωχωρική κατανομή του δείκτη.")
+
+        st.info("Τέλος Επεξεργασίας Λίμνης.")
+        st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
 # Επεξεργασία Υδάτινου Σώματος (Placeholder)
