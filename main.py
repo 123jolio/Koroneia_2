@@ -475,12 +475,9 @@ def run_lake_processing_app(waterbody: str, index: str):
         with col4:
             st.plotly_chart(fig_time, use_container_width=True, key="fig_time_2")
 
-       # ------------------------------
 # Επιπρόσθετη Ετήσια Ανάλυση: Μηνιαία Κατανομή Ημερών σε Εύρος
 # ------------------------------
 st.header("Επιπρόσθετη Ετήσια Ανάλυση: Μηνιαία Κατανομή Ημερών σε Εύρος")
-
-# Use the existing STACK, lower_thresh, and DATES from earlier
 stack_full_in_range = (STACK >= lower_thresh) & (STACK <= upper_thresh)
 monthly_days_in_range = {}
 for m in range(1, 13):
@@ -490,13 +487,11 @@ for m in range(1, 13):
     else:
         monthly_days_in_range[m] = None
 
-# Define an order of months starting from March, then Apr...Dec, then Jan, Feb
-months_in_order = list(range(3, 13)) + [1, 2]  # [3,4,5,6,7,8,9,10,11,12,1,2]
+# Define custom month order starting from March: March, April, ..., December, January, February.
+months_in_order = list(range(3, 13)) + [1, 2]
 
-# Display monthly heatmaps in a grid with 3 columns
 num_cols = 3
 cols = st.columns(num_cols)
-
 for idx, m in enumerate(months_in_order):
     col_index = idx % num_cols
     img = monthly_days_in_range[m]
@@ -514,13 +509,12 @@ for idx, m in enumerate(months_in_order):
             height=400,
             margin=dict(l=0, r=0, t=30, b=0)
         )
-        # Hide color legend
+        # Hide the color legend
         fig_month.update_coloraxes(showscale=False)
         cols[col_index].plotly_chart(fig_month, use_container_width=False)
     else:
         cols[col_index].info(f"Δεν υπάρχουν δεδομένα για τον μήνα {month_name}")
-
-    # After every 3 plots, create a new row if more months remain
+    # Create a new row after every 3 plots if there are more months to display
     if (idx + 1) % num_cols == 0 and (idx + 1) < len(months_in_order):
         cols = st.columns(num_cols)
 
@@ -530,6 +524,7 @@ with st.expander("Επεξήγηση: Μηνιαία Κατανομή Ημερώ
         "εντός του επιλεγμένου εύρους τιμών, ξεκινώντας από τον Μάρτιο. "
         "Το εύρος τιμών ορίζεται από το slider 'Εύρος τιμών pixel'."
     )
+
 
         # ------------------------------
         # Επιπρόσθετη Ετήσια Ανάλυση: Ετήσια Κατανομή Ημερών σε Εύρος
