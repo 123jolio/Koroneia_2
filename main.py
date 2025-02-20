@@ -521,45 +521,59 @@ def run_lake_processing_app(waterbody: str, index: str):
         with st.expander("Επεξήγηση: Μηνιαία Κατανομή Ημερών σε Εύρος"):
             st.write("Για κάθε μήνα, αυτό το διάγραμμα δείχνει πόσες ημέρες κάθε pixel βρέθηκε εντός του επιλεγμένου εύρους τιμών. Το εύρος τιμών ορίζεται από το slider 'Εύρος τιμών pixel'.")
 
-       # ------------------------------
-# Επιπρόσθετη Ετήσια Ανάλυση: Μηνιαία Κατανομή Ημερών σε Εύρος
-# ------------------------------
-st.header("Επιπρόσθετη Ετήσια Ανάλυση: Μηνιαία Κατανομή Ημερών σε Εύρος")
-stack_full_in_range = (STACK >= lower_thresh) & (STACK <= upper_thresh)
-monthly_days_in_range = {}
-for m in range(1, 13):
-    indices_m = [i for i, d in enumerate(DATES) if d is not None and d.month == m]
-    if indices_m:
-        monthly_days_in_range[m] = np.sum(stack_full_in_range[indices_m, :, :], axis=0)
-    else:
-        monthly_days_in_range[m] = None
+        # ------------------------------
+        # Επιπρόσθετη Ετήσια Ανάλυση: Ετήσια Κατανομή Ημερών σε Εύρος
+        # ------------------------------
+        st.header("Επιπρόσθετη Ετήσια Ανάλυση: Ετήσια Κατανομή Ημερών σε Εύρος")
+        unique_years_full = sorted({d.year for d in DATES if d is not None})
+        if not unique_years_full:
+            st.error("Δεν βρέθηκαν έγκυρα έτη στα δεδομένα.")
+            st.stop()
 
-# Display monthly heatmaps in a grid using Streamlit columns (4 per row)
-num_cols = 4
-# Create the first row of columns
-cols = st.columns(num_cols)
-for m in range(1, 13):
-    col_index = (m - 1) % num_cols
-    img = monthly_days_in_range[m]
-    month_name = datetime(2000, m, 1).strftime('%B')
-    if img is not None:
-        fig_month = px.imshow(np.flipud(img),
-                              color_continuous_scale="plasma",
-                              title=month_name,
-                              labels={"color": "Ημέρες σε Εύρος"})
-        fig_month.update_layout(height=300)
-        cols[col_index].plotly_chart(fig_month, use_container_width=True)
-    else:
-        cols[col_index].info(f"Δεν υπάρχουν δεδομένα για τον μήνα {month_name}")
-    # Every time we finish a row (4 plots), create a new row of columns
-    if m % num_cols == 0 and m != 12:
-        cols = st.columns(num_cols)
+        stack_full_in_range = (STACK >= lower_thresh) & (STACK <= upper_thresh)
+        yearly_days_in_range = {}
+        for year in unique_years_full:
+            indices_y = [i for i, d in enumerate(DATES) if d.year == year]
+            if indices_y:
+                yearly_days_in_range[year] = np.sum(stack_full_in_range[indices_y, :, :], axis=0)
+            else:
+                yearly_days_in_range[year] = None
 
-with st.expander("Επεξήγηση: Μηνιαία Κατανομή Ημερών σε Εύρος"):
-    st.write(
-        "Για κάθε μήνα, αυτό το διάγραμμα δείχνει πόσες ημέρες κάθε pixel βρέθηκε εντός του "
-        "επιλεγμένου εύρους τιμών. Το εύρος τιμών ορίζεται από το slider 'Εύρος τιμών pixel'."
-    )
+        n_years = len(unique_years_full)
+        vertical_spacing = 0.02  # Ρυθμισμένη τιμή για το vertical_spacing
+        fig_yearly = make_subplots(
+            rows=n_years, cols=1,
+            subplot_titles=[f"Έτος: {year}" for year in unique_years_full],
+            vertical_spacing=vertical_spacing
+        )
+        for idx, year in enumerate(unique_years_full, start=1):
+            img = yearly_days_in_range[year]
+            if img is not None:
+                fig_yearly.add_trace(
+                    go.Heatmap(
+                        z=np.flipud(img),
+                        colorscale="plasma",
+                        colorbar=dict(title="Ημέρες σε Εύρος", len=0.5) if idx == 1 else dict(showticklabels=False)
+                    ),
+                    row=idx, col=1
+                )
+            else:
+                fig_yearly.add_annotation(
+                    text="Δεν υπάρχουν δεδομένα",
+                    row=idx, col=1,
+                    showarrow=False
+                )
+        fig_yearly.update_layout(
+            height=300 * n_years,
+            title_text="Ετήσια Κατανομή Ημερών σε Εύρος"
+        )
+        st.plotly_chart(fig_yearly, use_container_width=True, key="fig_yearly")
+        with st.expander("Επεξήγηση: Ετήσια Κατανομή Ημερών σε Εύρος"):
+            st.write("Για κάθε έτος, αυτό το διάγραμμα δείχνει πόσες ημέρες κάθε pixel βρέθηκε εντός του επιλεγμένου εύρους τιμών, επιτρέποντάς σας να συγκρίνετε τις ετήσιες αλλαγές στη γεωχωρική κατανομή του δείκτη.")
+
+        st.info("Τέλος Επεξεργασίας Λίμνης.")
+        st.markdown('</div>', unsafe_allow_html=True)
+
 # -----------------------------------------------------------------------------
 # Επεξεργασία Υδάτινου Σώματος (Placeholder)
 # -----------------------------------------------------------------------------
