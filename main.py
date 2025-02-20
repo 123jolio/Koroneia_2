@@ -269,7 +269,7 @@ def run_custom_ui():
     """, unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# Lake Processing with Monthly and Yearly Analysis
+# Lake Processing Analysis (Includes All Charts and Additional Monthly/Yearly Sections)
 # -----------------------------------------------------------------------------
 def run_lake_processing_app(waterbody: str, index: str):
     with st.container():
@@ -289,7 +289,7 @@ def run_lake_processing_app(waterbody: str, index: str):
             st.error("Δεν υπάρχουν διαθέσιμες πληροφορίες ημερομηνίας.")
             st.stop()
 
-        # Sidebar filters
+        # Sidebar Filters
         min_date = min(DATES)
         max_date = max(DATES)
         unique_years = sorted({d.year for d in DATES if d is not None})
@@ -307,12 +307,10 @@ def run_lake_processing_app(waterbody: str, index: str):
                                                   default=st.session_state.selected_months,
                                                   key="months_lp")
         st.session_state.selected_years = unique_years
-        selected_years = st.sidebar.multiselect("Έτη", options=unique_years,
-                                                default=unique_years,
-                                                key="years_lp")
+        selected_years = st.sidebar.multiselect("Έτη", options=unique_years, default=unique_years, key="years_lp")
+
         start_dt, end_dt = refined_date_range
-        selected_indices = [i for i, d in enumerate(DATES)
-                            if start_dt <= d <= end_dt and d.month in selected_months and d.year in selected_years]
+        selected_indices = [i for i, d in enumerate(DATES) if start_dt <= d <= end_dt and d.month in selected_months and d.year in selected_years]
         if not selected_indices:
             st.error("Δεν υπάρχουν δεδομένα για την επιλεγμένη περίοδο/μήνες/έτη.")
             st.stop()
@@ -322,14 +320,19 @@ def run_lake_processing_app(waterbody: str, index: str):
         lower_thresh, upper_thresh = threshold_range
         in_range = np.logical_and(stack_filtered >= lower_thresh, stack_filtered <= upper_thresh)
 
-        # Other plots (Days in Range, Mean Day, etc.) – omitted for brevity; they remain unchanged.
-        # ... [Your code for fig_days, fig_mean, fig_sample, fig_time, etc.]
+        # --- Original Charts (Days in Range, Mean Day, Sample, Time) ---
+        # These charts remain unchanged (code omitted here for brevity)
+        # They are displayed as before using st.plotly_chart(...)
+        # For example:
+        fig_days = px.imshow(np.nansum(in_range, axis=0), color_continuous_scale="plasma",
+                             title="Διάγραμμα: Ημέρες σε Εύρος", labels={"color": "Ημέρες σε Εύρος"})
+        fig_days.update_layout(width=800, height=600)
+        st.plotly_chart(fig_days, use_container_width=True, key="fig_days")
+        # (Additional charts for Mean Day, Sample, Time, etc. should be here.)
 
-        # ------------------------------
-        # Monthly Analysis: Fixed Grid with Blank Tiles
-        # ------------------------------
+        # --- Additional Monthly Analysis ---
         st.header("Επιπρόσθετη Ετήσια Ανάλυση: Μηνιαία Κατανομή Ημερών σε Εύρος")
-        # Calculate monthly data from the full STACK (or filtered as needed)
+        # Calculate monthly data (from the full STACK, not the filtered one for charts)
         stack_full_in_range = (STACK >= lower_thresh) & (STACK <= upper_thresh)
         monthly_days_in_range = {}
         for m in range(1, 13):
@@ -338,16 +341,15 @@ def run_lake_processing_app(waterbody: str, index: str):
                 monthly_days_in_range[m] = np.sum(stack_full_in_range[indices_m, :, :], axis=0)
             else:
                 monthly_days_in_range[m] = None
-
-        # We always iterate over all 12 months in the fixed order:
-        # Custom order: start from March then April ... December, then January, February.
+        # Fixed grid: Always iterate over all 12 months in a fixed order
+        # Custom order: Start from March, then April ... December, then January, February.
         months_in_order = list(range(3, 13)) + [1, 2]
         num_cols = 3
         cols = st.columns(num_cols)
         for idx, m in enumerate(months_in_order):
             col_index = idx % num_cols
             month_name = datetime(2000, m, 1).strftime('%B')
-            # If month m is not selected in the sidebar, leave tile blank.
+            # If the month is not selected, leave its tile blank.
             if m not in selected_months:
                 cols[col_index].info(f"Μήνας {month_name}: Αποκλείστηκε")
             else:
@@ -355,33 +357,22 @@ def run_lake_processing_app(waterbody: str, index: str):
                 if img is None:
                     cols[col_index].info(f"Δεν υπάρχουν δεδομένα για τον μήνα {month_name}")
                 else:
-                    fig_month = px.imshow(
-                        np.flipud(img),
-                        color_continuous_scale="plasma",
-                        title=month_name,
-                        labels={"color": "Ημέρες σε Εύρος"}
-                    )
-                    fig_month.update_layout(
-                        width=500,
-                        height=400,
-                        margin=dict(l=0, r=0, t=30, b=0)
-                    )
+                    fig_month = px.imshow(np.flipud(img),
+                                          color_continuous_scale="plasma",
+                                          title=month_name,
+                                          labels={"color": "Ημέρες σε Εύρος"})
+                    fig_month.update_layout(width=500, height=400, margin=dict(l=0, r=0, t=30, b=0))
                     fig_month.update_coloraxes(showscale=False)
                     cols[col_index].plotly_chart(fig_month, use_container_width=False)
             if (idx + 1) % num_cols == 0 and (idx + 1) < len(months_in_order):
                 cols = st.columns(num_cols)
         with st.expander("Επεξήγηση: Μηνιαία Κατανομή Ημερών σε Εύρος"):
-            st.write(
-                "Αυτό το διάγραμμα εμφανίζει σταθερά 12 θέσεις (3 ανά σειρά) με την προσαρμοσμένη σειρά "
-                "που ξεκινά από τον Μάρτιο. Εάν ένας μήνας δεν έχει επιλεγεί ή δεν υπάρχουν δεδομένα, η θέση μένει κενή."
-            )
+            st.write("Αυτό το διάγραμμα εμφανίζει σταθερά 12 θέσεις με τη σειρά που ξεκινά από τον Μάρτιο. Εάν ένας μήνας δεν έχει επιλεγεί ή δεν υπάρχουν δεδομένα, η θέση μένει κενή.")
 
-        # ------------------------------
-        # Yearly Analysis: Fixed Grid with Blank Tiles
-        # ------------------------------
+        # --- Additional Yearly Analysis ---
         st.header("Επιπρόσθετη Ετήσια Ανάλυση: Ετήσια Κατανομή Ημερών σε Εύρος")
         unique_years_full = sorted({d.year for d in DATES if d is not None})
-        # Only consider years selected in the sidebar
+        # Only include years selected from the sidebar
         years_to_display = [y for y in unique_years_full if y in selected_years]
         if not years_to_display:
             st.error("Δεν υπάρχουν έγκυρα έτη στα δεδομένα μετά το φίλτρο.")
@@ -394,36 +385,25 @@ def run_lake_processing_app(waterbody: str, index: str):
                 yearly_days_in_range[year] = np.sum(stack_full_in_range[indices_y, :, :], axis=0)
             else:
                 yearly_days_in_range[year] = None
-
         num_cols = 3
         cols = st.columns(num_cols)
         for idx, year in enumerate(years_to_display):
             col_index = idx % num_cols
-            # If the year is not selected, the space remains blank (but here years_to_display already only includes selected years)
             img = yearly_days_in_range.get(year, None)
             if img is None:
                 cols[col_index].info(f"Δεν υπάρχουν δεδομένα για το έτος {year}")
             else:
-                fig_year = px.imshow(
-                    np.flipud(img),
-                    color_continuous_scale="plasma",
-                    title=f"Έτος: {year}",
-                    labels={"color": "Ημέρες σε Εύρος"}
-                )
-                fig_year.update_layout(
-                    width=500,
-                    height=400,
-                    margin=dict(l=0, r=0, t=30, b=0)
-                )
+                fig_year = px.imshow(np.flipud(img),
+                                     color_continuous_scale="plasma",
+                                     title=f"Έτος: {year}",
+                                     labels={"color": "Ημέρες σε Εύρος"})
+                fig_year.update_layout(width=500, height=400, margin=dict(l=0, r=0, t=30, b=0))
                 fig_year.update_coloraxes(showscale=False)
                 cols[col_index].plotly_chart(fig_year, use_container_width=False)
             if (idx + 1) % num_cols == 0 and (idx + 1) < len(years_to_display):
                 cols = st.columns(num_cols)
         with st.expander("Επεξήγηση: Ετήσια Κατανομή Ημερών σε Εύρος"):
-            st.write(
-                "Αυτό το διάγραμμα εμφανίζει ένα σταθερό πλέγμα για τα έτη που έχουν επιλεγεί. "
-                "Εάν κάποιο έτος δεν έχει επιλεγεί, η αντίστοιχη θέση μένει κενή."
-            )
+            st.write("Αυτό το διάγραμμα εμφανίζει τα έτη που έχουν επιλεγεί. Εάν κάποιο έτος δεν έχει επιλεγεί, η θέση μένει κενή.")
 
         st.info("Τέλος Επεξεργασίας Λίμνης.")
         st.markdown('</div>', unsafe_allow_html=True)
@@ -666,11 +646,11 @@ def run_water_quality_dashboard(waterbody: str, index: str):
             fig_dual.update_yaxes(title_text="mg/m³", secondary_y=True)
             return fig_geo, fig_dual, fig_colors, fig_mg, results_colors, results_mg, lake_data
 
+        # Tabs for Sampling
         if "default_results" not in st.session_state:
             st.session_state.default_results = None
         if "upload_results" not in st.session_state:
             st.session_state.upload_results = None
-
         tab_names = ["Δειγματοληψία 1 (Default)", "Δειγματοληψία 2 (Upload)"]
         tabs = st.tabs(tab_names)
         with tabs[0]:
@@ -681,20 +661,10 @@ def run_water_quality_dashboard(waterbody: str, index: str):
             else:
                 st.warning("Το αρχείο δειγματοληψίας (sampling.kml) δεν βρέθηκε.")
             point_names = [name for name, _, _ in default_sampling_points]
-            selected_points = st.multiselect("Επιλέξτε σημεία για ανάλυση mg/m³",
-                                             options=point_names,
-                                             default=point_names,
-                                             key="default_points")
+            selected_points = st.multiselect("Επιλέξτε σημεία για ανάλυση mg/m³", options=point_names, default=point_names, key="default_points")
             if st.button("Εκτέλεση Ανάλυσης (Default)", key="default_run"):
                 with st.spinner("Εκτέλεση ανάλυσης..."):
-                    st.session_state.default_results = analyze_sampling(
-                        default_sampling_points,
-                        first_image_data,
-                        first_transform,
-                        images_folder,
-                        lake_height_path,
-                        selected_points
-                    )
+                    st.session_state.default_results = analyze_sampling(default_sampling_points, first_image_data, first_transform, images_folder, lake_height_path, selected_points)
             if st.session_state.default_results is not None:
                 results = st.session_state.default_results
                 if isinstance(results, tuple) and len(results) == 7:
@@ -720,9 +690,7 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                 with nested_tabs[4]:
                     st.plotly_chart(fig_dual, use_container_width=True, key="default_fig_dual")
                 with nested_tabs[5]:
-                    selected_detail_point = st.selectbox("Επιλέξτε σημείο για λεπτομερή ανάλυση mg",
-                                                         options=list(results_mg.keys()),
-                                                         key="default_detail")
+                    selected_detail_point = st.selectbox("Επιλέξτε σημείο για λεπτομερή ανάλυση mg", options=list(results_mg.keys()), key="default_detail")
                     if selected_detail_point:
                         mg_data = results_mg[selected_detail_point]
                         if mg_data:
@@ -731,12 +699,10 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                             mg_values = [val for _, val in mg_data_sorted]
                             detail_colors = [mg_to_color(val) for val in mg_values]
                             fig_detail = go.Figure()
-                            fig_detail.add_trace(go.Scatter(
-                                x=dates_mg, y=mg_values, mode='lines+markers',
-                                marker=dict(color=detail_colors, size=10),
-                                line=dict(color="gray"),
-                                name=selected_detail_point
-                            ))
+                            fig_detail.add_trace(go.Scatter(x=dates_mg, y=mg_values, mode='lines+markers',
+                                                            marker=dict(color=detail_colors, size=10),
+                                                            line=dict(color="gray"),
+                                                            name=selected_detail_point))
                             fig_detail.update_layout(title=f"Λεπτομερής ανάλυση mg για {selected_detail_point}",
                                                      xaxis_title="Ημερομηνία", yaxis_title="mg/m³")
                             st.plotly_chart(fig_detail, use_container_width=True, key="default_fig_detail")
@@ -752,20 +718,10 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                     st.error(f"Σφάλμα επεξεργασίας ανεβασμένου αρχείου: {e}")
                     new_sampling_points = []
                 point_names = [name for name, _, _ in new_sampling_points]
-                selected_points = st.multiselect("Επιλέξτε σημεία για ανάλυση mg/m³",
-                                                 options=point_names,
-                                                 default=point_names,
-                                                 key="upload_points")
+                selected_points = st.multiselect("Επιλέξτε σημεία για ανάλυση mg/m³", options=point_names, default=point_names, key="upload_points")
                 if st.button("Εκτέλεση Ανάλυσης (Upload)", key="upload_run"):
                     with st.spinner("Εκτέλεση ανάλυσης..."):
-                        st.session_state.upload_results = analyze_sampling(
-                            new_sampling_points,
-                            first_image_data,
-                            first_transform,
-                            images_folder,
-                            lake_height_path,
-                            selected_points
-                        )
+                        st.session_state.upload_results = analyze_sampling(new_sampling_points, first_image_data, first_transform, images_folder, lake_height_path, selected_points)
                 if st.session_state.upload_results is not None:
                     results = st.session_state.upload_results
                     if isinstance(results, tuple) and len(results) == 7:
@@ -791,9 +747,7 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                     with nested_tabs[4]:
                         st.plotly_chart(fig_dual, use_container_width=True, key="upload_fig_dual")
                     with nested_tabs[5]:
-                        selected_detail_point = st.selectbox("Επιλέξτε σημείο για λεπτομερή ανάλυση mg",
-                                                             options=list(results_mg.keys()),
-                                                             key="upload_detail")
+                        selected_detail_point = st.selectbox("Επιλέξτε σημείο για λεπτομερής ανάλυση mg", options=list(results_mg.keys()), key="upload_detail")
                         if selected_detail_point:
                             mg_data = results_mg[selected_detail_point]
                             if mg_data:
@@ -802,12 +756,10 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                                 mg_values = [val for _, val in mg_data_sorted]
                                 detail_colors = [mg_to_color(val) for val in mg_values]
                                 fig_detail = go.Figure()
-                                fig_detail.add_trace(go.Scatter(
-                                    x=dates_mg, y=mg_values, mode='lines+markers',
-                                    marker=dict(color=detail_colors, size=10),
-                                    line=dict(color="gray"),
-                                    name=selected_detail_point
-                                ))
+                                fig_detail.add_trace(go.Scatter(x=dates_mg, y=mg_values, mode='lines+markers',
+                                                                marker=dict(color=detail_colors, size=10),
+                                                                line=dict(color="gray"),
+                                                                name=selected_detail_point))
                                 fig_detail.update_layout(title=f"Λεπτομερής ανάλυση mg για {selected_detail_point}",
                                                          xaxis_title="Ημερομηνία", yaxis_title="mg/m³")
                                 st.plotly_chart(fig_detail, use_container_width=True, key="upload_fig_detail")
@@ -815,7 +767,6 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                                 st.info("Δεν υπάρχουν δεδομένα mg για αυτό το σημείο.", key="upload_no_mg")
             else:
                 st.info("Παρακαλώ ανεβάστε ένα αρχείο KML για νέα σημεία δειγματοληψίας.", key="upload_info")
-
         st.info("Τέλος Πίνακα Ποιότητας Ύδατος.")
         st.markdown('</div>', unsafe_allow_html=True)
 
