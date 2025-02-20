@@ -475,51 +475,61 @@ def run_lake_processing_app(waterbody: str, index: str):
         with col4:
             st.plotly_chart(fig_time, use_container_width=True, key="fig_time_2")
 
-        # ------------------------------
-        # Επιπρόσθετη Ετήσια Ανάλυση: Μηνιαία Κατανομή Ημερών σε Εύρος
-        # ------------------------------
-        st.header("Επιπρόσθετη Ετήσια Ανάλυση: Μηνιαία Κατανομή Ημερών σε Εύρος")
-        stack_full_in_range = (STACK >= lower_thresh) & (STACK <= upper_thresh)
-        monthly_days_in_range = {}
-        for m in range(1, 13):
-            indices_m = [i for i, d in enumerate(DATES) if d is not None and d.month == m]
-            if indices_m:
-                monthly_days_in_range[m] = np.sum(stack_full_in_range[indices_m, :, :], axis=0)
-            else:
-                monthly_days_in_range[m] = None
+       # ------------------------------
+# Επιπρόσθετη Ετήσια Ανάλυση: Μηνιαία Κατανομή Ημερών σε Εύρος
+# ------------------------------
+st.header("Επιπρόσθετη Ετήσια Ανάλυση: Μηνιαία Κατανομή Ημερών σε Εύρος")
 
-        num_cols = 4
+# Use the existing STACK, lower_thresh, and DATES from earlier
+stack_full_in_range = (STACK >= lower_thresh) & (STACK <= upper_thresh)
+monthly_days_in_range = {}
+for m in range(1, 13):
+    indices_m = [i for i, d in enumerate(DATES) if d is not None and d.month == m]
+    if indices_m:
+        monthly_days_in_range[m] = np.sum(stack_full_in_range[indices_m, :, :], axis=0)
+    else:
+        monthly_days_in_range[m] = None
+
+# Define an order of months starting from March, then Apr...Dec, then Jan, Feb
+months_in_order = list(range(3, 13)) + [1, 2]  # [3,4,5,6,7,8,9,10,11,12,1,2]
+
+# Display monthly heatmaps in a grid with 3 columns
+num_cols = 3
+cols = st.columns(num_cols)
+
+for idx, m in enumerate(months_in_order):
+    col_index = idx % num_cols
+    img = monthly_days_in_range[m]
+    month_name = datetime(2000, m, 1).strftime('%B')
+    if img is not None:
+        fig_month = px.imshow(
+            np.flipud(img),
+            color_continuous_scale="plasma",
+            title=month_name,
+            labels={"color": "Ημέρες σε Εύρος"}
+        )
+        # Set larger size & remove margins
+        fig_month.update_layout(
+            width=500,
+            height=400,
+            margin=dict(l=0, r=0, t=30, b=0)
+        )
+        # Hide color legend
+        fig_month.update_coloraxes(showscale=False)
+        cols[col_index].plotly_chart(fig_month, use_container_width=False)
+    else:
+        cols[col_index].info(f"Δεν υπάρχουν δεδομένα για τον μήνα {month_name}")
+
+    # After every 3 plots, create a new row if more months remain
+    if (idx + 1) % num_cols == 0 and (idx + 1) < len(months_in_order):
         cols = st.columns(num_cols)
-        for m in range(1, 13):
-            col_index = (m - 1) % num_cols
-            img = monthly_days_in_range[m]
-            month_name = datetime(2000, m, 1).strftime('%B')
-            if img is not None:
-                fig_month = px.imshow(
-                    np.flipud(img),
-                    color_continuous_scale="plasma",
-                    title=month_name,
-                    labels={"color": "Ημέρες σε Εύρος"}
-                )
-                # Set larger size & remove margins
-                fig_month.update_layout(
-                    width=500,
-                    height=400,
-                    margin=dict(l=0, r=0, t=30, b=0)
-                )
-                # Hide color legend
-                fig_month.update_coloraxes(showscale=False)
-                cols[col_index].plotly_chart(fig_month, use_container_width=False)
-            else:
-                cols[col_index].info(f"Δεν υπάρχουν δεδομένα για τον μήνα {month_name}")
-            if m % num_cols == 0 and m != 12:
-                cols = st.columns(num_cols)
 
-        with st.expander("Επεξήγηση: Μηνιαία Κατανομή Ημερών σε Εύρος"):
-            st.write(
-                "Για κάθε μήνα, αυτό το διάγραμμα δείχνει πόσες ημέρες κάθε pixel βρέθηκε εντός του "
-                "επιλεγμένου εύρους τιμών. Το εύρος τιμών ορίζεται από το slider 'Εύρος τιμών pixel'."
-            )
+with st.expander("Επεξήγηση: Μηνιαία Κατανομή Ημερών σε Εύρος"):
+    st.write(
+        "Για κάθε μήνα, αυτό το διάγραμμα δείχνει πόσες ημέρες κάθε pixel βρέθηκε "
+        "εντός του επιλεγμένου εύρους τιμών, ξεκινώντας από τον Μάρτιο. "
+        "Το εύρος τιμών ορίζεται από το slider 'Εύρος τιμών pixel'."
+    )
 
         # ------------------------------
         # Επιπρόσθετη Ετήσια Ανάλυση: Ετήσια Κατανομή Ημερών σε Εύρος
