@@ -989,7 +989,7 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                             else:
                                 st.info("Δεν υπάρχουν δεδομένα mg για αυτό το σημείο.", key="upload_no_mg")
             else:
-                st.info("Παρακαλώ ανεβάστε ένα αρχείο KML για νέα σημεία δειγματοληψίας.", key="upload_info")
+                st.info("Παρακαλώ ανεβάστε ένα αρχείο KML για νέα σημεία δειγματοληψίας.")
 
         st.info("Τέλος Πίνακα Ποιότητας Ύδατος.")
         st.markdown('</div>', unsafe_allow_html=True)
