@@ -347,7 +347,7 @@ def run_lake_processing_app(waterbody: str, index: str):
             st.error("Δεν υπάρχουν διαθέσιμες πληροφορίες ημερομηνίας.")
             st.stop()
 
-        # Βασικά φίλτρα από την πλαϊνή μπάρας
+        # Βασικά φίλτρα από την πλαϊνή μπάρα
         min_date = min(DATES)
         max_date = max(DATES)
         unique_years = sorted({d.year for d in DATES if d is not None})
@@ -361,6 +361,7 @@ def run_lake_processing_app(waterbody: str, index: str):
         display_option = st.sidebar.radio("Τρόπος εμφάνισης", options=["Thresholded", "Original"], index=0, key="display_lp")
 
         st.sidebar.markdown("### Επιλογή Μηνών")
+        # Existing month selection used for filtering
         month_options = {i: datetime(2000, i, 1).strftime('%B') for i in range(1, 13)}
         if "selected_months" not in st.session_state:
             st.session_state.selected_months = list(month_options.keys())
@@ -369,6 +370,7 @@ def run_lake_processing_app(waterbody: str, index: str):
                                                  format_func=lambda x: month_options[x],
                                                  default=st.session_state.selected_months,
                                                  key="months_lp")
+        # The same selection is used to filter the dataset and now also the grid plots
 
         st.session_state.selected_years = unique_years
         selected_years = st.sidebar.multiselect("Έτη", options=unique_years,
@@ -479,6 +481,7 @@ def run_lake_processing_app(waterbody: str, index: str):
         # Επιπρόσθετη Ετήσια Ανάλυση: Μηνιαία Κατανομή Ημερών σε Εύρος
         # ------------------------------
         st.header("Επιπρόσθετη Ετήσια Ανάλυση: Μηνιαία Κατανομή Ημερών σε Εύρος")
+        # Use full dataset arrays (STACK, lower_thresh, DATES)
         stack_full_in_range = (STACK >= lower_thresh) & (STACK <= upper_thresh)
         monthly_days_in_range = {}
         for m in range(1, 13):
@@ -488,8 +491,16 @@ def run_lake_processing_app(waterbody: str, index: str):
             else:
                 monthly_days_in_range[m] = None
 
-        # Custom order: start from March then April ... December, then January, February.
-        months_in_order = list(range(3, 13)) + [1, 2]
+        # Only include months that were selected in the filtering (from the sidebar "Μήνες")
+        months_to_display = [m for m in list(range(1, 13)) if m in selected_months]
+        # Reorder to start from March
+        months_in_order = sorted(months_to_display)
+        # If March is in the list, reorder so that March comes first:
+        if 3 in months_in_order:
+            months_in_order = list(range(3, 13)) + [m for m in months_in_order if m < 3]
+            # Remove duplicates while preserving order:
+            seen = set()
+            months_in_order = [x for x in months_in_order if not (x in seen or seen.add(x))]
 
         num_cols = 3
         cols = st.columns(num_cols)
@@ -517,9 +528,8 @@ def run_lake_processing_app(waterbody: str, index: str):
                 cols = st.columns(num_cols)
         with st.expander("Επεξήγηση: Μηνιαία Κατανομή Ημερών σε Εύρος"):
             st.write(
-                "Για κάθε μήνα, αυτό το διάγραμμα δείχνει πόσες ημέρες κάθε pixel βρέθηκε "
-                "εντός του επιλεγμένου εύρους τιμών, ξεκινώντας από τον Μάρτιο. "
-                "Το εύρος τιμών ορίζεται από το slider 'Εύρος τιμών pixel'."
+                "Για κάθε μήνα που έχετε επιλέξει, το διάγραμμα δείχνει πόσες ημέρες κάθε pixel βρέθηκε "
+                "εντός του επιλεγμένου εύρους τιμών. Οι μήνες που δεν έχουν επιλεγεί δεν εμφανίζονται και τα δεδομένα τους δεν περιλαμβάνονται."
             )
 
         # ------------------------------
@@ -527,13 +537,16 @@ def run_lake_processing_app(waterbody: str, index: str):
         # ------------------------------
         st.header("Επιπρόσθετη Ετήσια Ανάλυση: Ετήσια Κατανομή Ημερών σε Εύρος")
         unique_years_full = sorted({d.year for d in DATES if d is not None})
-        if not unique_years_full:
-            st.error("Δεν βρέθηκαν έγκυρα έτη στα δεδομένα.")
+        # Only include years that were selected in the sidebar "Έτη"
+        years_to_display = [y for y in unique_years_full if y in selected_years]
+
+        if not years_to_display:
+            st.error("Δεν υπάρχουν έγκυρα έτη στα δεδομένα μετά το φίλτρο.")
             st.stop()
 
         stack_full_in_range = (STACK >= lower_thresh) & (STACK <= upper_thresh)
         yearly_days_in_range = {}
-        for year in unique_years_full:
+        for year in years_to_display:
             indices_y = [i for i, d in enumerate(DATES) if d.year == year]
             if indices_y:
                 yearly_days_in_range[year] = np.sum(stack_full_in_range[indices_y, :, :], axis=0)
@@ -542,7 +555,7 @@ def run_lake_processing_app(waterbody: str, index: str):
 
         num_cols = 3
         cols = st.columns(num_cols)
-        for idx, year in enumerate(unique_years_full):
+        for idx, year in enumerate(years_to_display):
             col_index = idx % num_cols
             img = yearly_days_in_range[year]
             if img is not None:
@@ -561,10 +574,10 @@ def run_lake_processing_app(waterbody: str, index: str):
                 cols[col_index].plotly_chart(fig_year, use_container_width=False)
             else:
                 cols[col_index].info(f"Δεν υπάρχουν δεδομένα για το έτος {year}")
-            if (idx + 1) % num_cols == 0 and (idx + 1) < len(unique_years_full):
+            if (idx + 1) % num_cols == 0 and (idx + 1) < len(years_to_display):
                 cols = st.columns(num_cols)
         with st.expander("Επεξήγηση: Ετήσια Κατανομή Ημερών σε Εύρος"):
-            st.write("Για κάθε έτος, αυτό το διάγραμμα δείχνει πόσες ημέρες κάθε pixel βρέθηκε εντός του επιλεγμένου εύρους τιμών, επιτρέποντάς σας να συγκρίνετε τις ετήσιες αλλαγές στη γεωχωρική κατανομή του δείκτη.")
+            st.write("Για κάθε έτος που έχετε επιλέξει, το διάγραμμα δείχνει πόσες ημέρες κάθε pixel βρέθηκε εντός του επιλεγμένου εύρους τιμών. Τα έτη που δεν έχουν επιλεγεί δεν εμφανίζονται και τα δεδομένα τους δεν περιλαμβάνονται.")
 
         st.info("Τέλος Επεξεργασίας Λίμνης.")
         st.markdown('</div>', unsafe_allow_html=True)
@@ -979,161 +992,6 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                 st.info("Παρακαλώ ανεβάστε ένα αρχείο KML για νέα σημεία δειγματοληψίας.", key="upload_info")
 
         st.info("Τέλος Πίνακα Ποιότητας Ύδατος.")
-        st.markdown('</div>', unsafe_allow_html=True)
-
-# -----------------------------------------------------------------------------
-# Επεξεργασία Καμένων Περιοχών (Placeholder)
-# -----------------------------------------------------------------------------
-def run_burned_areas():
-    with st.container():
-        st.markdown('<div class="card">', unsafe_allow_html=True)
-        st.title("Burned Areas γύρω από το ταμιευτήριο (μόνο Γαδουρά)")
-        st.info("Δεν υπάρχουν δεδομένα ή λειτουργίες για ανάλυση καμένων περιοχών.")
-        st.markdown('</div>', unsafe_allow_html=True)
-
-# -----------------------------------------------------------------------------
-# Προφίλ Ύψους (Placeholder)
-# -----------------------------------------------------------------------------
-def run_water_level_profiles(waterbody: str, index: str):
-    with st.container():
-        st.markdown('<div class="card">', unsafe_allow_html=True)
-        st.title(f"Προφίλ Ύψους ({waterbody}) [Placeholder]")
-        st.info("Δεν υπάρχουν δεδομένα ή λειτουργίες για προφίλ ύψους νερού.")
-        st.markdown('</div>', unsafe_allow_html=True)
-
-# -----------------------------------------------------------------------------
-# Ανάλυση Προτύπων
-# -----------------------------------------------------------------------------
-def run_pattern_analysis(waterbody: str, index: str):
-    with st.container():
-        st.markdown('<div class="card">', unsafe_allow_html=True)
-        st.title(f"Ανάλυση Προτύπων ({waterbody} - {index})")
-
-        data_folder = get_data_folder(waterbody, index)
-        if data_folder is None:
-            st.error("Δεν υπάρχει φάκελος δεδομένων για το επιλεγμένο υδάτινο σώμα/δείκτη.")
-            st.stop()
-
-        input_folder = os.path.join(data_folder, "GeoTIFFs")
-        try:
-            STACK, DAYS, DATES = load_data(input_folder)
-        except Exception as e:
-            st.error(f"Σφάλμα φόρτωσης δεδομένων: {e}")
-            st.stop()
-
-        st.sidebar.header("Ελέγχοι Ανάλυσης Προτύπων")
-        unique_years = sorted({d.year for d in DATES if d is not None})
-        selected_years_pattern = st.sidebar.multiselect(
-            "Επιλέξτε έτη",
-            options=unique_years,
-            default=unique_years,
-            key="pattern_years"
-        )
-        selected_months_pattern = st.sidebar.multiselect(
-            "Επιλέξτε μήνες",
-            options=list(range(1, 13)),
-            default=list(range(1, 13)),
-            key="pattern_months",
-            format_func=lambda m: datetime(2000, m, 1).strftime('%B')
-        )
-        threshold_range = st.sidebar.slider("Εύρος τιμών pixel", 0, 255, (0, 255), key="pattern_threshold")
-        lower_thresh, upper_thresh = threshold_range
-
-        if not selected_years_pattern or not selected_months_pattern:
-            st.error("Παρακαλώ επιλέξτε τουλάχιστον ένα έτος και έναν μήνα.")
-            st.stop()
-
-        indices = [i for i, d in enumerate(DATES)
-                   if d.year in selected_years_pattern and d.month in selected_months_pattern]
-        if not indices:
-            st.error("Δεν υπάρχουν δεδομένα για τα επιλεγμένα έτη/μήνες στην ανάλυση προτύπων.")
-            st.stop()
-
-        STACK_filtered = STACK[indices, :, :]
-        stack_full_in_range = (STACK_filtered >= lower_thresh) & (STACK_filtered <= upper_thresh)
-        filtered_dates = [DATES[i] for i in indices]
-
-        monthly_avg = {}
-        for m in selected_months_pattern:
-            month_indices = [i for i, dd in enumerate(filtered_dates) if dd.month == m]
-            if month_indices:
-                avg_days = np.nanmean(stack_full_in_range[month_indices, :, :], axis=0)
-                monthly_avg[m] = avg_days
-            else:
-                monthly_avg[m] = None
-
-        agg_avg = None
-        count = 0
-        for m in monthly_avg:
-            if monthly_avg[m] is not None:
-                if agg_avg is None:
-                    agg_avg = monthly_avg[m]
-                else:
-                    agg_avg += monthly_avg[m]
-                count += 1
-        overall_avg = (agg_avg / count) if (agg_avg is not None and count > 0) else None
-
-        temporal_data = []
-        for mm in sorted(monthly_avg.keys()):
-            if monthly_avg[mm] is not None:
-                spatial_avg = np.nanmean(monthly_avg[mm])
-                temporal_data.append((mm, spatial_avg))
-
-        if temporal_data:
-            months, means = zip(*temporal_data)
-            month_names = [datetime(2000, mm, 1).strftime('%B') for mm in months]
-            fig_temporal = px.bar(
-                x=month_names,
-                y=means,
-                labels={'x': 'Μήνας', 'y': 'Μέσο Ποσοστό σε Εύρος'},
-                title="Χρονολογικό Πρότυπο ανά Μήνα"
-            )
-        else:
-            fig_temporal = go.Figure()
-
-        if overall_avg is not None:
-            classification = np.full(overall_avg.shape, "Μη Ταξινομημένο", dtype=object)
-            valid_mask = ~np.isnan(overall_avg)
-            classification[valid_mask & (overall_avg < 0.3)] = "Χαμηλό"
-            classification[valid_mask & (overall_avg >= 0.3) & (overall_avg < 0.7)] = "Μέτριο"
-            classification[valid_mask & (overall_avg >= 0.7)] = "Υψηλό"
-            mapping_dict = {"Χαμηλό": 0, "Μέτριο": 1, "Υψηλό": 2, "Μη Ταξινομημένο": 3}
-            numeric_class = np.vectorize(lambda x: mapping_dict[x])(classification)
-            discrete_colorscale = [
-                [0.00, "blue"],
-                [0.33, "yellow"],
-                [0.66, "red"],
-                [1.00, "gray"]
-            ]
-            fig_class = px.imshow(
-                numeric_class,
-                color_continuous_scale=discrete_colorscale,
-                title="Χωρική Ταξινόμηση"
-            )
-            fig_class.update_traces(
-                colorbar=dict(tickvals=[0, 1, 2, 3],
-                              ticktext=["Χαμηλό", "Μέτριο", "Υψηλό", "Μη Ταξινομημένο"])
-            )
-        else:
-            fig_class = go.Figure()
-
-        st.header("Ανάλυση Προτύπων")
-        st.markdown("Η ανάλυση αυτή παρουσιάζει το χρονολογικό πρότυπο (μηνιαία) και την χωρική ταξινόμηση των δεδομένων.")
-        st.subheader("Χρονολογικό Πρότυπο")
-        st.plotly_chart(fig_temporal, use_container_width=True, key="pattern_fig_temporal")
-        with st.expander("Επεξήγηση: Χρονολογικό Πρότυπο ανά Μήνα"):
-            st.write("Το διάγραμμα αυτό δείχνει το μέσο ποσοστό των pixels που βρίσκονται εντός του επιλεγμένου εύρους τιμών για κάθε μήνα. Μπορείτε να τροποποιήσετε το 'Εύρος τιμών pixel' για να δείτε πώς αλλάζει το πρότυπο.")
-        st.subheader("Χωρική Ταξινόμηση")
-        st.plotly_chart(fig_class, use_container_width=True, key="pattern_fig_class")
-        with st.expander("Επεξήγηση: Χωρική Ταξινόμηση"):
-            st.write("Το διάγραμμα αυτό ταξινομεί χωρικά τα pixels με βάση το μέσο ποσοστό τους εντός του εύρους τιμών. Αυτό σας επιτρέπει να εντοπίσετε περιοχές με χαμηλές, μέτριες ή υψηλές τιμές.")
-        if temporal_data:
-            df_temporal = pd.DataFrame(temporal_data, columns=["Μήνας", "Μέσο Ποσοστό σε Εύρος"])
-            csv = df_temporal.to_csv(index=False).encode('utf-8')
-            st.download_button("Λήψη CSV ανάλυσης", data=csv,
-                               file_name="χρονική_ανάλυση.csv", mime="text/csv", key="pattern_csv")
-
-        st.info("Τέλος Ανάλυσης Προτύπων.")
         st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
