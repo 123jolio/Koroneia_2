@@ -848,7 +848,9 @@ def run_water_quality_dashboard(waterbody: str, index: str):
         tab_names = ["Δειγματοληψία 1 (Default)", "Δειγματοληψία 2 (Upload)"]
         tabs = st.tabs(tab_names)
 
-# Καρτέλα 1 (Default)
+# Define the main tabs for the Default and Upload sections
+tabs = st.tabs(["Καρτέλα 1 (Default)", "Καρτέλα 2 (Upload)"])
+
 with tabs[0]:
     st.header("Ανάλυση για Δειγματοληψία 1 (Default)")
     default_sampling_points = []
@@ -878,11 +880,15 @@ with tabs[0]:
         else:
             st.error("Σφάλμα μορφοποίησης αποτελεσμάτων ανάλυσης. Παρακαλώ επαναλάβετε την ανάλυση.")
             st.stop()
+        # Create nested tabs to display various results
         nested_tabs = st.tabs(["GeoTIFF", "Video/GIF", "Χρώματα Pixel", "Μέσο mg", "Διπλά Διαγράμματα", "Λεπτομερής ανάλυση mg"])
+        
+        # GeoTIFF Tab
         with nested_tabs[0]:
             st.plotly_chart(fig_geo, use_container_width=True, key="default_fig_geo")
+        
+        # Video/GIF Tab with date-based navigation
         with nested_tabs[1]:
-            # Updated Video/GIF tab with date-based navigation
             # Extract TIFF files with date information from the images folder
             tif_files = [f for f in os.listdir(images_folder) if f.lower().endswith('.tif')]
             available_dates = {}
@@ -925,12 +931,20 @@ with tabs[0]:
                     st.error("Η εικόνα δεν βρέθηκε.")
             else:
                 st.info("Δεν βρέθηκαν εικόνες με ημερομηνία στο φάκελο.")
+        
+        # Χρώματα Pixel Tab
         with nested_tabs[2]:
             st.plotly_chart(fig_colors, use_container_width=True, key="default_fig_colors")
+        
+        # Μέσο mg Tab
         with nested_tabs[3]:
             st.plotly_chart(fig_mg, use_container_width=True, key="default_fig_mg")
+        
+        # Διπλά Διαγράμματα Tab
         with nested_tabs[4]:
             st.plotly_chart(fig_dual, use_container_width=True, key="default_fig_dual")
+        
+        # Λεπτομερής ανάλυση mg Tab
         with nested_tabs[5]:
             selected_detail_point = st.selectbox("Επιλέξτε σημείο για λεπτομερή ανάλυση mg",
                                                  options=list(results_mg.keys()),
@@ -954,6 +968,10 @@ with tabs[0]:
                     st.plotly_chart(fig_detail, use_container_width=True, key="default_fig_detail")
                 else:
                     st.info("Δεν υπάρχουν δεδομένα mg για αυτό το σημείο.")
+
+with tabs[1]:
+    st.header("Ανάλυση για ανεβασμένη δειγματοληψία")
+    # Additional code for the Upload section goes here...
 
         # Καρτέλα 2 (Upload)
         with tabs[1]:
