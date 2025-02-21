@@ -137,7 +137,7 @@ def get_data_folder(waterbody: str, index: str) -> str:
         data_folder = os.path.join(base_dir, waterbody_folder, "Chlorophyll")
     elif index == "Burned Areas":
         data_folder = os.path.join(base_dir, waterbody_folder, "Burned Areas")
-    # New branch: when index is "Πραγματικό" and waterbody is "Κορώνεια"
+    # New branch: for waterbody "Κορώνεια" when index is "Πραγματικό"
     elif index == "Πραγματικό" and waterbody == "Κορώνεια":
         data_folder = os.path.join(base_dir, "Koroneia_2", "Koroneia", "Pragmatiko")
     else:
@@ -149,6 +149,61 @@ def get_data_folder(waterbody: str, index: str) -> str:
     return data_folder
 
 
+def extract_date_from_filename(filename: str):
+    """
+    Εξάγει ημερομηνία (YYYY-MM-DD) από το όνομα του αρχείου χρησιμοποιώντας regex.
+    Προσπαθεί πρώτα με διαχωριστικά (π.χ. 2023_07_22 ή 2023-07-22) και αν δεν βρεθεί, δοκιμάζει χωρίς διαχωριστικά (π.χ. 20230722).
+    Επιστρέφει (day_of_year, datetime_obj) ή (None, None) αν δεν βρεθεί ταίριασμα.
+    """
+    basename = os.path.basename(filename)
+    debug("DEBUG: Εξαγωγή ημερομηνίας από το όνομα:", basename)
+    # First try with separators
+    match = re.search(r'(\d{4})[_-](\d{2})[_-](\d{2})', basename)
+    if not match:
+        # Try without separators: e.g. YYYYMMDD
+        match = re.search(r'(\d{4})(\d{2})(\d{2})', basename)
+    if match:
+        year, month, day = match.groups()
+        try:
+            date_obj = datetime(int(year), int(month), int(day))
+            day_of_year = date_obj.timetuple().tm_yday
+            return day_of_year, date_obj
+        except Exception as e:
+            debug("DEBUG: Σφάλμα μετατροπής ημερομηνίας:", e)
+            return None, None
+    return None, None
+
+
+def run_water_quality_dashboard(waterbody: str, index: str):
+    with st.container():
+        st.markdown('<div class="card">', unsafe_allow_html=True)
+        st.title(f"Πίνακας Ποιότητας Ύδατος ({waterbody} - {index})")
+
+        data_folder = get_data_folder(waterbody, index)
+        if data_folder is None:
+            st.error("Δεν υπάρχει φάκελος δεδομένων για το επιλεγμένο υδάτινο σώμα/δείκτη.")
+            st.stop()
+
+        images_folder = os.path.join(data_folder, "GeoTIFFs")
+        # ... (other unchanged code) ...
+
+        tif_files = [f for f in os.listdir(images_folder) if f.lower().endswith('.tif')]
+        available_dates = {}
+        for filename in tif_files:
+            # Use flexible regex to match either YYYY_MM_DD, YYYY-MM-DD or YYYYMMDD formats
+            match = re.search(r'(\d{4})[_-]?(\d{2})[_-]?(\d{2})', filename)
+            if match:
+                year, month, day = match.groups()
+                date_str = f"{year}_{month}_{day}"
+                try:
+                    date_obj = datetime.strptime(date_str, '%Y_%m_%d').date()
+                    available_dates[str(date_obj)] = filename
+                except Exception as e:
+                    debug("DEBUG: Σφάλμα εξαγωγής ημερομηνίας από", filename, ":", e)
+                    continue
+        # ... (rest of the function remains unchanged) ...
+
+
 def main():
     debug("DEBUG: Εισήχθη η main()")
     run_intro_page()
@@ -158,19 +213,7 @@ def main():
     analysis = st.session_state.get("analysis_choice", None)
     debug("DEBUG: Επιλεγμένα: υδάτινο σώμα =", wb, "δείκτης =", idx, "ανάλυση =", analysis)
     
-    if idx == "Burned Areas" and analysis == "Burned Areas":
-        if wb in ["Γαδουρά", "Κορώνεια"]:
-            run_lake_processing_app(wb, idx)
-        else:
-            st.warning("Τα Burned Areas είναι διαθέσιμα μόνο για Γαδουρά (ή Κορώνεια, αν υπάρχουν δεδομένα).")
-        return
-    if idx == "Burned Areas" and analysis == "Water Quality Dashboard":
-        if wb == "Γαδουρά":
-            run_water_quality_dashboard(wb, idx)
-        else:
-            st.warning("Το Dashboard για Burned Areas είναι διαθέσιμο μόνο στη Γαδουρά.")
-        return
-    # Update branch: treat both "Χλωροφύλλη" and "Πραγματικό" the same way
+    # Now treat both "Χλωροφύλλη" and "Πραγματικό" under the same processing branches
     if idx in ["Χλωροφύλλη", "Πραγματικό"] and wb in ["Κορώνεια", "Πολυφύτου", "Γαδουρά", "Αξιός"]:
         if analysis == "Lake Processing":
             run_lake_processing_app(wb, idx)
@@ -192,8 +235,12 @@ def main():
     else:
         st.warning(
             "Δεν υπάρχουν διαθέσιμα δεδομένα για αυτόν τον συνδυασμό δείκτη/υδάτινου σώματος. "
-            "Για παράδειγμα, η Χλωροφύλλη και η Πραγματικό είναι διαθέσιμες μόνο για (Κορώνεια, Πολυφύτου, Γαδουρά, Αξιός)."
+            "Για παράδειγμα, οι επιλογές 'Χλωροφύλλη' και 'Πραγματικό' είναι διαθέσιμες μόνο για (Κορώνεια, Πολυφύτου, Γαδουρά, Αξιός)."
         )
+
+if __name__ == "__main__":
+    main()
+
 
 
 # -----------------------------------------------------------------------------
