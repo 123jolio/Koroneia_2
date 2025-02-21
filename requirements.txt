@@ -12,8 +12,4 @@ scikit-image
 simplekml
 requests
 openpyxl
-streamlit-drawable-canvas
-geopandas
-richdem
-pyproj
-fiona
+streamlit-drawable-canvas 
