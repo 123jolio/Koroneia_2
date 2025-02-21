@@ -848,9 +848,12 @@ def run_water_quality_dashboard(waterbody: str, index: str):
         tab_names = ["Δειγματοληψία 1 (Default)", "Δειγματοληψία 2 (Upload)"]
         tabs = st.tabs(tab_names)
 
-# Define the main tabs for the Default and Upload sections
+# Ορισμός των κύριων tabs για την Default και Upload ενότητα
 tabs = st.tabs(["Καρτέλα 1 (Default)", "Καρτέλα 2 (Upload)"])
 
+# -------------------------------
+# Default Section (Καρτέλα 1)
+# -------------------------------
 with tabs[0]:
     st.header("Ανάλυση για Δειγματοληψία 1 (Default)")
     default_sampling_points = []
@@ -858,6 +861,7 @@ with tabs[0]:
         default_sampling_points = parse_sampling_kml(sampling_kml_path)
     else:
         st.warning("Το αρχείο δειγματοληψίας (sampling.kml) δεν βρέθηκε.")
+    
     point_names = [name for name, _, _ in default_sampling_points]
     selected_points = st.multiselect("Επιλέξτε σημεία για ανάλυση mg/m³",
                                      options=point_names,
@@ -873,23 +877,22 @@ with tabs[0]:
                 lake_height_path,
                 selected_points
             )
-    if st.session_state.default_results is not None:
+    if st.session_state.get("default_results") is not None:
         results = st.session_state.default_results
         if isinstance(results, tuple) and len(results) == 7:
             fig_geo, fig_dual, fig_colors, fig_mg, results_colors, results_mg, lake_data = results
         else:
             st.error("Σφάλμα μορφοποίησης αποτελεσμάτων ανάλυσης. Παρακαλώ επαναλάβετε την ανάλυση.")
             st.stop()
-        # Create nested tabs to display various results
+        
+        # Δημιουργία nested tabs για εμφάνιση των αποτελεσμάτων
         nested_tabs = st.tabs(["GeoTIFF", "Video/GIF", "Χρώματα Pixel", "Μέσο mg", "Διπλά Διαγράμματα", "Λεπτομερής ανάλυση mg"])
         
-        # GeoTIFF Tab
         with nested_tabs[0]:
             st.plotly_chart(fig_geo, use_container_width=True, key="default_fig_geo")
         
-        # Video/GIF Tab with date-based navigation
         with nested_tabs[1]:
-            # Extract TIFF files with date information from the images folder
+            # Ενημερωμένο Video/GIF tab με πλοήγηση βάσει ημερομηνίας
             tif_files = [f for f in os.listdir(images_folder) if f.lower().endswith('.tif')]
             available_dates = {}
             for filename in tif_files:
@@ -898,20 +901,14 @@ with tabs[0]:
                     date_str = match.group(1)
                     try:
                         date_obj = datetime.strptime(date_str, '%Y_%m_%d').date()
-                        # Use the string representation as key
                         available_dates[str(date_obj)] = filename
                     except Exception as e:
                         debug("DEBUG: Σφάλμα εξαγωγής ημερομηνίας από", filename, ":", e)
                         continue
-
             if available_dates:
-                # Sort the dates for navigation
                 sorted_dates = sorted(available_dates.keys())
-                # Initialize the session state index if not already set
                 if 'current_image_index' not in st.session_state:
                     st.session_state.current_image_index = 0
-
-                # Create navigation buttons in a horizontal layout
                 col_prev, col_info, col_next = st.columns([1, 2, 1])
                 with col_prev:
                     if st.button("<< Προηγούμενη"):
@@ -919,8 +916,6 @@ with tabs[0]:
                 with col_next:
                     if st.button("Επόμενη >>"):
                         st.session_state.current_image_index = min(len(sorted_dates) - 1, st.session_state.current_image_index + 1)
-
-                # Get the currently selected date and display it
                 current_date = sorted_dates[st.session_state.current_image_index]
                 st.write(f"Επιλεγμένη Ημερομηνία: {current_date}")
                 image_filename = available_dates[current_date]
@@ -932,19 +927,15 @@ with tabs[0]:
             else:
                 st.info("Δεν βρέθηκαν εικόνες με ημερομηνία στο φάκελο.")
         
-        # Χρώματα Pixel Tab
         with nested_tabs[2]:
             st.plotly_chart(fig_colors, use_container_width=True, key="default_fig_colors")
         
-        # Μέσο mg Tab
         with nested_tabs[3]:
             st.plotly_chart(fig_mg, use_container_width=True, key="default_fig_mg")
         
-        # Διπλά Διαγράμματα Tab
         with nested_tabs[4]:
             st.plotly_chart(fig_dual, use_container_width=True, key="default_fig_dual")
         
-        # Λεπτομερής ανάλυση mg Tab
         with nested_tabs[5]:
             selected_detail_point = st.selectbox("Επιλέξτε σημείο για λεπτομερή ανάλυση mg",
                                                  options=list(results_mg.keys()),
@@ -969,87 +960,115 @@ with tabs[0]:
                 else:
                     st.info("Δεν υπάρχουν δεδομένα mg για αυτό το σημείο.")
 
+# -------------------------------
+# Upload Section (Καρτέλα 2)
+# -------------------------------
 with tabs[1]:
     st.header("Ανάλυση για ανεβασμένη δειγματοληψία")
-    # Additional code for the Upload section goes here...
-
-        # Καρτέλα 2 (Upload)
-        with tabs[1]:
-            st.header("Ανάλυση για ανεβασμένη δειγματοληψία")
-            uploaded_file = st.file_uploader("Ανεβάστε αρχείο KML για νέα σημεία δειγματοληψίας", type="kml", key="upload_kml")
-            if uploaded_file is not None:
-                try:
-                    new_sampling_points = parse_sampling_kml(uploaded_file)
-                except Exception as e:
-                    st.error(f"Σφάλμα επεξεργασίας ανεβασμένου αρχείου: {e}")
-                    new_sampling_points = []
-                point_names = [name for name, _, _ in new_sampling_points]
-                selected_points = st.multiselect("Επιλέξτε σημεία για ανάλυση mg/m³",
-                                                 options=point_names,
-                                                 default=point_names,
-                                                 key="upload_points")
-                if st.button("Εκτέλεση Ανάλυσης (Upload)", key="upload_run"):
-                    with st.spinner("Εκτέλεση ανάλυσης..."):
-                        st.session_state.upload_results = analyze_sampling(
-                            new_sampling_points,
-                            first_image_data,
-                            first_transform,
-                            images_folder,
-                            lake_height_path,
-                            selected_points
-                        )
-                if st.session_state.upload_results is not None:
-                    results = st.session_state.upload_results
-                    if isinstance(results, tuple) and len(results) == 7:
-                        fig_geo, fig_dual, fig_colors, fig_mg, results_colors, results_mg, lake_data = results
-                    else:
-                        st.error("Σφάλμα μορφοποίησης αποτελεσμάτων ανάλυσης (Upload). Παρακαλώ επαναλάβετε.")
-                        st.stop()
-                    nested_tabs = st.tabs(["GeoTIFF", "Video/GIF", "Χρώματα Pixel", "Μέσο mg", "Διπλά Διαγράμματα", "Λεπτομερής ανάλυση mg"])
-                    with nested_tabs[0]:
-                        st.plotly_chart(fig_geo, use_container_width=True, key="upload_fig_geo")
-                    with nested_tabs[1]:
-                        if video_path is not None:
-                            if video_path.endswith(".mp4"):
-                                st.video(video_path, key="upload_video")
-                            else:
-                                st.image(video_path)
-                        else:
-                            st.info("Δεν βρέθηκε αρχείο Video/GIF.")
-                    with nested_tabs[2]:
-                        st.plotly_chart(fig_colors, use_container_width=True, key="upload_fig_colors")
-                    with nested_tabs[3]:
-                        st.plotly_chart(fig_mg, use_container_width=True, key="upload_fig_mg")
-                    with nested_tabs[4]:
-                        st.plotly_chart(fig_dual, use_container_width=True, key="upload_fig_dual")
-                    with nested_tabs[5]:
-                        selected_detail_point = st.selectbox("Επιλέξτε σημείο για λεπτομερή ανάλυση mg",
-                                                             options=list(results_mg.keys()),
-                                                             key="upload_detail")
-                        if selected_detail_point:
-                            mg_data = results_mg[selected_detail_point]
-                            if mg_data:
-                                mg_data_sorted = sorted(mg_data, key=lambda x: x[0])
-                                dates_mg = [d for d, _ in mg_data_sorted]
-                                mg_values = [val for _, val in mg_data_sorted]
-                                detail_colors = [mg_to_color(val) for val in mg_values]
-                                fig_detail = go.Figure()
-                                fig_detail.add_trace(go.Scatter(
-                                    x=dates_mg, y=mg_values, mode='lines+markers',
-                                    marker=dict(color=detail_colors, size=10),
-                                    line=dict(color="gray"),
-                                    name=selected_detail_point
-                                ))
-                                fig_detail.update_layout(title=f"Λεπτομερής ανάλυση mg για {selected_detail_point}",
-                                                         xaxis_title="Ημερομηνία", yaxis_title="mg/m³")
-                                st.plotly_chart(fig_detail, use_container_width=True, key="upload_fig_detail")
-                            else:
-                                st.info("Δεν υπάρχουν δεδομένα mg για αυτό το σημείο.", key="upload_no_mg")
+    uploaded_file = st.file_uploader("Ανεβάστε αρχείο KML για νέα σημεία δειγματοληψίας", type="kml", key="upload_kml")
+    if uploaded_file is not None:
+        try:
+            new_sampling_points = parse_sampling_kml(uploaded_file)
+        except Exception as e:
+            st.error(f"Σφάλμα επεξεργασίας ανεβασμένου αρχείου: {e}")
+            new_sampling_points = []
+        point_names = [name for name, _, _ in new_sampling_points]
+        selected_points = st.multiselect("Επιλέξτε σημεία για ανάλυση mg/m³",
+                                         options=point_names,
+                                         default=point_names,
+                                         key="upload_points")
+        if st.button("Εκτέλεση Ανάλυσης (Upload)", key="upload_run"):
+            with st.spinner("Εκτέλεση ανάλυσης..."):
+                st.session_state.upload_results = analyze_sampling(
+                    new_sampling_points,
+                    first_image_data,
+                    first_transform,
+                    images_folder,
+                    lake_height_path,
+                    selected_points
+                )
+        if st.session_state.get("upload_results") is not None:
+            results = st.session_state.upload_results
+            if isinstance(results, tuple) and len(results) == 7:
+                fig_geo, fig_dual, fig_colors, fig_mg, results_colors, results_mg, lake_data = results
             else:
-                st.info("Παρακαλώ ανεβάστε ένα αρχείο KML για νέα σημεία δειγματοληψίας.")
+                st.error("Σφάλμα μορφοποίησης αποτελεσμάτων ανάλυσης (Upload). Παρακαλώ επαναλάβετε.")
+                st.stop()
+            nested_tabs = st.tabs(["GeoTIFF", "Video/GIF", "Χρώματα Pixel", "Μέσο mg", "Διπλά Διαγράμματα", "Λεπτομερής ανάλυση mg"])
+            
+            with nested_tabs[0]:
+                st.plotly_chart(fig_geo, use_container_width=True, key="upload_fig_geo")
+            
+            with nested_tabs[1]:
+                tif_files = [f for f in os.listdir(images_folder) if f.lower().endswith('.tif')]
+                available_dates = {}
+                for filename in tif_files:
+                    match = re.search(r'(\d{4}_\d{2}_\d{2})', filename)
+                    if match:
+                        date_str = match.group(1)
+                        try:
+                            date_obj = datetime.strptime(date_str, '%Y_%m_%d').date()
+                            available_dates[str(date_obj)] = filename
+                        except Exception as e:
+                            debug("DEBUG: Σφάλμα εξαγωγής ημερομηνίας από", filename, ":", e)
+                            continue
+                if available_dates:
+                    sorted_dates = sorted(available_dates.keys())
+                    if 'current_upload_image_index' not in st.session_state:
+                        st.session_state.current_upload_image_index = 0
+                    col_prev, col_info, col_next = st.columns([1, 2, 1])
+                    with col_prev:
+                        if st.button("<< Προηγούμενη", key="upload_prev"):
+                            st.session_state.current_upload_image_index = max(0, st.session_state.current_upload_image_index - 1)
+                    with col_next:
+                        if st.button("Επόμενη >>", key="upload_next"):
+                            st.session_state.current_upload_image_index = min(len(sorted_dates) - 1, st.session_state.current_upload_image_index + 1)
+                    current_date = sorted_dates[st.session_state.current_upload_image_index]
+                    st.write(f"Επιλεγμένη Ημερομηνία: {current_date}")
+                    image_filename = available_dates[current_date]
+                    image_path = os.path.join(images_folder, image_filename)
+                    if os.path.exists(image_path):
+                        st.image(image_path, caption=f"Εικόνα για {current_date}", use_column_width=True)
+                    else:
+                        st.error("Η εικόνα δεν βρέθηκε.")
+                else:
+                    st.info("Δεν βρέθηκαν εικόνες με ημερομηνία στο φάκελο.")
+            
+            with nested_tabs[2]:
+                st.plotly_chart(fig_colors, use_container_width=True, key="upload_fig_colors")
+            
+            with nested_tabs[3]:
+                st.plotly_chart(fig_mg, use_container_width=True, key="upload_fig_mg")
+            
+            with nested_tabs[4]:
+                st.plotly_chart(fig_dual, use_container_width=True, key="upload_fig_dual")
+            
+            with nested_tabs[5]:
+                selected_detail_point = st.selectbox("Επιλέξτε σημείο για λεπτομερή ανάλυση mg",
+                                                     options=list(results_mg.keys()),
+                                                     key="upload_detail")
+                if selected_detail_point:
+                    mg_data = results_mg[selected_detail_point]
+                    if mg_data:
+                        mg_data_sorted = sorted(mg_data, key=lambda x: x[0])
+                        dates_mg = [d for d, _ in mg_data_sorted]
+                        mg_values = [val for _, val in mg_data_sorted]
+                        detail_colors = [mg_to_color(val) for val in mg_values]
+                        fig_detail = go.Figure()
+                        fig_detail.add_trace(go.Scatter(
+                            x=dates_mg, y=mg_values, mode='lines+markers',
+                            marker=dict(color=detail_colors, size=10),
+                            line=dict(color="gray"),
+                            name=selected_detail_point
+                        ))
+                        fig_detail.update_layout(title=f"Λεπτομερής ανάλυση mg για {selected_detail_point}",
+                                                 xaxis_title="Ημερομηνία", yaxis_title="mg/m³")
+                        st.plotly_chart(fig_detail, use_container_width=True, key="upload_fig_detail")
+                    else:
+                        st.info("Δεν υπάρχουν δεδομένα mg για αυτό το σημείο.")
+    else:
+        st.info("Παρακαλώ ανεβάστε ένα αρχείο KML για νέα σημεία δειγματοληψίας.")
 
-        st.info("Τέλος Πίνακα Ποιότητας Ύδατος.")
-        st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
 # Επεξεργασία Καμένων Περιοχών (Placeholder)
