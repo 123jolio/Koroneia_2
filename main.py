@@ -121,9 +121,11 @@ def get_data_folder(waterbody: str, index: str) -> str:
     """
     Αντιστοιχεί το επιλεγμένο υδάτινο σώμα και δείκτη στον σωστό φάκελο δεδομένων.
     Επιστρέφει None αν δεν υπάρχει ο φάκελος.
+    
+    Τώρα ορίζουμε τη βασική διαδρομή στο φάκελο "pragmatiko" μέσα στο repository.
     """
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    debug("DEBUG: Τρέχων φάκελος:", base_dir)
+    base_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "pragmatiko")
+    debug("DEBUG: Τρέχων φάκελος (μέσα στο pragmatiko):", base_dir)
     waterbody_map = {
         "Κορώνεια": "Koroneia",
         "Πολυφύτου": "polyphytou",
