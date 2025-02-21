@@ -361,7 +361,6 @@ def run_lake_processing_app(waterbody: str, index: str):
         display_option = st.sidebar.radio("Τρόπος εμφάνισης", options=["Thresholded", "Original"], index=0, key="display_lp")
 
         st.sidebar.markdown("### Επιλογή Μηνών")
-        # Existing month selection used for filtering
         month_options = {i: datetime(2000, i, 1).strftime('%B') for i in range(1, 13)}
         if "selected_months" not in st.session_state:
             st.session_state.selected_months = list(month_options.keys())
@@ -370,8 +369,6 @@ def run_lake_processing_app(waterbody: str, index: str):
                                                  format_func=lambda x: month_options[x],
                                                  default=st.session_state.selected_months,
                                                  key="months_lp")
-        # The same selection is used to filter the dataset and now also the grid plots
-
         st.session_state.selected_years = unique_years
         selected_years = st.sidebar.multiselect("Έτη", options=unique_years,
                                                 default=unique_years,
@@ -401,13 +398,11 @@ def run_lake_processing_app(waterbody: str, index: str):
         with st.expander("Επεξήγηση: Ημέρες σε Εύρος"):
             st.write("Το διάγραμμα αυτό δείχνει πόσες ημέρες κάθε pixel βρίσκεται εντός του επιλεγμένου εύρους τιμών. Ρυθμίστε το 'Εύρος τιμών pixel' για να δείτε πώς αλλάζει το αποτέλεσμα.")
 
-        # Ορισμός κοινών μεταβλητών για τα διαγράμματα (ticks)
         tick_vals = [1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 365]
         tick_text = ["1 (Ιαν)", "32 (Φεβ)", "60 (Μαρ)", "91 (Απρ)",
                      "121 (Μαΐ)", "152 (Ιουν)", "182 (Ιουλ)", "213 (Αυγ)",
                      "244 (Σεπ)", "274 (Οκτ)", "305 (Νοε)", "335 (Δεκ)", "365 (Δεκ)"]
 
-        # Διάγραμμα "Μέση Ημέρα Εμφάνισης"
         days_array = days_filtered.reshape((-1, 1, 1))
         sum_days = np.nansum(days_array * in_range, axis=0)
         count_in_range = np.nansum(in_range, axis=0)
@@ -422,7 +417,6 @@ def run_lake_processing_app(waterbody: str, index: str):
         with st.expander("Επεξήγηση: Μέση Ημέρα Εμφάνισης"):
             st.write("Το διάγραμμα αυτό παρουσιάζει τη μέση ημέρα εμφάνισης για τα pixels που πληρούν το επιλεγμένο εύρος τιμών. Πειραματιστείτε με το 'Εύρος τιμών pixel' για να δείτε πώς μεταβάλλεται η μέση ημέρα.")
 
-        # Διάγραμμα "Μέσο Δείγμα Εικόνας"
         if display_option.lower() == "thresholded":
             filtered_stack = np.where(in_range, stack_filtered, np.nan)
         else:
@@ -443,7 +437,6 @@ def run_lake_processing_app(waterbody: str, index: str):
         with st.expander("Επεξήγηση: Μέσο Δείγμα Εικόνας"):
             st.write("Το διάγραμμα αυτό δείχνει τη μέση τιμή των pixels μετά την εφαρμογή του φίλτρου. Επιλέξτε 'Thresholded' ή 'Original' για να δείτε τη φιλτραρισμένη ή την αρχική εικόνα.")
 
-        # Διάγραμμα "Χρόνος Μέγιστης Εμφάνισης"
         filtered_day_of_year = np.array([d.timetuple().tm_yday for d in filtered_dates])
         def nanargmax_or_nan(arr):
             return np.nan if np.all(np.isnan(arr)) else np.nanargmax(arr)
@@ -481,7 +474,6 @@ def run_lake_processing_app(waterbody: str, index: str):
         # Επιπρόσθετη Ετήσια Ανάλυση: Μηνιαία Κατανομή Ημερών σε Εύρος
         # ------------------------------
         st.header("Επιπρόσθετη Ετήσια Ανάλυση: Μηνιαία Κατανομή Ημερών σε Εύρος")
-        # Use full dataset arrays (STACK, lower_thresh, DATES)
         stack_full_in_range = (STACK >= lower_thresh) & (STACK <= upper_thresh)
         monthly_days_in_range = {}
         for m in range(1, 13):
@@ -491,17 +483,12 @@ def run_lake_processing_app(waterbody: str, index: str):
             else:
                 monthly_days_in_range[m] = None
 
-        # Only include months that were selected in the filtering (from the sidebar "Μήνες")
         months_to_display = [m for m in list(range(1, 13)) if m in selected_months]
-        # Reorder to start from March
         months_in_order = sorted(months_to_display)
-        # If March is in the list, reorder so that March comes first:
         if 3 in months_in_order:
             months_in_order = list(range(3, 13)) + [m for m in months_in_order if m < 3]
-            # Remove duplicates while preserving order:
             seen = set()
             months_in_order = [x for x in months_in_order if not (x in seen or seen.add(x))]
-
         num_cols = 3
         cols = st.columns(num_cols)
         for idx, m in enumerate(months_in_order):
@@ -509,7 +496,6 @@ def run_lake_processing_app(waterbody: str, index: str):
             img = monthly_days_in_range[m]
             month_name = datetime(2000, m, 1).strftime('%B')
             if img is not None:
-                # Removed np.flipud(img) to fix upside-down issue
                 fig_month = px.imshow(
                     img,
                     color_continuous_scale="plasma",
@@ -538,7 +524,6 @@ def run_lake_processing_app(waterbody: str, index: str):
         # ------------------------------
         st.header("Επιπρόσθετη Ετήσια Ανάλυση: Ετήσια Κατανομή Ημερών σε Εύρος")
         unique_years_full = sorted({d.year for d in DATES if d is not None})
-        # Only include years that were selected in the sidebar "Έτη"
         years_to_display = [y for y in unique_years_full if y in selected_years]
 
         if not years_to_display:
@@ -560,7 +545,6 @@ def run_lake_processing_app(waterbody: str, index: str):
             col_index = idx % num_cols
             img = yearly_days_in_range[year]
             if img is not None:
-                # Removed np.flipud(img) to fix upside-down issue
                 fig_year = px.imshow(
                     img,
                     color_continuous_scale="plasma",
@@ -584,6 +568,219 @@ def run_lake_processing_app(waterbody: str, index: str):
         st.info("Τέλος Επεξεργασίας Λίμνης.")
         st.markdown('</div>', unsafe_allow_html=True)
 
+        # -------------------------------
+        # Δύο καρτέλες δειγματοληψίας: Default και Upload
+        # -------------------------------
+        if "default_results" not in st.session_state:
+            st.session_state.default_results = None
+        if "upload_results" not in st.session_state:
+            st.session_state.upload_results = None
+
+        tab_names = ["Δειγματοληψία 1 (Default)", "Δειγματοληψία 2 (Upload)"]
+        sampling_tabs = st.tabs(tab_names)
+        
+        # Καρτέλα 1 (Default Sampling)
+        with sampling_tabs[0]:
+            st.header("Ανάλυση για Δειγματοληψία 1 (Default)")
+            # Ορίζουμε το sampling_kml_path για την default ανάλυση
+            sampling_kml_path = os.path.join(data_folder, "sampling.kml")
+            default_sampling_points = []
+            if os.path.exists(sampling_kml_path):
+                default_sampling_points = parse_sampling_kml(sampling_kml_path)
+            else:
+                st.warning("Το αρχείο δειγματοληψίας (sampling.kml) δεν βρέθηκε.")
+            
+            point_names = [name for name, _, _ in default_sampling_points]
+            selected_points = st.multiselect("Επιλέξτε σημεία για ανάλυση mg/m³",
+                                             options=point_names,
+                                             default=point_names,
+                                             key="default_points")
+            if st.button("Εκτέλεση Ανάλυσης (Default)", key="default_run"):
+                with st.spinner("Εκτέλεση ανάλυσης..."):
+                    st.session_state.default_results = analyze_sampling(
+                        default_sampling_points,
+                        first_image_data,
+                        first_transform,
+                        images_folder,
+                        os.path.join(data_folder, "lake height.xlsx"),
+                        selected_points
+                    )
+            if st.session_state.get("default_results") is not None:
+                results = st.session_state.default_results
+                if isinstance(results, tuple) and len(results) == 7:
+                    fig_geo, fig_dual, fig_colors, fig_mg, results_colors, results_mg, lake_data = results
+                else:
+                    st.error("Σφάλμα μορφοποίησης αποτελεσμάτων ανάλυσης. Παρακαλώ επαναλάβετε την ανάλυση.")
+                    st.stop()
+                
+                nested_tabs = st.tabs(["GeoTIFF", "Video/GIF", "Χρώματα Pixel", "Μέσο mg", "Διπλά Διαγράμματα", "Λεπτομερής ανάλυση mg"])
+                with nested_tabs[0]:
+                    st.plotly_chart(fig_geo, use_container_width=True, key="default_fig_geo")
+                with nested_tabs[1]:
+                    tif_files = [f for f in os.listdir(images_folder) if f.lower().endswith('.tif')]
+                    available_dates = {}
+                    for filename in tif_files:
+                        match = re.search(r'(\d{4}_\d{2}_\d{2})', filename)
+                        if match:
+                            date_str = match.group(1)
+                            try:
+                                date_obj = datetime.strptime(date_str, '%Y_%m_%d').date()
+                                available_dates[str(date_obj)] = filename
+                            except Exception as e:
+                                debug("DEBUG: Σφάλμα εξαγωγής ημερομηνίας από", filename, ":", e)
+                                continue
+                    if available_dates:
+                        sorted_dates = sorted(available_dates.keys())
+                        if 'current_image_index' not in st.session_state:
+                            st.session_state.current_image_index = 0
+                        col_prev, col_info, col_next = st.columns([1, 2, 1])
+                        with col_prev:
+                            if st.button("<< Προηγούμενη"):
+                                st.session_state.current_image_index = max(0, st.session_state.current_image_index - 1)
+                        with col_next:
+                            if st.button("Επόμενη >>"):
+                                st.session_state.current_image_index = min(len(sorted_dates) - 1, st.session_state.current_image_index + 1)
+                        current_date = sorted_dates[st.session_state.current_image_index]
+                        st.write(f"Επιλεγμένη Ημερομηνία: {current_date}")
+                        image_filename = available_dates[current_date]
+                        image_path = os.path.join(images_folder, image_filename)
+                        if os.path.exists(image_path):
+                            st.image(image_path, caption=f"Εικόνα για {current_date}", use_column_width=True)
+                        else:
+                            st.error("Η εικόνα δεν βρέθηκε.")
+                    else:
+                        st.info("Δεν βρέθηκαν εικόνες με ημερομηνία στο φάκελο.")
+                with nested_tabs[2]:
+                    st.plotly_chart(fig_colors, use_container_width=True, key="default_fig_colors")
+                with nested_tabs[3]:
+                    st.plotly_chart(fig_mg, use_container_width=True, key="default_fig_mg")
+                with nested_tabs[4]:
+                    st.plotly_chart(fig_dual, use_container_width=True, key="default_fig_dual")
+                with nested_tabs[5]:
+                    selected_detail_point = st.selectbox("Επιλέξτε σημείο για λεπτομερή ανάλυση mg",
+                                                         options=list(results_mg.keys()),
+                                                         key="default_detail")
+                    if selected_detail_point:
+                        mg_data = results_mg[selected_detail_point]
+                        if mg_data:
+                            mg_data_sorted = sorted(mg_data, key=lambda x: x[0])
+                            dates_mg = [d for d, _ in mg_data_sorted]
+                            mg_values = [val for _, val in mg_data_sorted]
+                            detail_colors = [mg_to_color(val) for val in mg_values]
+                            fig_detail = go.Figure()
+                            fig_detail.add_trace(go.Scatter(
+                                x=dates_mg, y=mg_values, mode='lines+markers',
+                                marker=dict(color=detail_colors, size=10),
+                                line=dict(color="gray"),
+                                name=selected_detail_point
+                            ))
+                            fig_detail.update_layout(title=f"Λεπτομερής ανάλυση mg για {selected_detail_point}",
+                                                     xaxis_title="Ημερομηνία", yaxis_title="mg/m³")
+                            st.plotly_chart(fig_detail, use_container_width=True, key="default_fig_detail")
+                        else:
+                            st.info("Δεν υπάρχουν δεδομένα mg για αυτό το σημείο.")
+        
+        # Καρτέλα 2 (Upload Sampling)
+        with sampling_tabs[1]:
+            st.header("Ανάλυση για ανεβασμένη δειγματοληψία")
+            uploaded_file = st.file_uploader("Ανεβάστε αρχείο KML για νέα σημεία δειγματοληψίας", type="kml", key="upload_kml")
+            if uploaded_file is not None:
+                try:
+                    new_sampling_points = parse_sampling_kml(uploaded_file)
+                except Exception as e:
+                    st.error(f"Σφάλμα επεξεργασίας ανεβασμένου αρχείου: {e}")
+                    new_sampling_points = []
+                point_names = [name for name, _, _ in new_sampling_points]
+                selected_points = st.multiselect("Επιλέξτε σημεία για ανάλυση mg/m³",
+                                                 options=point_names,
+                                                 default=point_names,
+                                                 key="upload_points")
+                if st.button("Εκτέλεση Ανάλυσης (Upload)", key="upload_run"):
+                    with st.spinner("Εκτέλεση ανάλυσης..."):
+                        st.session_state.upload_results = analyze_sampling(
+                            new_sampling_points,
+                            first_image_data,
+                            first_transform,
+                            images_folder,
+                            os.path.join(data_folder, "lake height.xlsx"),
+                            selected_points
+                        )
+                if st.session_state.get("upload_results") is not None:
+                    results = st.session_state.upload_results
+                    if isinstance(results, tuple) and len(results) == 7:
+                        fig_geo, fig_dual, fig_colors, fig_mg, results_colors, results_mg, lake_data = results
+                    else:
+                        st.error("Σφάλμα μορφοποίησης αποτελεσμάτων ανάλυσης (Upload). Παρακαλώ επαναλάβετε.")
+                        st.stop()
+                    nested_tabs = st.tabs(["GeoTIFF", "Video/GIF", "Χρώματα Pixel", "Μέσο mg", "Διπλά Διαγράμματα", "Λεπτομερής ανάλυση mg"])
+                    with nested_tabs[0]:
+                        st.plotly_chart(fig_geo, use_container_width=True, key="upload_fig_geo")
+                    with nested_tabs[1]:
+                        tif_files = [f for f in os.listdir(images_folder) if f.lower().endswith('.tif')]
+                        available_dates = {}
+                        for filename in tif_files:
+                            match = re.search(r'(\d{4}_\d{2}_\d{2})', filename)
+                            if match:
+                                date_str = match.group(1)
+                                try:
+                                    date_obj = datetime.strptime(date_str, '%Y_%m_%d').date()
+                                    available_dates[str(date_obj)] = filename
+                                except Exception as e:
+                                    debug("DEBUG: Σφάλμα εξαγωγής ημερομηνίας από", filename, ":", e)
+                                    continue
+                        if available_dates:
+                            sorted_dates = sorted(available_dates.keys())
+                            if 'current_upload_image_index' not in st.session_state:
+                                st.session_state.current_upload_image_index = 0
+                            col_prev, col_info, col_next = st.columns([1, 2, 1])
+                            with col_prev:
+                                if st.button("<< Προηγούμενη", key="upload_prev"):
+                                    st.session_state.current_upload_image_index = max(0, st.session_state.current_upload_image_index - 1)
+                            with col_next:
+                                if st.button("Επόμενη >>", key="upload_next"):
+                                    st.session_state.current_upload_image_index = min(len(sorted_dates) - 1, st.session_state.current_upload_image_index + 1)
+                            current_date = sorted_dates[st.session_state.current_upload_image_index]
+                            st.write(f"Επιλεγμένη Ημερομηνία: {current_date}")
+                            image_filename = available_dates[current_date]
+                            image_path = os.path.join(images_folder, image_filename)
+                            if os.path.exists(image_path):
+                                st.image(image_path, caption=f"Εικόνα για {current_date}", use_column_width=True)
+                            else:
+                                st.error("Η εικόνα δεν βρέθηκε.")
+                        else:
+                            st.info("Δεν βρέθηκαν εικόνες με ημερομηνία στο φάκελο.")
+                    with nested_tabs[2]:
+                        st.plotly_chart(fig_colors, use_container_width=True, key="upload_fig_colors")
+                    with nested_tabs[3]:
+                        st.plotly_chart(fig_mg, use_container_width=True, key="upload_fig_mg")
+                    with nested_tabs[4]:
+                        st.plotly_chart(fig_dual, use_container_width=True, key="upload_fig_dual")
+                    with nested_tabs[5]:
+                        selected_detail_point = st.selectbox("Επιλέξτε σημείο για λεπτομερή ανάλυση mg",
+                                                             options=list(results_mg.keys()),
+                                                             key="upload_detail")
+                        if selected_detail_point:
+                            mg_data = results_mg[selected_detail_point]
+                            if mg_data:
+                                mg_data_sorted = sorted(mg_data, key=lambda x: x[0])
+                                dates_mg = [d for d, _ in mg_data_sorted]
+                                mg_values = [val for _, val in mg_data_sorted]
+                                detail_colors = [mg_to_color(val) for val in mg_values]
+                                fig_detail = go.Figure()
+                                fig_detail.add_trace(go.Scatter(
+                                    x=dates_mg, y=mg_values, mode='lines+markers',
+                                    marker=dict(color=detail_colors, size=10),
+                                    line=dict(color="gray"),
+                                    name=selected_detail_point
+                                ))
+                                fig_detail.update_layout(title=f"Λεπτομερής ανάλυση mg για {selected_detail_point}",
+                                                         xaxis_title="Ημερομηνία", yaxis_title="mg/m³")
+                                st.plotly_chart(fig_detail, use_container_width=True, key="upload_fig_detail")
+                            else:
+                                st.info("Δεν υπάρχουν δεδομένα mg για αυτό το σημείο.")
+            else:
+                st.info("Παρακαλώ ανεβάστε ένα αρχείο KML για νέα σημεία δειγματοληψίας.")
+                
 # -----------------------------------------------------------------------------
 # Επεξεργασία Υδάτινου Σώματος (Placeholder)
 # -----------------------------------------------------------------------------
@@ -838,237 +1035,6 @@ def run_water_quality_dashboard(waterbody: str, index: str):
             fig_dual.update_yaxes(title_text="mg/m³", secondary_y=True)
 
             return fig_geo, fig_dual, fig_colors, fig_mg, results_colors, results_mg, lake_data
-
-        # Δύο καρτέλες δειγματοληψίας
-        if "default_results" not in st.session_state:
-            st.session_state.default_results = None
-        if "upload_results" not in st.session_state:
-            st.session_state.upload_results = None
-
-        tab_names = ["Δειγματοληψία 1 (Default)", "Δειγματοληψία 2 (Upload)"]
-        tabs = st.tabs(tab_names)
-
-# Ορισμός των κύριων tabs για την Default και Upload ενότητα
-tabs = st.tabs(["Καρτέλα 1 (Default)", "Καρτέλα 2 (Upload)"])
-
-# -------------------------------
-# Default Section (Καρτέλα 1)
-# -------------------------------
-with tabs[0]:
-    st.header("Ανάλυση για Δειγματοληψία 1 (Default)")
-    default_sampling_points = []
-    if os.path.exists(sampling_kml_path):
-        default_sampling_points = parse_sampling_kml(sampling_kml_path)
-    else:
-        st.warning("Το αρχείο δειγματοληψίας (sampling.kml) δεν βρέθηκε.")
-    
-    point_names = [name for name, _, _ in default_sampling_points]
-    selected_points = st.multiselect("Επιλέξτε σημεία για ανάλυση mg/m³",
-                                     options=point_names,
-                                     default=point_names,
-                                     key="default_points")
-    if st.button("Εκτέλεση Ανάλυσης (Default)", key="default_run"):
-        with st.spinner("Εκτέλεση ανάλυσης..."):
-            st.session_state.default_results = analyze_sampling(
-                default_sampling_points,
-                first_image_data,
-                first_transform,
-                images_folder,
-                lake_height_path,
-                selected_points
-            )
-    if st.session_state.get("default_results") is not None:
-        results = st.session_state.default_results
-        if isinstance(results, tuple) and len(results) == 7:
-            fig_geo, fig_dual, fig_colors, fig_mg, results_colors, results_mg, lake_data = results
-        else:
-            st.error("Σφάλμα μορφοποίησης αποτελεσμάτων ανάλυσης. Παρακαλώ επαναλάβετε την ανάλυση.")
-            st.stop()
-        
-        # Δημιουργία nested tabs για εμφάνιση των αποτελεσμάτων
-        nested_tabs = st.tabs(["GeoTIFF", "Video/GIF", "Χρώματα Pixel", "Μέσο mg", "Διπλά Διαγράμματα", "Λεπτομερής ανάλυση mg"])
-        
-        with nested_tabs[0]:
-            st.plotly_chart(fig_geo, use_container_width=True, key="default_fig_geo")
-        
-        with nested_tabs[1]:
-            # Ενημερωμένο Video/GIF tab με πλοήγηση βάσει ημερομηνίας
-            tif_files = [f for f in os.listdir(images_folder) if f.lower().endswith('.tif')]
-            available_dates = {}
-            for filename in tif_files:
-                match = re.search(r'(\d{4}_\d{2}_\d{2})', filename)
-                if match:
-                    date_str = match.group(1)
-                    try:
-                        date_obj = datetime.strptime(date_str, '%Y_%m_%d').date()
-                        available_dates[str(date_obj)] = filename
-                    except Exception as e:
-                        debug("DEBUG: Σφάλμα εξαγωγής ημερομηνίας από", filename, ":", e)
-                        continue
-            if available_dates:
-                sorted_dates = sorted(available_dates.keys())
-                if 'current_image_index' not in st.session_state:
-                    st.session_state.current_image_index = 0
-                col_prev, col_info, col_next = st.columns([1, 2, 1])
-                with col_prev:
-                    if st.button("<< Προηγούμενη"):
-                        st.session_state.current_image_index = max(0, st.session_state.current_image_index - 1)
-                with col_next:
-                    if st.button("Επόμενη >>"):
-                        st.session_state.current_image_index = min(len(sorted_dates) - 1, st.session_state.current_image_index + 1)
-                current_date = sorted_dates[st.session_state.current_image_index]
-                st.write(f"Επιλεγμένη Ημερομηνία: {current_date}")
-                image_filename = available_dates[current_date]
-                image_path = os.path.join(images_folder, image_filename)
-                if os.path.exists(image_path):
-                    st.image(image_path, caption=f"Εικόνα για {current_date}", use_column_width=True)
-                else:
-                    st.error("Η εικόνα δεν βρέθηκε.")
-            else:
-                st.info("Δεν βρέθηκαν εικόνες με ημερομηνία στο φάκελο.")
-        
-        with nested_tabs[2]:
-            st.plotly_chart(fig_colors, use_container_width=True, key="default_fig_colors")
-        
-        with nested_tabs[3]:
-            st.plotly_chart(fig_mg, use_container_width=True, key="default_fig_mg")
-        
-        with nested_tabs[4]:
-            st.plotly_chart(fig_dual, use_container_width=True, key="default_fig_dual")
-        
-        with nested_tabs[5]:
-            selected_detail_point = st.selectbox("Επιλέξτε σημείο για λεπτομερή ανάλυση mg",
-                                                 options=list(results_mg.keys()),
-                                                 key="default_detail")
-            if selected_detail_point:
-                mg_data = results_mg[selected_detail_point]
-                if mg_data:
-                    mg_data_sorted = sorted(mg_data, key=lambda x: x[0])
-                    dates_mg = [d for d, _ in mg_data_sorted]
-                    mg_values = [val for _, val in mg_data_sorted]
-                    detail_colors = [mg_to_color(val) for val in mg_values]
-                    fig_detail = go.Figure()
-                    fig_detail.add_trace(go.Scatter(
-                        x=dates_mg, y=mg_values, mode='lines+markers',
-                        marker=dict(color=detail_colors, size=10),
-                        line=dict(color="gray"),
-                        name=selected_detail_point
-                    ))
-                    fig_detail.update_layout(title=f"Λεπτομερής ανάλυση mg για {selected_detail_point}",
-                                             xaxis_title="Ημερομηνία", yaxis_title="mg/m³")
-                    st.plotly_chart(fig_detail, use_container_width=True, key="default_fig_detail")
-                else:
-                    st.info("Δεν υπάρχουν δεδομένα mg για αυτό το σημείο.")
-
-# -------------------------------
-# Upload Section (Καρτέλα 2)
-# -------------------------------
-with tabs[1]:
-    st.header("Ανάλυση για ανεβασμένη δειγματοληψία")
-    uploaded_file = st.file_uploader("Ανεβάστε αρχείο KML για νέα σημεία δειγματοληψίας", type="kml", key="upload_kml")
-    if uploaded_file is not None:
-        try:
-            new_sampling_points = parse_sampling_kml(uploaded_file)
-        except Exception as e:
-            st.error(f"Σφάλμα επεξεργασίας ανεβασμένου αρχείου: {e}")
-            new_sampling_points = []
-        point_names = [name for name, _, _ in new_sampling_points]
-        selected_points = st.multiselect("Επιλέξτε σημεία για ανάλυση mg/m³",
-                                         options=point_names,
-                                         default=point_names,
-                                         key="upload_points")
-        if st.button("Εκτέλεση Ανάλυσης (Upload)", key="upload_run"):
-            with st.spinner("Εκτέλεση ανάλυσης..."):
-                st.session_state.upload_results = analyze_sampling(
-                    new_sampling_points,
-                    first_image_data,
-                    first_transform,
-                    images_folder,
-                    lake_height_path,
-                    selected_points
-                )
-        if st.session_state.get("upload_results") is not None:
-            results = st.session_state.upload_results
-            if isinstance(results, tuple) and len(results) == 7:
-                fig_geo, fig_dual, fig_colors, fig_mg, results_colors, results_mg, lake_data = results
-            else:
-                st.error("Σφάλμα μορφοποίησης αποτελεσμάτων ανάλυσης (Upload). Παρακαλώ επαναλάβετε.")
-                st.stop()
-            nested_tabs = st.tabs(["GeoTIFF", "Video/GIF", "Χρώματα Pixel", "Μέσο mg", "Διπλά Διαγράμματα", "Λεπτομερής ανάλυση mg"])
-            
-            with nested_tabs[0]:
-                st.plotly_chart(fig_geo, use_container_width=True, key="upload_fig_geo")
-            
-            with nested_tabs[1]:
-                tif_files = [f for f in os.listdir(images_folder) if f.lower().endswith('.tif')]
-                available_dates = {}
-                for filename in tif_files:
-                    match = re.search(r'(\d{4}_\d{2}_\d{2})', filename)
-                    if match:
-                        date_str = match.group(1)
-                        try:
-                            date_obj = datetime.strptime(date_str, '%Y_%m_%d').date()
-                            available_dates[str(date_obj)] = filename
-                        except Exception as e:
-                            debug("DEBUG: Σφάλμα εξαγωγής ημερομηνίας από", filename, ":", e)
-                            continue
-                if available_dates:
-                    sorted_dates = sorted(available_dates.keys())
-                    if 'current_upload_image_index' not in st.session_state:
-                        st.session_state.current_upload_image_index = 0
-                    col_prev, col_info, col_next = st.columns([1, 2, 1])
-                    with col_prev:
-                        if st.button("<< Προηγούμενη", key="upload_prev"):
-                            st.session_state.current_upload_image_index = max(0, st.session_state.current_upload_image_index - 1)
-                    with col_next:
-                        if st.button("Επόμενη >>", key="upload_next"):
-                            st.session_state.current_upload_image_index = min(len(sorted_dates) - 1, st.session_state.current_upload_image_index + 1)
-                    current_date = sorted_dates[st.session_state.current_upload_image_index]
-                    st.write(f"Επιλεγμένη Ημερομηνία: {current_date}")
-                    image_filename = available_dates[current_date]
-                    image_path = os.path.join(images_folder, image_filename)
-                    if os.path.exists(image_path):
-                        st.image(image_path, caption=f"Εικόνα για {current_date}", use_column_width=True)
-                    else:
-                        st.error("Η εικόνα δεν βρέθηκε.")
-                else:
-                    st.info("Δεν βρέθηκαν εικόνες με ημερομηνία στο φάκελο.")
-            
-            with nested_tabs[2]:
-                st.plotly_chart(fig_colors, use_container_width=True, key="upload_fig_colors")
-            
-            with nested_tabs[3]:
-                st.plotly_chart(fig_mg, use_container_width=True, key="upload_fig_mg")
-            
-            with nested_tabs[4]:
-                st.plotly_chart(fig_dual, use_container_width=True, key="upload_fig_dual")
-            
-            with nested_tabs[5]:
-                selected_detail_point = st.selectbox("Επιλέξτε σημείο για λεπτομερή ανάλυση mg",
-                                                     options=list(results_mg.keys()),
-                                                     key="upload_detail")
-                if selected_detail_point:
-                    mg_data = results_mg[selected_detail_point]
-                    if mg_data:
-                        mg_data_sorted = sorted(mg_data, key=lambda x: x[0])
-                        dates_mg = [d for d, _ in mg_data_sorted]
-                        mg_values = [val for _, val in mg_data_sorted]
-                        detail_colors = [mg_to_color(val) for val in mg_values]
-                        fig_detail = go.Figure()
-                        fig_detail.add_trace(go.Scatter(
-                            x=dates_mg, y=mg_values, mode='lines+markers',
-                            marker=dict(color=detail_colors, size=10),
-                            line=dict(color="gray"),
-                            name=selected_detail_point
-                        ))
-                        fig_detail.update_layout(title=f"Λεπτομερής ανάλυση mg για {selected_detail_point}",
-                                                 xaxis_title="Ημερομηνία", yaxis_title="mg/m³")
-                        st.plotly_chart(fig_detail, use_container_width=True, key="upload_fig_detail")
-                    else:
-                        st.info("Δεν υπάρχουν δεδομένα mg για αυτό το σημείο.")
-    else:
-        st.info("Παρακαλώ ανεβάστε ένα αρχείο KML για νέα σημεία δειγματοληψίας.")
-
 
 # -----------------------------------------------------------------------------
 # Επεξεργασία Καμένων Περιοχών (Placeholder)
