@@ -137,7 +137,7 @@ def get_data_folder(waterbody: str, index: str) -> str:
         data_folder = os.path.join(base_dir, waterbody_folder, "Chlorophyll")
     elif index == "Burned Areas":
         data_folder = os.path.join(base_dir, waterbody_folder, "Burned Areas")
-    # New branch: for Korώνεια and index "Πραγματικό", use the relative folder Koroneia_2/Koroneia/Pragmatiko
+    # New branch: when index is "Πραγματικό" and waterbody is "Κορώνεια"
     elif index == "Πραγματικό" and waterbody == "Κορώνεια":
         data_folder = os.path.join(base_dir, "Koroneia_2", "Koroneia", "Pragmatiko")
     else:
@@ -147,6 +147,54 @@ def get_data_folder(waterbody: str, index: str) -> str:
         st.error(f"Ο φάκελος δεν υπάρχει: {data_folder}")
         return None
     return data_folder
+
+
+def main():
+    debug("DEBUG: Εισήχθη η main()")
+    run_intro_page()
+    run_custom_ui()
+    wb = st.session_state.get("waterbody_choice", None)
+    idx = st.session_state.get("index_choice", None)
+    analysis = st.session_state.get("analysis_choice", None)
+    debug("DEBUG: Επιλεγμένα: υδάτινο σώμα =", wb, "δείκτης =", idx, "ανάλυση =", analysis)
+    
+    if idx == "Burned Areas" and analysis == "Burned Areas":
+        if wb in ["Γαδουρά", "Κορώνεια"]:
+            run_lake_processing_app(wb, idx)
+        else:
+            st.warning("Τα Burned Areas είναι διαθέσιμα μόνο για Γαδουρά (ή Κορώνεια, αν υπάρχουν δεδομένα).")
+        return
+    if idx == "Burned Areas" and analysis == "Water Quality Dashboard":
+        if wb == "Γαδουρά":
+            run_water_quality_dashboard(wb, idx)
+        else:
+            st.warning("Το Dashboard για Burned Areas είναι διαθέσιμο μόνο στη Γαδουρά.")
+        return
+    # Update branch: treat both "Χλωροφύλλη" and "Πραγματικό" the same way
+    if idx in ["Χλωροφύλλη", "Πραγματικό"] and wb in ["Κορώνεια", "Πολυφύτου", "Γαδουρά", "Αξιός"]:
+        if analysis == "Lake Processing":
+            run_lake_processing_app(wb, idx)
+        elif analysis == "Water Processing":
+            run_water_processing(wb, idx)
+        elif analysis == "Water Quality Dashboard":
+            run_water_quality_dashboard(wb, idx)
+        elif analysis == "Water level":
+            run_water_level_profiles(wb, idx)
+        elif analysis == "Pattern Analysis":
+            run_pattern_analysis(wb, idx)
+        else:
+            st.info("Παρακαλώ επιλέξτε ένα είδος ανάλυσης.")
+    elif analysis == "Burned Areas":
+        if wb == "Γαδουρά":
+            st.warning("Η ενότητα Burned Areas είναι υπό ανάπτυξη.")
+        else:
+            st.warning("Το 'Burned Areas' είναι διαθέσιμο μόνο για το υδάτινο σώμα Γαδουρά.")
+    else:
+        st.warning(
+            "Δεν υπάρχουν διαθέσιμα δεδομένα για αυτόν τον συνδυασμό δείκτη/υδάτινου σώματος. "
+            "Για παράδειγμα, η Χλωροφύλλη και η Πραγματικό είναι διαθέσιμες μόνο για (Κορώνεια, Πολυφύτου, Γαδουρά, Αξιός)."
+        )
+
 
 # -----------------------------------------------------------------------------
 # Βοηθητικές Συναρτήσεις για Εξαγωγή Δεδομένων και Επεξεργασία Εικόνας
