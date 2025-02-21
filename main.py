@@ -115,7 +115,7 @@ def inject_custom_css():
 inject_custom_css()
 
 # -----------------------------------------------------------------------------
-# Helper Functions (data folder, extraction, reading images, etc.)
+# Helper Functions
 # -----------------------------------------------------------------------------
 def get_data_folder(waterbody: str, index: str) -> str:
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -263,8 +263,12 @@ def run_intro_page():
 # -----------------------------------------------------------------------------
 def run_custom_ui():
     st.sidebar.markdown("<div class='nav-section'><h4>Παραμετροποίηση Ανάλυσης</h4></div>", unsafe_allow_html=True)
-    waterbody = st.sidebar.selectbox("Επιλογή υδάτινου σώματος", ["Κορώνεια", "Πολυφύτου", "Γαδουρά", "Αξιός"], key="waterbody_choice")
-    index = st.sidebar.selectbox("Επιλογή Δείκτη", ["Πραγματικό", "Χλωροφύλλη", "CDOM", "Colour", "Burned Areas"], key="index_choice")
+    waterbody = st.sidebar.selectbox("Επιλογή υδάτινου σώματος",
+                                     ["Κορώνεια", "Πολυφύτου", "Γαδουρά", "Αξιός"],
+                                     key="waterbody_choice")
+    index = st.sidebar.selectbox("Επιλογή Δείκτη",
+                                 ["Πραγματικό", "Χλωροφύλλη", "CDOM", "Colour", "Burned Areas"],
+                                 key="index_choice")
     analysis = st.sidebar.selectbox("Είδος Ανάλυσης",
                                     ["Lake Processing", "Water Processing", "Water Quality Dashboard",
                                      "Burned Areas", "Water level", "Pattern Analysis"],
@@ -278,8 +282,8 @@ def run_custom_ui():
     """, unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# Επεξεργασία Λίμνης (Lake Processing) με Μηνιαία και Ετήσια Ανάλυση
-# (Not modified for interactivity; same as before)
+# Επεξεργασία Λίμνης (Lake Processing)
+# (This section remains largely unchanged)
 # -----------------------------------------------------------------------------
 def run_lake_processing_app(waterbody: str, index: str):
     with st.container():
@@ -338,7 +342,7 @@ def run_lake_processing_app(waterbody: str, index: str):
         fig_days.update_layout(width=800, height=600)
         st.plotly_chart(fig_days, use_container_width=True, key="fig_days")
         with st.expander("Επεξήγηση: Ημέρες σε Εύρος"):
-            st.write("Το διάγραμμα αυτό δείχνει πόσες ημέρες κάθε pixel βρίσκεται εντός του επιλεγμένου εύρους τιμών.")
+            st.write("Το διάγραμμα δείχνει πόσες ημέρες κάθε pixel βρίσκεται εντός του εύρους τιμών.")
         tick_vals = [1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 365]
         tick_text = ["1 (Ιαν)", "32 (Φεβ)", "60 (Μαρ)", "91 (Απρ)",
                      "121 (Μαΐ)", "152 (Ιουν)", "182 (Ιουλ)", "213 (Αυγ)",
@@ -355,7 +359,7 @@ def run_lake_processing_app(waterbody: str, index: str):
         fig_mean.update_layout(coloraxis_colorbar=dict(tickmode='array', tickvals=tick_vals, ticktext=tick_text))
         st.plotly_chart(fig_mean, use_container_width=True, key="fig_mean")
         with st.expander("Επεξήγηση: Μέση Ημέρα Εμφάνισης"):
-            st.write("Το διάγραμμα αυτό παρουσιάζει τη μέση ημέρα εμφάνισης για τα pixels.")
+            st.write("Το διάγραμμα παρουσιάζει τη μέση ημέρα εμφάνισης για τα pixels.")
         if display_option.lower() == "thresholded":
             filtered_stack = np.where(in_range, stack_filtered, np.nan)
         else:
@@ -372,7 +376,7 @@ def run_lake_processing_app(waterbody: str, index: str):
         fig_sample.update_layout(width=800, height=600)
         st.plotly_chart(fig_sample, use_container_width=True, key="fig_sample")
         with st.expander("Επεξήγηση: Μέσο Δείγμα Εικόνας"):
-            st.write("Το διάγραμμα αυτό δείχνει τη μέση τιμή των pixels μετά το φίλτρο.")
+            st.write("Το διάγραμμα δείχνει τη μέση τιμή των pixels μετά το φίλτρο.")
         filtered_day_of_year = np.array([d.timetuple().tm_yday for d in filtered_dates])
         def nanargmax_or_nan(arr):
             return np.nan if np.all(np.isnan(arr)) else np.nanargmax(arr)
@@ -390,7 +394,7 @@ def run_lake_processing_app(waterbody: str, index: str):
         fig_time.update_layout(coloraxis_colorbar=dict(tickmode='array', tickvals=tick_vals, ticktext=tick_text))
         st.plotly_chart(fig_time, use_container_width=True, key="fig_time")
         with st.expander("Επεξήγηση: Χρόνος Μέγιστης Εμφάνισης"):
-            st.write("Το διάγραμμα αυτό δείχνει την ημέρα του έτους με τη μέγιστη τιμή.")
+            st.write("Το διάγραμμα δείχνει την ημέρα του έτους με τη μέγιστη τιμή.")
         st.header("Χάρτες Ανάλυσης")
         col1, col2 = st.columns(2)
         with col1:
@@ -415,7 +419,7 @@ def run_lake_processing_app(waterbody: str, index: str):
         # --- Default Sampling Tab ---
         with sampling_tabs[0]:
             st.header("Ανάλυση για Δειγματοληψία 1 (Default)")
-            # Use KML points (if available) as default
+            # Use points from a KML file (if available)
             default_sampling_points = []
             if os.path.exists(sampling_kml_path):
                 default_sampling_points = parse_sampling_kml(sampling_kml_path)
@@ -441,20 +445,21 @@ def run_lake_processing_app(waterbody: str, index: str):
                 if isinstance(results, tuple) and len(results) == 7:
                     fig_geo, fig_dual, fig_colors, fig_mg, results_colors, results_mg, lake_data = results
                 else:
-                    st.error("Σφάλμα μορφοποίησης αποτελεσμάτων ανάλυσης. Παρακαλώ επαναλάβετε την ανάλυση.")
+                    st.error("Σφάλμα μορφοποίησης αποτελεσμάτων ανάλυσης. Παρακαλώ επαναλάβετε.")
                     st.stop()
-                nested_tabs = st.tabs(["GeoTIFF", "Επιλογή Εικόνων", "Video/GIF", "Χρώματα Pixel", "Μέσο mg", "Διπλά Διαγράμματα", "Λεπτομερής ανάλυση mg"])
+                nested_tabs = st.tabs(["GeoTIFF", "Επιλογή Εικόνων και Επιλογή Σημείων", "Video/GIF", "Χρώματα Pixel", "Μέσο mg", "Διπλά Διαγράμματα", "Λεπτομερής ανάλυση mg"])
                 with nested_tabs[0]:
                     st.plotly_chart(fig_geo, use_container_width=True, key="default_fig_geo")
                 with nested_tabs[1]:
                     st.header("Επιλογή Εικόνων και Επιλογή Σημείων")
-                    # Display the background image interactively so that the user can click to select points
-                    fig_bg = px.imshow(first_image_data.transpose((1,2,0))/255.0, title="Click on the image to select points")
+                    # Display the background image interactively so the user can click to select points.
+                    fig_bg = px.imshow(first_image_data.transpose((1,2,0)) / 255.0,
+                                       title="Click on the image to select points")
                     fig_bg.update_layout(clickmode='event+select')
                     events = st.plotly_events(fig_bg, click_event=True, hover_event=False)
                     if events:
                         st.write("Selected pixel coordinates:", events)
-                        # Convert pixel coordinates to geographic coordinates using the inverse transform
+                        # Convert pixel coordinates to geographic coordinates.
                         interactive_points = []
                         inv_transform = ~first_transform
                         for ev in events:
@@ -463,9 +468,9 @@ def run_lake_processing_app(waterbody: str, index: str):
                             geo_x, geo_y = inv_transform * (x_pixel, y_pixel)
                             interactive_points.append((f"Interactive_{len(interactive_points)+1}", geo_x, geo_y))
                         st.session_state.interactive_points = interactive_points
+                        st.write("Interactive points (converted):", interactive_points)
                     else:
-                        st.write("Click on the image to select points.")
-                # Now, in subsequent tabs, if interactive points exist, re-run analysis using them:
+                        st.write("Click on the image above to select points.")
                 with nested_tabs[2]:
                     if video_path is not None:
                         if video_path.endswith(".mp4"):
@@ -477,7 +482,6 @@ def run_lake_processing_app(waterbody: str, index: str):
                 with nested_tabs[3]:
                     if st.session_state.get("interactive_points"):
                         ip = st.session_state.interactive_points
-                        st.write("Using interactive points:", ip)
                         res_geo, res_dual, res_colors, res_mg, _, _, _ = analyze_sampling(ip, first_image_data, first_transform, images_folder, lake_height_path)
                         st.plotly_chart(res_colors, use_container_width=True, key="default_fig_colors_interactive")
                     else:
@@ -519,7 +523,7 @@ def run_lake_processing_app(waterbody: str, index: str):
                             st.plotly_chart(fig_detail, use_container_width=True, key="default_fig_detail")
                         else:
                             st.info("Δεν υπάρχουν δεδομένα mg για αυτό το σημείο.")
-        # --- Upload Sampling Tab (similar structure) ---
+        # --- Upload Sampling Tab ---
         with sampling_tabs[1]:
             st.header("Ανάλυση για ανεβασμένη δειγματοληψία")
             uploaded_file = st.file_uploader("Ανεβάστε αρχείο KML για νέα σημεία δειγματοληψίας", type="kml", key="upload_kml")
@@ -551,7 +555,7 @@ def run_lake_processing_app(waterbody: str, index: str):
                     else:
                         st.error("Σφάλμα μορφοποίησης αποτελεσμάτων ανάλυσης (Upload). Παρακαλώ επαναλάβετε.")
                         st.stop()
-                    nested_tabs = st.tabs(["GeoTIFF", "Επιλογή Εικόνων", "Video/GIF", "Χρώματα Pixel", "Μέσο mg", "Διπλά Διαγράμματα", "Λεπτομερής ανάλυση mg"])
+                    nested_tabs = st.tabs(["GeoTIFF", "Επιλογή Εικόνων και Επιλογή Σημείων", "Video/GIF", "Χρώματα Pixel", "Μέσο mg", "Διπλά Διαγράμματα", "Λεπτομερής ανάλυση mg"])
                     with nested_tabs[0]:
                         st.plotly_chart(fig_geo, use_container_width=True, key="upload_fig_geo")
                     with nested_tabs[1]:
