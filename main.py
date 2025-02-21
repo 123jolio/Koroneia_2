@@ -122,7 +122,10 @@ def get_data_folder(waterbody: str, index: str) -> str:
     Αντιστοιχεί το επιλεγμένο υδάτινο σώμα και δείκτη στον σωστό φάκελο δεδομένων.
     Επιστρέφει None αν δεν υπάρχει ο φάκελος.
     """
-    base_dir = os.path.dirname(os.path.abspath(__file__))
+    try:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+    except NameError:
+        base_dir = os.getcwd()
     debug("DEBUG: Τρέχων φάκελος:", base_dir)
     waterbody_map = {
         "Κορώνεια": "Koroneia",
@@ -137,9 +140,9 @@ def get_data_folder(waterbody: str, index: str) -> str:
         data_folder = os.path.join(base_dir, waterbody_folder, "Chlorophyll")
     elif index == "Burned Areas":
         data_folder = os.path.join(base_dir, waterbody_folder, "Burned Areas")
-    # New branch: when index is "Πραγματικό" and waterbody is "Κορώνεια"
+    # Corrected branch: for waterbody "Κορώνεια" when index is "Πραγματικό"
     elif index == "Πραγματικό" and waterbody == "Κορώνεια":
-        data_folder = os.path.join(base_dir, "Koroneia_2", "Koroneia", "Pragmatiko")
+        data_folder = os.path.join(base_dir, waterbody_folder, "Pragmatiko")
     else:
         data_folder = os.path.join(base_dir, waterbody_folder, index)
     debug("DEBUG: Ο φάκελος δεδομένων επιλύθηκε σε:", data_folder)
@@ -148,72 +151,89 @@ def get_data_folder(waterbody: str, index: str) -> str:
         return None
     return data_folder
 
-
-def main():
-    debug("DEBUG: Εισήχθη η main()")
-    run_intro_page()
-    run_custom_ui()
-    wb = st.session_state.get("waterbody_choice", None)
-    idx = st.session_state.get("index_choice", None)
-    analysis = st.session_state.get("analysis_choice", None)
-    debug("DEBUG: Επιλεγμένα: υδάτινο σώμα =", wb, "δείκτης =", idx, "ανάλυση =", analysis)
-    
-    if idx == "Burned Areas" and analysis == "Burned Areas":
-        if wb in ["Γαδουρά", "Κορώνεια"]:
-            run_lake_processing_app(wb, idx)
-        else:
-            st.warning("Τα Burned Areas είναι διαθέσιμα μόνο για Γαδουρά (ή Κορώνεια, αν υπάρχουν δεδομένα).")
-        return
-    if idx == "Burned Areas" and analysis == "Water Quality Dashboard":
-        if wb == "Γαδουρά":
-            run_water_quality_dashboard(wb, idx)
-        else:
-            st.warning("Το Dashboard για Burned Areas είναι διαθέσιμο μόνο στη Γαδουρά.")
-        return
-    # Update branch: treat both "Χλωροφύλλη" and "Πραγματικό" the same way
-    if idx in ["Χλωροφύλλη", "Πραγματικό"] and wb in ["Κορώνεια", "Πολυφύτου", "Γαδουρά", "Αξιός"]:
-        if analysis == "Lake Processing":
-            run_lake_processing_app(wb, idx)
-        elif analysis == "Water Processing":
-            run_water_processing(wb, idx)
-        elif analysis == "Water Quality Dashboard":
-            run_water_quality_dashboard(wb, idx)
-        elif analysis == "Water level":
-            run_water_level_profiles(wb, idx)
-        elif analysis == "Pattern Analysis":
-            run_pattern_analysis(wb, idx)
-        else:
-            st.info("Παρακαλώ επιλέξτε ένα είδος ανάλυσης.")
-    elif analysis == "Burned Areas":
-        if wb == "Γαδουρά":
-            st.warning("Η ενότητα Burned Areas είναι υπό ανάπτυξη.")
-        else:
-            st.warning("Το 'Burned Areas' είναι διαθέσιμο μόνο για το υδάτινο σώμα Γαδουρά.")
-    else:
-        st.warning(
-            "Δεν υπάρχουν διαθέσιμα δεδομένα για αυτόν τον συνδυασμό δείκτη/υδάτινου σώματος. "
-            "Για παράδειγμα, η Χλωροφύλλη και η Πραγματικό είναι διαθέσιμες μόνο για (Κορώνεια, Πολυφύτου, Γαδουρά, Αξιός)."
-        )
-
-
 # -----------------------------------------------------------------------------
-# Βοηθητικές Συναρτήσεις για Εξαγωγή Δεδομένων και Επεξεργασία Εικόνας
+# Εξαγωγή ημερομηνίας από όνομα αρχείου (με ή χωρίς διαχωριστικά)
 # -----------------------------------------------------------------------------
 def extract_date_from_filename(filename: str):
     """
     Εξάγει ημερομηνία (YYYY-MM-DD) από το όνομα του αρχείου χρησιμοποιώντας regex.
+    Προσπαθεί πρώτα με διαχωριστικά (π.χ. 2023_07_22 ή 2023-07-22) και αν δεν βρεθεί, δοκιμάζει χωρίς διαχωριστικά (π.χ. 20230722).
     Επιστρέφει (day_of_year, datetime_obj) ή (None, None) αν δεν βρεθεί ταίριασμα.
     """
     basename = os.path.basename(filename)
     debug("DEBUG: Εξαγωγή ημερομηνίας από το όνομα:", basename)
     match = re.search(r'(\d{4})[_-](\d{2})[_-](\d{2})', basename)
+    if not match:
+        match = re.search(r'(\d{4})(\d{2})(\d{2})', basename)
     if match:
         year, month, day = match.groups()
-        date_obj = datetime(int(year), int(month), int(day))
-        day_of_year = date_obj.timetuple().tm_yday
-        return day_of_year, date_obj
+        try:
+            date_obj = datetime(int(year), int(month), int(day))
+            day_of_year = date_obj.timetuple().tm_yday
+            return day_of_year, date_obj
+        except Exception as e:
+            debug("DEBUG: Σφάλμα μετατροπής ημερομηνίας:", e)
+            return None, None
     return None, None
 
+# -----------------------------------------------------------------------------
+# Σελίδα Εισαγωγής
+# -----------------------------------------------------------------------------
+def run_intro_page():
+    """Εμφανίζει μια κάρτα εισαγωγής με λογότυπο και τίτλο."""
+    with st.container():
+        st.markdown('<div class="card">', unsafe_allow_html=True)
+        col_logo, col_text = st.columns([1, 3])
+        with col_logo:
+            try:
+                base_dir = os.path.dirname(os.path.abspath(__file__))
+            except NameError:
+                base_dir = os.getcwd()
+            logo_path = os.path.join(base_dir, "logo.jpg")
+            if os.path.exists(logo_path):
+                st.image(logo_path, width=250)
+            else:
+                debug("DEBUG: Δεν βρέθηκε το λογότυπο.")
+        with col_text:
+            st.markdown(
+                "<h2 class='header-title'>Ποιοτικά χαρακτηριστικά Επιφανειακού Ύδατος</h2>",
+                unsafe_allow_html=True
+            )
+            st.markdown(
+                "<p style='text-align: center; font-size: 1.1rem;'>"
+                "Αυτή η εφαρμογή ανάλυσης χρησιμοποιεί εργαλεία δορυφορικής τηλεπισκόπησης. "
+                "Επιλέξτε τις ρυθμίσεις στην πλαϊνή μπάρα και εξερευνήστε τα δεδομένα.</p>",
+                unsafe_allow_html=True
+            )
+        st.markdown('</div>', unsafe_allow_html=True)
+
+# -----------------------------------------------------------------------------
+# Πλαϊνή Μπάρα Πλοήγησης (Custom UI)
+# -----------------------------------------------------------------------------
+def run_custom_ui():
+    """Δημιουργεί την πλαϊνή μπάρα για επιλογή υδάτινου σώματος, δείκτη και είδους ανάλυσης."""
+    st.sidebar.markdown("<div class='nav-section'><h4>Παραμετροποίηση Ανάλυσης</h4></div>", unsafe_allow_html=True)
+    waterbody = st.sidebar.selectbox("Επιλογή υδάτινου σώματος",
+                                     ["Κορώνεια", "Πολυφύτου", "Γαδουρά", "Αξιός"],
+                                     key="waterbody_choice")
+    index = st.sidebar.selectbox("Επιλογή Δείκτη",
+                                 ["Πραγματικό", "Χλωροφύλλη", "CDOM", "Colour", "Burned Areas"],
+                                 key="index_choice")
+    analysis = st.sidebar.selectbox("Είδος Ανάλυσης",
+                                    ["Lake Processing", "Water Processing", "Water Quality Dashboard",
+                                     "Burned Areas", "Water level", "Pattern Analysis"],
+                                    key="analysis_choice")
+    st.sidebar.markdown(f"""
+    <div style="padding: 0.5rem; background:#262626; border-radius:5px; margin-top:1rem;">
+        <strong>Υδάτινο σώμα:</strong> {waterbody}<br>
+        <strong>Δείκτης:</strong> {index}<br>
+        <strong>Ανάλυση:</strong> {analysis}
+    </div>
+    """, unsafe_allow_html=True)
+
+# -----------------------------------------------------------------------------
+# Βοηθητικές Συναρτήσεις για Εξαγωγή Δεδομένων και Επεξεργασία Εικόνας
+# -----------------------------------------------------------------------------
 def load_lake_shape_from_xml(xml_file: str, bounds: tuple = None,
                              xml_width: float = 518.0, xml_height: float = 505.0):
     """
@@ -309,58 +329,6 @@ def load_data(input_folder: str, shapefile_name="shapefile.xml"):
         raise Exception("Δεν βρέθηκαν έγκυρες εικόνες.")
     stack = np.stack(images, axis=0)
     return stack, np.array(days), date_list
-
-# -----------------------------------------------------------------------------
-# Σελίδα Εισαγωγής
-# -----------------------------------------------------------------------------
-def run_intro_page():
-    """Εμφανίζει μια κάρτα εισαγωγής με λογότυπο και τίτλο."""
-    with st.container():
-        st.markdown('<div class="card">', unsafe_allow_html=True)
-        col_logo, col_text = st.columns([1, 3])
-        with col_logo:
-            base_dir = os.path.dirname(os.path.abspath(__file__))
-            logo_path = os.path.join(base_dir, "logo.jpg")
-            if os.path.exists(logo_path):
-                st.image(logo_path, width=250)
-            else:
-                debug("DEBUG: Δεν βρέθηκε το λογότυπο.")
-        with col_text:
-            st.markdown(
-                "<h2 class='header-title'>Ποιοτικά χαρακτηριστικά Επιφανειακού Ύδατος</h2>",
-                unsafe_allow_html=True
-            )
-            st.markdown(
-                "<p style='text-align: center; font-size: 1.1rem;'>"
-                "Αυτή η εφαρμογή ανάλυσης χρησιμοποιεί εργαλεία δορυφορικής τηλεπισκόπησης. "
-                "Επιλέξτε τις ρυθμίσεις στην πλαϊνή μπάρα και εξερευνήστε τα δεδομένα.</p>",
-                unsafe_allow_html=True
-            )
-        st.markdown('</div>', unsafe_allow_html=True)
-
-# -----------------------------------------------------------------------------
-# Πλαϊνή Μπάρα Πλοήγησης (Custom UI)
-# -----------------------------------------------------------------------------
-def run_custom_ui():
-    """Δημιουργεί την πλαϊνή μπάρα για επιλογή υδάτινου σώματος, δείκτη και είδους ανάλυσης."""
-    st.sidebar.markdown("<div class='nav-section'><h4>Παραμετροποίηση Ανάλυσης</h4></div>", unsafe_allow_html=True)
-    waterbody = st.sidebar.selectbox("Επιλογή υδάτινου σώματος",
-                                     ["Κορώνεια", "Πολυφύτου", "Γαδουρά", "Αξιός"],
-                                     key="waterbody_choice")
-    index = st.sidebar.selectbox("Επιλογή Δείκτη",
-                                 ["Πραγματικό", "Χλωροφύλλη", "CDOM", "Colour", "Burned Areas"],
-                                 key="index_choice")
-    analysis = st.sidebar.selectbox("Είδος Ανάλυσης",
-                                    ["Lake Processing", "Water Processing", "Water Quality Dashboard",
-                                     "Burned Areas", "Water level", "Pattern Analysis"],
-                                    key="analysis_choice")
-    st.sidebar.markdown(f"""
-    <div style="padding: 0.5rem; background:#262626; border-radius:5px; margin-top:1rem;">
-        <strong>Υδάτινο σώμα:</strong> {waterbody}<br>
-        <strong>Δείκτης:</strong> {index}<br>
-        <strong>Ανάλυση:</strong> {analysis}
-    </div>
-    """, unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
 # Επεξεργασία Λίμνης (Lake Processing) με Μηνιαία και Ετήσια Ανάλυση
@@ -651,9 +619,11 @@ def run_water_quality_dashboard(waterbody: str, index: str):
         tif_files = [f for f in os.listdir(images_folder) if f.lower().endswith('.tif')]
         available_dates = {}
         for filename in tif_files:
-            match = re.search(r'(\d{4}_\d{2}_\d{2})', filename)
+            # Use flexible regex to match either YYYY_MM_DD, YYYY-MM-DD or YYYYMMDD formats
+            match = re.search(r'(\d{4})[_-]?(\d{2})[_-]?(\d{2})', filename)
             if match:
-                date_str = match.group(1)
+                year, month, day = match.groups()
+                date_str = f"{year}_{month}_{day}"
                 try:
                     date_obj = datetime.strptime(date_str, '%Y_%m_%d').date()
                     available_dates[str(date_obj)] = filename
@@ -1104,6 +1074,16 @@ def run_water_level_profiles(waterbody: str, index: str):
         st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
+# Pattern Analysis (Placeholder)
+# -----------------------------------------------------------------------------
+def run_pattern_analysis(waterbody: str, index: str):
+    with st.container():
+        st.markdown('<div class="card">', unsafe_allow_html=True)
+        st.title(f"Pattern Analysis ({waterbody} - {index}) [Placeholder]")
+        st.info("Δεν υπάρχουν διαθέσιμα δεδομένα για Pattern Analysis.")
+        st.markdown('</div>', unsafe_allow_html=True)
+
+# -----------------------------------------------------------------------------
 # Main Entry Point
 # -----------------------------------------------------------------------------
 def main():
@@ -1114,19 +1094,9 @@ def main():
     idx = st.session_state.get("index_choice", None)
     analysis = st.session_state.get("analysis_choice", None)
     debug("DEBUG: Επιλεγμένα: υδάτινο σώμα =", wb, "δείκτης =", idx, "ανάλυση =", analysis)
-    if idx == "Burned Areas" and analysis == "Burned Areas":
-        if wb in ["Γαδουρά", "Κορώνεια"]:
-            run_lake_processing_app(wb, idx)
-        else:
-            st.warning("Τα Burned Areas είναι διαθέσιμα μόνο για Γαδουρά (ή Κορώνεια, αν υπάρχουν δεδομένα).")
-        return
-    if idx == "Burned Areas" and analysis == "Water Quality Dashboard":
-        if wb == "Γαδουρά":
-            run_water_quality_dashboard(wb, idx)
-        else:
-            st.warning("Το Dashboard για Burned Areas είναι διαθέσιμο μόνο στη Γαδουρά.")
-        return
-    if idx == "Χλωροφύλλη" and wb in ["Κορώνεια", "Πολυφύτου", "Γαδουρά", "Αξιός"]:
+    
+    # Treat both "Χλωροφύλλη" and "Πραγματικό" under the same processing branches
+    if idx in ["Χλωροφύλλη", "Πραγματικό"] and wb in ["Κορώνεια", "Πολυφύτου", "Γαδουρά", "Αξιός"]:
         if analysis == "Lake Processing":
             run_lake_processing_app(wb, idx)
         elif analysis == "Water Processing":
@@ -1147,7 +1117,7 @@ def main():
     else:
         st.warning(
             "Δεν υπάρχουν διαθέσιμα δεδομένα για αυτόν τον συνδυασμό δείκτη/υδάτινου σώματος. "
-            "Για παράδειγμα, η Χλωροφύλλη είναι διαθέσιμη μόνο για (Κορώνεια, Πολυφύτου, Γαδουρά, Αξιός)."
+            "Για παράδειγμα, οι επιλογές 'Χλωροφύλλη' και 'Πραγματικό' είναι διαθέσιμες μόνο για (Κορώνεια, Πολυφύτου, Γαδουρά, Αξιός)."
         )
 
 if __name__ == "__main__":
