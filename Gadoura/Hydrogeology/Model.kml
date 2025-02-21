@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
+<Document>
+	<name>Model.kml</name>
+	<Style id="default">
+	</Style>
+	<Style id="default0">
+	</Style>
+	<StyleMap id="default1">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#default</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#default0</styleUrl>
+		</Pair>
+	</StyleMap>
+	<Placemark>
+		<name>Model</name>
+		<styleUrl>#default1</styleUrl>
+		<Model id="model_2">
+			<altitudeMode>relativeToGround</altitudeMode>
+			<Location>
+				<longitude>27.98502301624587</longitude>
+				<latitude>36.17217497615804</latitude>
+				<altitude>0</altitude>
+			</Location>
+			<Orientation>
+				<heading>-0</heading>
+				<tilt>0</tilt>
+				<roll>0</roll>
+			</Orientation>
+			<Scale>
+				<x>1</x>
+				<y>1</y>
+				<z>1</z>
+			</Scale>
+			<Link>
+				<href>untitled.dae</href>
+			</Link>
+			<ResourceMap>
+			</ResourceMap>
+		</Model>
+		<atom:link rel="app" href="https://www.google.com/earth/about/versions/#earth-pro" title="Google Earth Pro 7.3.6.10201"></atom:link>
+	</Placemark>
+</Document>
+</kml>
