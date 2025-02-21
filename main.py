@@ -78,7 +78,7 @@ def inject_custom_css():
             font-size: 1.75rem;
             text-align: center;
         }
-        /* Ενότητα πλοήγησης στην πλαϊνή μπάρα */
+        /* Ενότητα πλοήγησης στην πλαϊνή μπάρας */
         .nav-section {
             padding: 1rem;
             background: #262626;
@@ -124,7 +124,6 @@ def get_data_folder(waterbody: str, index: str) -> str:
     """
     base_dir = os.path.dirname(os.path.abspath(__file__))
     debug("DEBUG: Τρέχων φάκελος:", base_dir)
-
     waterbody_map = {
         "Κορώνεια": "Koroneia",
         "Πολυφύτου": "polyphytou",
@@ -134,19 +133,16 @@ def get_data_folder(waterbody: str, index: str) -> str:
     waterbody_folder = waterbody_map.get(waterbody, None)
     if waterbody_folder is None:
         return None
-
     if index == "Χλωροφύλλη":
         data_folder = os.path.join(base_dir, waterbody_folder, "Chlorophyll")
     elif index == "Burned Areas":
         data_folder = os.path.join(base_dir, waterbody_folder, "Burned Areas")
     else:
         data_folder = os.path.join(base_dir, waterbody_folder, index)
-
     debug("DEBUG: Ο φάκελος δεδομένων επιλύθηκε σε:", data_folder)
     if data_folder is not None and not os.path.exists(data_folder):
         st.error(f"Ο φάκελος δεν υπάρχει: {data_folder}")
         return None
-
     return data_folder
 
 # -----------------------------------------------------------------------------
@@ -231,7 +227,6 @@ def load_data(input_folder: str, shapefile_name="shapefile.xml"):
     debug("DEBUG: load_data καλεσμένη με:", input_folder)
     if not os.path.exists(input_folder):
         raise Exception(f"Ο φάκελος δεν υπάρχει: {input_folder}")
-
     shapefile_path_xml = os.path.join(input_folder, shapefile_name)
     shapefile_path_txt = os.path.join(input_folder, "shapefile.txt")
     lake_shape = None
@@ -242,18 +237,14 @@ def load_data(input_folder: str, shapefile_name="shapefile.xml"):
     else:
         shape_file = None
         debug("DEBUG: Δεν βρέθηκε XML περιγράμματος στον φάκελο", input_folder)
-
     all_tif_files = sorted(glob.glob(os.path.join(input_folder, "*.tif")))
     tif_files = [fp for fp in all_tif_files if os.path.basename(fp).lower() != "mask.tif"]
     if not tif_files:
         raise Exception("Δεν βρέθηκαν GeoTIFF αρχεία.")
-
     with rasterio.open(tif_files[0]) as src:
         bounds = src.bounds
-
     if shape_file is not None:
         lake_shape = load_lake_shape_from_xml(shape_file, bounds=bounds)
-
     images, days, date_list = [], [], []
     for file_path in tif_files:
         day_of_year, date_obj = extract_date_from_filename(file_path)
@@ -263,10 +254,8 @@ def load_data(input_folder: str, shapefile_name="shapefile.xml"):
         images.append(img)
         days.append(day_of_year)
         date_list.append(date_obj)
-
     if not images:
         raise Exception("Δεν βρέθηκαν έγκυρες εικόνες.")
-
     stack = np.stack(images, axis=0)
     return stack, np.array(days), date_list
 
@@ -525,11 +514,9 @@ def run_lake_processing_app(waterbody: str, index: str):
         st.header("Επιπρόσθετη Ετήσια Ανάλυση: Ετήσια Κατανομή Ημερών σε Εύρος")
         unique_years_full = sorted({d.year for d in DATES if d is not None})
         years_to_display = [y for y in unique_years_full if y in selected_years]
-
         if not years_to_display:
             st.error("Δεν υπάρχουν έγκυρα έτη στα δεδομένα μετά το φίλτρο.")
             st.stop()
-
         stack_full_in_range = (STACK >= lower_thresh) & (STACK <= upper_thresh)
         yearly_days_in_range = {}
         for year in years_to_display:
@@ -538,7 +525,6 @@ def run_lake_processing_app(waterbody: str, index: str):
                 yearly_days_in_range[year] = np.sum(stack_full_in_range[indices_y, :, :], axis=0)
             else:
                 yearly_days_in_range[year] = None
-
         num_cols = 3
         cols = st.columns(num_cols)
         for idx, year in enumerate(years_to_display):
@@ -700,7 +686,6 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                              images_folder: str, lake_height_path: str, selected_points: list = None):
             results_colors = {name: [] for name, _, _ in sampling_points}
             results_mg = {name: [] for name, _, _ in sampling_points}
-
             for filename in sorted(os.listdir(images_folder)):
                 if filename.lower().endswith(('.tif', '.tiff')):
                     match = re.search(r'(\d{4}_\d{2}_\d{2})', filename)
@@ -728,7 +713,6 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                                 results_mg[name].append((date_obj, mg_value))
                                 pixel_color = (r / 255, g / 255, b / 255)
                                 results_colors[name].append((date_obj, pixel_color))
-
             rgb_image = first_image_data.transpose((1, 2, 0)) / 255.0
             fig_geo = px.imshow(rgb_image, title='Εικόνα GeoTIFF με Σημεία Δειγματοληψίας')
             for name, lon, lat in sampling_points:
@@ -738,7 +722,6 @@ def run_water_quality_dashboard(waterbody: str, index: str):
             fig_geo.update_xaxes(visible=False)
             fig_geo.update_yaxes(visible=False)
             fig_geo.update_layout(width=900, height=600, showlegend=True)
-
             try:
                 lake_data = pd.read_excel(lake_height_path)
                 lake_data['Date'] = pd.to_datetime(lake_data.iloc[:, 0])
@@ -746,12 +729,10 @@ def run_water_quality_dashboard(waterbody: str, index: str):
             except Exception as e:
                 st.error(f"Σφάλμα ανάγνωσης αρχείου ύψους λίμνης: {e}")
                 lake_data = pd.DataFrame()
-
             scatter_traces = []
             point_names = list(results_colors.keys())
             if selected_points is not None:
                 point_names = [p for p in point_names if p in selected_points]
-
             for idx, name in enumerate(point_names):
                 data_list = results_colors[name]
                 if not data_list:
@@ -766,7 +747,6 @@ def run_water_quality_dashboard(waterbody: str, index: str):
             fig_colors = make_subplots(specs=[[{"secondary_y": True}]])
             for trace in scatter_traces:
                 fig_colors.add_trace(trace, secondary_y=False)
-
             if not lake_data.empty:
                 trace_height = go.Scatter(
                     x=lake_data['Date'],
@@ -774,20 +754,17 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                     name='Ύψος Λίμνης', mode='lines', line=dict(color='blue', width=2)
                 )
                 fig_colors.add_trace(trace_height, secondary_y=True)
-
             fig_colors.update_layout(title='Χρώματα Pixel και Ύψος Λίμνης με την πάροδο του χρόνου',
                                      xaxis_title='Ημερομηνία',
                                      yaxis_title='Σημεία Δειγματοληψίας',
                                      showlegend=True)
             fig_colors.update_yaxes(title_text="Ύψος Λίμνης", secondary_y=True)
-
             all_dates_dict = {}
             for data_list in results_mg.values():
                 for date_obj, mg_val in data_list:
                     all_dates_dict.setdefault(date_obj, []).append(mg_val)
             sorted_dates = sorted(all_dates_dict.keys())
             avg_mg = [np.mean(all_dates_dict[d]) for d in sorted_dates]
-
             fig_mg = go.Figure()
             fig_mg.add_trace(go.Scatter(
                 x=sorted_dates,
@@ -800,7 +777,6 @@ def run_water_quality_dashboard(waterbody: str, index: str):
             fig_mg.update_layout(title='Μέσο mg/m³ με την πάροδο του χρόνου',
                                  xaxis_title='Ημερομηνία', yaxis_title='mg/m³',
                                  showlegend=False)
-
             fig_dual = make_subplots(specs=[[{"secondary_y": True}]])
             if not lake_data.empty:
                 fig_dual.add_trace(go.Scatter(
@@ -820,7 +796,6 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                                    xaxis_title='Ημερομηνία', showlegend=True)
             fig_dual.update_yaxes(title_text="Ύψος Λίμνης", secondary_y=False)
             fig_dual.update_yaxes(title_text="mg/m³", secondary_y=True)
-
             return fig_geo, fig_dual, fig_colors, fig_mg, results_colors, results_mg, lake_data
 
         # Δύο καρτέλες δειγματοληψίας
@@ -867,7 +842,7 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                     st.plotly_chart(fig_geo, use_container_width=True, key="default_fig_geo")
                 with nested_tabs[1]:
                     st.header("Επιλογή Εικόνων")
-                    # Εμφάνιση εικόνων σε grid layout
+                    # Use arrow buttons and a selectbox to navigate images by date
                     tif_files = [f for f in os.listdir(images_folder) if f.lower().endswith('.tif')]
                     available_dates = {}
                     for filename in tif_files:
@@ -878,23 +853,32 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                                 date_obj = datetime.strptime(date_str, '%Y_%m_%d').date()
                                 available_dates[str(date_obj)] = filename
                             except Exception as e:
-                                debug("DEBUG: Σφάλμα εξαγωγής ημερομηνίας από", filename, ":", e)
+                                debug("DEBUG: Error extracting date from", filename, ":", e)
                                 continue
                     if available_dates:
                         sorted_dates = sorted(available_dates.keys())
-                        num_cols = 3  # Αριθμός εικόνων ανά γραμμή
-                        for i in range(0, len(sorted_dates), num_cols):
-                            cols = st.columns(num_cols)
-                            for j, date_str in enumerate(sorted_dates[i:i+num_cols]):
-                                image_filename = available_dates[date_str]
-                                image_path = os.path.join(images_folder, image_filename)
-                                with cols[j]:
-                                    if os.path.exists(image_path):
-                                        st.image(image_path, caption=date_str, use_column_width=True)
-                                    else:
-                                        st.error(f"Η εικόνα για {date_str} δεν βρέθηκε.")
+                        if 'current_image_index' not in st.session_state:
+                            st.session_state.current_image_index = 0
+                        col_prev, col_select, col_next = st.columns([1, 3, 1])
+                        with col_prev:
+                            if st.button("<< Previous"):
+                                st.session_state.current_image_index = max(0, st.session_state.current_image_index - 1)
+                        with col_next:
+                            if st.button("Next >>"):
+                                st.session_state.current_image_index = min(len(sorted_dates) - 1, st.session_state.current_image_index + 1)
+                        with col_select:
+                            selected_date = st.selectbox("Select date", sorted_dates, index=st.session_state.current_image_index)
+                            st.session_state.current_image_index = sorted_dates.index(selected_date)
+                        current_date = sorted_dates[st.session_state.current_image_index]
+                        st.write(f"Selected Date: {current_date}")
+                        image_filename = available_dates[current_date]
+                        image_path = os.path.join(images_folder, image_filename)
+                        if os.path.exists(image_path):
+                            st.image(image_path, caption=f"Image for {current_date}", use_column_width=True)
+                        else:
+                            st.error("Image not found.")
                     else:
-                        st.info("Δεν βρέθηκαν εικόνες με ημερομηνία στο φάκελο.")
+                        st.info("No images found with a date in the folder.")
                 with nested_tabs[2]:
                     if video_path is not None:
                         if video_path.endswith(".mp4"):
@@ -979,23 +963,32 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                                     date_obj = datetime.strptime(date_str, '%Y_%m_%d').date()
                                     available_dates[str(date_obj)] = filename
                                 except Exception as e:
-                                    debug("DEBUG: Σφάλμα εξαγωγής ημερομηνίας από", filename, ":", e)
+                                    debug("DEBUG: Error extracting date from", filename, ":", e)
                                     continue
                         if available_dates:
                             sorted_dates = sorted(available_dates.keys())
-                            num_cols = 3
-                            for i in range(0, len(sorted_dates), num_cols):
-                                cols = st.columns(num_cols)
-                                for j, date_str in enumerate(sorted_dates[i:i+num_cols]):
-                                    image_filename = available_dates[date_str]
-                                    image_path = os.path.join(images_folder, image_filename)
-                                    with cols[j]:
-                                        if os.path.exists(image_path):
-                                            st.image(image_path, caption=date_str, use_column_width=True)
-                                        else:
-                                            st.error(f"Η εικόνα για {date_str} δεν βρέθηκε.")
+                            if 'current_upload_image_index' not in st.session_state:
+                                st.session_state.current_upload_image_index = 0
+                            col_prev, col_select, col_next = st.columns([1, 3, 1])
+                            with col_prev:
+                                if st.button("<< Previous", key="upload_prev"):
+                                    st.session_state.current_upload_image_index = max(0, st.session_state.current_upload_image_index - 1)
+                            with col_next:
+                                if st.button("Next >>", key="upload_next"):
+                                    st.session_state.current_upload_image_index = min(len(sorted_dates) - 1, st.session_state.current_upload_image_index + 1)
+                            with col_select:
+                                selected_date = st.selectbox("Select date", sorted_dates, index=st.session_state.current_upload_image_index)
+                                st.session_state.current_upload_image_index = sorted_dates.index(selected_date)
+                            current_date = sorted_dates[st.session_state.current_upload_image_index]
+                            st.write(f"Selected Date: {current_date}")
+                            image_filename = available_dates[current_date]
+                            image_path = os.path.join(images_folder, image_filename)
+                            if os.path.exists(image_path):
+                                st.image(image_path, caption=f"Image for {current_date}", use_column_width=True)
+                            else:
+                                st.error("Image not found.")
                         else:
-                            st.info("Δεν βρέθηκαν εικόνες με ημερομηνία στο φάκελο.")
+                            st.info("No images found with a date in the folder.")
                     with nested_tabs[2]:
                         if video_path is not None:
                             if video_path.endswith(".mp4"):
@@ -1066,28 +1059,22 @@ def main():
     debug("DEBUG: Εισήχθη η main()")
     run_intro_page()
     run_custom_ui()
-
     wb = st.session_state.get("waterbody_choice", None)
     idx = st.session_state.get("index_choice", None)
     analysis = st.session_state.get("analysis_choice", None)
-
     debug("DEBUG: Επιλεγμένα: υδάτινο σώμα =", wb, "δείκτης =", idx, "ανάλυση =", analysis)
-
-    # Δρομολόγηση στην αντίστοιχη λειτουργία
     if idx == "Burned Areas" and analysis == "Burned Areas":
         if wb in ["Γαδουρά", "Κορώνεια"]:
             run_lake_processing_app(wb, idx)
         else:
             st.warning("Τα Burned Areas είναι διαθέσιμα μόνο για Γαδουρά (ή Κορώνεια, αν υπάρχουν δεδομένα).")
         return
-
     if idx == "Burned Areas" and analysis == "Water Quality Dashboard":
         if wb == "Γαδουρά":
             run_water_quality_dashboard(wb, idx)
         else:
             st.warning("Το Dashboard για Burned Areas είναι διαθέσιμο μόνο στη Γαδουρά.")
         return
-
     if idx == "Χλωροφύλλη" and wb in ["Κορώνεια", "Πολυφύτου", "Γαδουρά", "Αξιός"]:
         if analysis == "Lake Processing":
             run_lake_processing_app(wb, idx)
