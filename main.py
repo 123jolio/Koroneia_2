@@ -361,7 +361,6 @@ def run_lake_processing_app(waterbody: str, index: str):
         display_option = st.sidebar.radio("Τρόπος εμφάνισης", options=["Thresholded", "Original"], index=0, key="display_lp")
 
         st.sidebar.markdown("### Επιλογή Μηνών")
-        # Existing month selection used for filtering
         month_options = {i: datetime(2000, i, 1).strftime('%B') for i in range(1, 13)}
         if "selected_months" not in st.session_state:
             st.session_state.selected_months = list(month_options.keys())
@@ -370,8 +369,6 @@ def run_lake_processing_app(waterbody: str, index: str):
                                                  format_func=lambda x: month_options[x],
                                                  default=st.session_state.selected_months,
                                                  key="months_lp")
-        # The same selection is used to filter the dataset and now also the grid plots
-
         st.session_state.selected_years = unique_years
         selected_years = st.sidebar.multiselect("Έτη", options=unique_years,
                                                 default=unique_years,
@@ -401,13 +398,11 @@ def run_lake_processing_app(waterbody: str, index: str):
         with st.expander("Επεξήγηση: Ημέρες σε Εύρος"):
             st.write("Το διάγραμμα αυτό δείχνει πόσες ημέρες κάθε pixel βρίσκεται εντός του επιλεγμένου εύρους τιμών. Ρυθμίστε το 'Εύρος τιμών pixel' για να δείτε πώς αλλάζει το αποτέλεσμα.")
 
-        # Ορισμός κοινών μεταβλητών για τα διαγράμματα (ticks)
         tick_vals = [1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 365]
         tick_text = ["1 (Ιαν)", "32 (Φεβ)", "60 (Μαρ)", "91 (Απρ)",
                      "121 (Μαΐ)", "152 (Ιουν)", "182 (Ιουλ)", "213 (Αυγ)",
                      "244 (Σεπ)", "274 (Οκτ)", "305 (Νοε)", "335 (Δεκ)", "365 (Δεκ)"]
 
-        # Διάγραμμα "Μέση Ημέρα Εμφάνισης"
         days_array = days_filtered.reshape((-1, 1, 1))
         sum_days = np.nansum(days_array * in_range, axis=0)
         count_in_range = np.nansum(in_range, axis=0)
@@ -422,7 +417,6 @@ def run_lake_processing_app(waterbody: str, index: str):
         with st.expander("Επεξήγηση: Μέση Ημέρα Εμφάνισης"):
             st.write("Το διάγραμμα αυτό παρουσιάζει τη μέση ημέρα εμφάνισης για τα pixels που πληρούν το επιλεγμένο εύρος τιμών. Πειραματιστείτε με το 'Εύρος τιμών pixel' για να δείτε πώς μεταβάλλεται η μέση ημέρα.")
 
-        # Διάγραμμα "Μέσο Δείγμα Εικόνας"
         if display_option.lower() == "thresholded":
             filtered_stack = np.where(in_range, stack_filtered, np.nan)
         else:
@@ -443,7 +437,6 @@ def run_lake_processing_app(waterbody: str, index: str):
         with st.expander("Επεξήγηση: Μέσο Δείγμα Εικόνας"):
             st.write("Το διάγραμμα αυτό δείχνει τη μέση τιμή των pixels μετά την εφαρμογή του φίλτρου. Επιλέξτε 'Thresholded' ή 'Original' για να δείτε τη φιλτραρισμένη ή την αρχική εικόνα.")
 
-        # Διάγραμμα "Χρόνος Μέγιστης Εμφάνισης"
         filtered_day_of_year = np.array([d.timetuple().tm_yday for d in filtered_dates])
         def nanargmax_or_nan(arr):
             return np.nan if np.all(np.isnan(arr)) else np.nanargmax(arr)
@@ -481,7 +474,6 @@ def run_lake_processing_app(waterbody: str, index: str):
         # Επιπρόσθετη Ετήσια Ανάλυση: Μηνιαία Κατανομή Ημερών σε Εύρος
         # ------------------------------
         st.header("Επιπρόσθετη Ετήσια Ανάλυση: Μηνιαία Κατανομή Ημερών σε Εύρος")
-        # Use full dataset arrays (STACK, lower_thresh, DATES)
         stack_full_in_range = (STACK >= lower_thresh) & (STACK <= upper_thresh)
         monthly_days_in_range = {}
         for m in range(1, 13):
@@ -491,17 +483,12 @@ def run_lake_processing_app(waterbody: str, index: str):
             else:
                 monthly_days_in_range[m] = None
 
-        # Only include months that were selected in the filtering (from the sidebar "Μήνες")
         months_to_display = [m for m in list(range(1, 13)) if m in selected_months]
-        # Reorder to start from March
         months_in_order = sorted(months_to_display)
-        # If March is in the list, reorder so that March comes first:
         if 3 in months_in_order:
             months_in_order = list(range(3, 13)) + [m for m in months_in_order if m < 3]
-            # Remove duplicates while preserving order:
             seen = set()
             months_in_order = [x for x in months_in_order if not (x in seen or seen.add(x))]
-
         num_cols = 3
         cols = st.columns(num_cols)
         for idx, m in enumerate(months_in_order):
@@ -509,7 +496,6 @@ def run_lake_processing_app(waterbody: str, index: str):
             img = monthly_days_in_range[m]
             month_name = datetime(2000, m, 1).strftime('%B')
             if img is not None:
-                # Removed np.flipud(img) to fix upside-down issue
                 fig_month = px.imshow(
                     img,
                     color_continuous_scale="plasma",
@@ -538,7 +524,6 @@ def run_lake_processing_app(waterbody: str, index: str):
         # ------------------------------
         st.header("Επιπρόσθετη Ετήσια Ανάλυση: Ετήσια Κατανομή Ημερών σε Εύρος")
         unique_years_full = sorted({d.year for d in DATES if d is not None})
-        # Only include years that were selected in the sidebar "Έτη"
         years_to_display = [y for y in unique_years_full if y in selected_years]
 
         if not years_to_display:
@@ -560,7 +545,6 @@ def run_lake_processing_app(waterbody: str, index: str):
             col_index = idx % num_cols
             img = yearly_days_in_range[year]
             if img is not None:
-                # Removed np.flipud(img) to fix upside-down issue
                 fig_year = px.imshow(
                     img,
                     color_continuous_scale="plasma",
@@ -846,10 +830,10 @@ def run_water_quality_dashboard(waterbody: str, index: str):
             st.session_state.upload_results = None
 
         tab_names = ["Δειγματοληψία 1 (Default)", "Δειγματοληψία 2 (Upload)"]
-        tabs = st.tabs(tab_names)
+        sampling_tabs = st.tabs(tab_names)
 
-        # Καρτέλα 1 (Default)
-        with tabs[0]:
+        # Καρτέλα 1 (Default Sampling)
+        with sampling_tabs[0]:
             st.header("Ανάλυση για Δειγματοληψία 1 (Default)")
             default_sampling_points = []
             if os.path.exists(sampling_kml_path):
@@ -878,10 +862,40 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                 else:
                     st.error("Σφάλμα μορφοποίησης αποτελεσμάτων ανάλυσης. Παρακαλώ επαναλάβετε την ανάλυση.")
                     st.stop()
-                nested_tabs = st.tabs(["GeoTIFF", "Video/GIF", "Χρώματα Pixel", "Μέσο mg", "Διπλά Διαγράμματα", "Λεπτομερής ανάλυση mg"])
+                nested_tabs = st.tabs(["GeoTIFF", "Επιλογή Εικόνων", "Video/GIF", "Χρώματα Pixel", "Μέσο mg", "Διπλά Διαγράμματα", "Λεπτομερής ανάλυση mg"])
                 with nested_tabs[0]:
                     st.plotly_chart(fig_geo, use_container_width=True, key="default_fig_geo")
                 with nested_tabs[1]:
+                    st.header("Επιλογή Εικόνων")
+                    # Εμφάνιση εικόνων σε grid layout
+                    tif_files = [f for f in os.listdir(images_folder) if f.lower().endswith('.tif')]
+                    available_dates = {}
+                    for filename in tif_files:
+                        match = re.search(r'(\d{4}_\d{2}_\d{2})', filename)
+                        if match:
+                            date_str = match.group(1)
+                            try:
+                                date_obj = datetime.strptime(date_str, '%Y_%m_%d').date()
+                                available_dates[str(date_obj)] = filename
+                            except Exception as e:
+                                debug("DEBUG: Σφάλμα εξαγωγής ημερομηνίας από", filename, ":", e)
+                                continue
+                    if available_dates:
+                        sorted_dates = sorted(available_dates.keys())
+                        num_cols = 3  # Αριθμός εικόνων ανά γραμμή
+                        for i in range(0, len(sorted_dates), num_cols):
+                            cols = st.columns(num_cols)
+                            for j, date_str in enumerate(sorted_dates[i:i+num_cols]):
+                                image_filename = available_dates[date_str]
+                                image_path = os.path.join(images_folder, image_filename)
+                                with cols[j]:
+                                    if os.path.exists(image_path):
+                                        st.image(image_path, caption=date_str, use_column_width=True)
+                                    else:
+                                        st.error(f"Η εικόνα για {date_str} δεν βρέθηκε.")
+                    else:
+                        st.info("Δεν βρέθηκαν εικόνες με ημερομηνία στο φάκελο.")
+                with nested_tabs[2]:
                     if video_path is not None:
                         if video_path.endswith(".mp4"):
                             st.video(video_path, key="default_video")
@@ -889,13 +903,13 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                             st.image(video_path)
                     else:
                         st.info("Δεν βρέθηκε αρχείο timelapse.")
-                with nested_tabs[2]:
-                    st.plotly_chart(fig_colors, use_container_width=True, key="default_fig_colors")
                 with nested_tabs[3]:
-                    st.plotly_chart(fig_mg, use_container_width=True, key="default_fig_mg")
+                    st.plotly_chart(fig_colors, use_container_width=True, key="default_fig_colors")
                 with nested_tabs[4]:
-                    st.plotly_chart(fig_dual, use_container_width=True, key="default_fig_dual")
+                    st.plotly_chart(fig_mg, use_container_width=True, key="default_fig_mg")
                 with nested_tabs[5]:
+                    st.plotly_chart(fig_dual, use_container_width=True, key="default_fig_dual")
+                with nested_tabs[6]:
                     selected_detail_point = st.selectbox("Επιλέξτε σημείο για λεπτομερή ανάλυση mg",
                                                          options=list(results_mg.keys()),
                                                          key="default_detail")
@@ -918,8 +932,8 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                             st.plotly_chart(fig_detail, use_container_width=True, key="default_fig_detail")
                         else:
                             st.info("Δεν υπάρχουν δεδομένα mg για αυτό το σημείο.")
-        # Καρτέλα 2 (Upload)
-        with tabs[1]:
+        # Καρτέλα 2 (Upload Sampling)
+        with sampling_tabs[1]:
             st.header("Ανάλυση για ανεβασμένη δειγματοληψία")
             uploaded_file = st.file_uploader("Ανεβάστε αρχείο KML για νέα σημεία δειγματοληψίας", type="kml", key="upload_kml")
             if uploaded_file is not None:
@@ -950,10 +964,39 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                     else:
                         st.error("Σφάλμα μορφοποίησης αποτελεσμάτων ανάλυσης (Upload). Παρακαλώ επαναλάβετε.")
                         st.stop()
-                    nested_tabs = st.tabs(["GeoTIFF", "Video/GIF", "Χρώματα Pixel", "Μέσο mg", "Διπλά Διαγράμματα", "Λεπτομερής ανάλυση mg"])
+                    nested_tabs = st.tabs(["GeoTIFF", "Επιλογή Εικόνων", "Video/GIF", "Χρώματα Pixel", "Μέσο mg", "Διπλά Διαγράμματα", "Λεπτομερής ανάλυση mg"])
                     with nested_tabs[0]:
                         st.plotly_chart(fig_geo, use_container_width=True, key="upload_fig_geo")
                     with nested_tabs[1]:
+                        st.header("Επιλογή Εικόνων")
+                        tif_files = [f for f in os.listdir(images_folder) if f.lower().endswith('.tif')]
+                        available_dates = {}
+                        for filename in tif_files:
+                            match = re.search(r'(\d{4}_\d{2}_\d{2})', filename)
+                            if match:
+                                date_str = match.group(1)
+                                try:
+                                    date_obj = datetime.strptime(date_str, '%Y_%m_%d').date()
+                                    available_dates[str(date_obj)] = filename
+                                except Exception as e:
+                                    debug("DEBUG: Σφάλμα εξαγωγής ημερομηνίας από", filename, ":", e)
+                                    continue
+                        if available_dates:
+                            sorted_dates = sorted(available_dates.keys())
+                            num_cols = 3
+                            for i in range(0, len(sorted_dates), num_cols):
+                                cols = st.columns(num_cols)
+                                for j, date_str in enumerate(sorted_dates[i:i+num_cols]):
+                                    image_filename = available_dates[date_str]
+                                    image_path = os.path.join(images_folder, image_filename)
+                                    with cols[j]:
+                                        if os.path.exists(image_path):
+                                            st.image(image_path, caption=date_str, use_column_width=True)
+                                        else:
+                                            st.error(f"Η εικόνα για {date_str} δεν βρέθηκε.")
+                        else:
+                            st.info("Δεν βρέθηκαν εικόνες με ημερομηνία στο φάκελο.")
+                    with nested_tabs[2]:
                         if video_path is not None:
                             if video_path.endswith(".mp4"):
                                 st.video(video_path, key="upload_video")
@@ -961,13 +1004,13 @@ def run_water_quality_dashboard(waterbody: str, index: str):
                                 st.image(video_path)
                         else:
                             st.info("Δεν βρέθηκε αρχείο Video/GIF.")
-                    with nested_tabs[2]:
-                        st.plotly_chart(fig_colors, use_container_width=True, key="upload_fig_colors")
                     with nested_tabs[3]:
-                        st.plotly_chart(fig_mg, use_container_width=True, key="upload_fig_mg")
+                        st.plotly_chart(fig_colors, use_container_width=True, key="upload_fig_colors")
                     with nested_tabs[4]:
-                        st.plotly_chart(fig_dual, use_container_width=True, key="upload_fig_dual")
+                        st.plotly_chart(fig_mg, use_container_width=True, key="upload_fig_mg")
                     with nested_tabs[5]:
+                        st.plotly_chart(fig_dual, use_container_width=True, key="upload_fig_dual")
+                    with nested_tabs[6]:
                         selected_detail_point = st.selectbox("Επιλέξτε σημείο για λεπτομερή ανάλυση mg",
                                                              options=list(results_mg.keys()),
                                                              key="upload_detail")
@@ -1069,4 +1112,5 @@ def main():
             "Για παράδειγμα, η Χλωροφύλλη είναι διαθέσιμη μόνο για (Κορώνεια, Πολυφύτου, Γαδουρά, Αξιός)."
         )
 
-if __name__ == "__main__
+if __name__ == "__main__":
+    main()
