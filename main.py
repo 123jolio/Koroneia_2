@@ -140,9 +140,9 @@ def get_data_folder(waterbody: str, index: str) -> str:
         data_folder = os.path.join(base_dir, waterbody_folder, "Chlorophyll")
     elif index == "Burned Areas":
         data_folder = os.path.join(base_dir, waterbody_folder, "Burned Areas")
-    # New branch: for waterbody "Κορώνεια" when index is "Πραγματικό"
+    # Corrected branch: for waterbody "Κορώνεια" when index is "Πραγματικό"
     elif index == "Πραγματικό" and waterbody == "Κορώνεια":
-        data_folder = os.path.join(base_dir, "Koroneia_2", "Koroneia", "Pragmatiko")
+        data_folder = os.path.join(base_dir, waterbody_folder, "Pragmatiko")
     else:
         data_folder = os.path.join(base_dir, waterbody_folder, index)
     debug("DEBUG: Ο φάκελος δεδομένων επιλύθηκε σε:", data_folder)
