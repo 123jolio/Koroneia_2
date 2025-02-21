@@ -120,12 +120,16 @@ inject_custom_css()
 def get_data_folder(waterbody: str, index: str) -> str:
     """
     Αντιστοιχεί το επιλεγμένο υδάτινο σώμα και δείκτη στον σωστό φάκελο δεδομένων.
-    Επιστρέφει None αν δεν υπάρχει ο φάκελος.
-    
-    Τώρα ορίζουμε τη βασική διαδρομή στο φάκελο "pragmatiko" μέσα στο repository.
+    Στο παράδειγμά σου, η δομή είναι:
+        Koroneia_2/
+            Koroneia/
+                Pragmatiko/
+                    GeoTIFFs/
+    Έτσι, απλώς δείχνουμε στον φάκελο "Pragmatiko" ανεξάρτητα από τον δείκτη.
     """
-    base_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "pragmatiko")
-    debug("DEBUG: Τρέχων φάκελος (μέσα στο pragmatiko):", base_dir)
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    debug("DEBUG: Τρέχων φάκελος:", base_dir)
+
     waterbody_map = {
         "Κορώνεια": "Koroneia",
         "Πολυφύτου": "polyphytou",
@@ -135,13 +139,11 @@ def get_data_folder(waterbody: str, index: str) -> str:
     waterbody_folder = waterbody_map.get(waterbody, None)
     if waterbody_folder is None:
         return None
-    if index == "Χλωροφύλλη":
-        data_folder = os.path.join(base_dir, waterbody_folder, "Chlorophyll")
-    elif index == "Burned Areas":
-        data_folder = os.path.join(base_dir, waterbody_folder, "Burned Areas")
-    else:
-        data_folder = os.path.join(base_dir, waterbody_folder, index)
+
+    # Always go to "Pragmatiko" for any index
+    data_folder = os.path.join(base_dir, waterbody_folder, "Pragmatiko")
     debug("DEBUG: Ο φάκελος δεδομένων επιλύθηκε σε:", data_folder)
+
     if data_folder is not None and not os.path.exists(data_folder):
         st.error(f"Ο φάκελος δεν υπάρχει: {data_folder}")
         return None
@@ -327,6 +329,7 @@ def run_lake_processing_app(waterbody: str, index: str):
             st.error("Δεν υπάρχει φάκελος δεδομένων για το επιλεγμένο υδάτινο σώμα/δείκτη.")
             st.stop()
 
+        # Here is where we look for "GeoTIFFs" inside that data folder
         input_folder = os.path.join(data_folder, "GeoTIFFs")
         try:
             STACK, DAYS, DATES = load_data(input_folder)
@@ -477,7 +480,8 @@ def run_lake_processing_app(waterbody: str, index: str):
         months_to_display = [m for m in list(range(1, 13)) if m in selected_months]
         months_in_order = sorted(months_to_display)
         if 3 in months_in_order:
-            months_in_order = list(range(3, 13)) + [m for m in months_in_order if m < 3]
+            # Just a small re-order example
+            months_in_order = list(range(3, 13)) + [mm for mm in months_in_order if mm < 3]
             seen = set()
             months_in_order = [x for x in months_in_order if not (x in seen or seen.add(x))]
         num_cols = 3
